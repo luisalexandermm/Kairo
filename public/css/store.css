@@ -18,7 +18,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 header{position:sticky;top:0;z-index:120;background:transparent;transition:.3s}
 header.scrolled{background:var(--ink);box-shadow:0 6px 26px -14px rgba(0,0,0,.7)}
 header .wrap{height:var(--hh);display:flex;align-items:center;justify-content:space-between;gap:20px}
-.brand{display:flex;align-items:baseline;gap:8px;color:#fff}
+.brand{display:flex;align-items:center;gap:8px;color:#fff}.brand__logo{width:38px;height:38px;object-fit:contain;flex:0 0 38px}
 .brand__mark{font-family:'Anton',sans-serif;font-size:1.65rem;letter-spacing:1px;text-shadow:1px 1px 0 var(--ember),2px 2px 0 var(--ember-dark),3px 3px 0 rgba(0,0,0,.3)}
 .brand__tag{font-size:.64rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#a9adbe}
 .nav-links{display:flex;gap:28px}.nav-links a{font-weight:700;font-size:.84rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;opacity:.85}.nav-links a:hover{opacity:1}

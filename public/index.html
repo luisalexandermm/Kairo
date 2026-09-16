@@ -24,7 +24,7 @@
 <!-- HEADER -->
 <header id="hdr">
   <div class="wrap">
-    <a href="#inicio" class="brand"><span class="brand__mark" id="brandMark">kAIRO</span><span class="brand__tag" id="brandTag">Sneaker Store</span></a>
+    <a href="#inicio" class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark" id="brandMark">kAIRO</span><span class="brand__tag" id="brandTag">Sneaker Store</span></a>
     <nav class="nav-links"><a href="#productos">Tenis</a><a href="#destacado">Destacado</a><a href="#colecciones">Colecciones</a><a href="#opiniones">Opiniones</a></nav>
     <div class="nav-actions">
       <button class="icon-btn" onclick="openCart()" aria-label="Carrito"><svg><use href="#i-cart"/></svg><span class="badge hide" id="cartBadge">0</span></button>
@@ -35,7 +35,7 @@
 
 <!-- MOBILE MENU -->
 <div class="mob-menu" id="mobMenu">
-  <div class="top"><span class="brand"><span class="brand__mark">kAIRO</span></span>
+  <div class="top"><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark">kAIRO</span></span>
     <button class="icon-btn" style="background:rgba(255,255,255,.12);color:#fff" onclick="toggleMenu(false)"><svg><use href="#i-close"/></svg></button></div>
   <a href="#inicio" onclick="toggleMenu(false)">Inicio</a>
   <a href="#productos" onclick="toggleMenu(false)">Tenis</a>
@@ -159,7 +159,7 @@
 <!-- FOOTER -->
 <footer><div class="wrap">
   <div class="foot-grid">
-    <div><span class="brand"><span class="brand__mark">kAIRO</span></span><p>Nike, Jordan, Adidas y Timberland originales. Envíos a toda Colombia y atención directa por WhatsApp.</p>
+    <div><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark">kAIRO</span></span><p>Nike, Jordan, Adidas y Timberland originales. Envíos a toda Colombia y atención directa por WhatsApp.</p>
       <div class="socials"><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" style="color:#fff"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg></a></div></div>
     <div class="foot-col"><h4>Marcas</h4><a href="#productos" onclick="filterBrand('Nike');return false">Nike</a><a href="#productos" onclick="filterBrand('Jordan');return false">Jordan</a><a href="#productos" onclick="filterBrand('Adidas');return false">Adidas</a><a href="#productos" onclick="filterBrand('Timberland');return false">Timberland</a></div>
     <div class="foot-col"><h4>Ayuda</h4><a href="#productos">Cómo comprar</a><a href="#">Guía de tallas</a><a href="#">Envíos y entregas</a><a href="#">Cambios y devoluciones</a></div>
