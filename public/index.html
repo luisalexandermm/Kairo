@@ -530,7 +530,8 @@ PRODUCTS = [
 async function loadCatalog() {
   try {
     const r = await fetch('/api/catalog');
-    if (!r.ok) throw new Error('API no disponible');
+    const contentType = r.headers.get('content-type') || '';
+    if (!r.ok || !contentType.includes('application/json')) throw new Error('API no disponible');
     const d = await r.json();
     if (d.products && d.products.length) PRODUCTS = d.products;
     PROMOS = d.promos || [];

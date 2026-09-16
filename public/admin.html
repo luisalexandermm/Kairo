@@ -225,6 +225,8 @@ async function api(path, opts = {}) {
     ...opts,
     body: opts.body ? (typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body)) : undefined
   });
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) throw new Error('La API no está disponible en este deploy');
   let data;
   try { data = await res.json(); } catch (_) { data = {}; }
   if (res.status === 401 && TOKEN) { logout(); throw new Error('Sesión vencida'); }
@@ -244,6 +246,8 @@ async function doLogin() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: pass })
     });
+    const contentType = r.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) throw new Error('La API no está disponible en este deploy');
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || 'Contraseña incorrecta');
     TOKEN = data.token;
