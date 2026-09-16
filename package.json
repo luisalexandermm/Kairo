@@ -1,16 +1,12 @@
 {
-  "name": "kairo",
-  "version": "1.0.0",
-  "description": "Tienda de tenis kAIRO: sitio público, panel de administración y base de datos.",
-  "main": "server.js",
+  "name": "kairo-store",
+  "version": "2.0.0",
+  "description": "Tienda kAIRO — Vercel + Supabase",
   "scripts": {
-    "start": "node server.js"
+    "dev": "node dev-server.js",
+    "seed": "node lib/seed-db.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "private": true,
   "dependencies": {
-    "pg": "^8.23.0"
+    "@supabase/supabase-js": "^2.39.0"
   }
 }
