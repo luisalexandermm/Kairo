@@ -1,0 +1,16 @@
+{
+  "name": "kairo",
+  "version": "1.0.0",
+  "description": "Tienda de tenis kAIRO: sitio público, panel de administración y base de datos.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true,
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}

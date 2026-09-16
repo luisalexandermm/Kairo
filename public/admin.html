@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kAIRO · Panel de administración</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b0d14;--ink-soft:#161a2b;--paper:#f2f3f1;--line:#e0e2e0;
+    --ember:#ff4433;--ember-dark:#d1301f;--indigo:#241a46;--lime:#d8ff4f;
+    --muted:#6a707c;--ok:#1e8e5a;--radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Manrope',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font-family:inherit;font-size:inherit}
+  button{cursor:pointer;border:none;background:none;color:inherit}
+  a{color:inherit}
+  img{display:block;max-width:100%}
+  .display{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.5px}
+  :focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:999px;font-weight:800;font-size:.88rem;transition:.18s}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-primary{background:var(--ember);color:#fff}
+  .btn-primary:hover{background:var(--ember-dark)}
+  .btn-dark{background:var(--ink);color:#fff}
+  .btn-line{border:1.6px solid var(--line);background:#fff}
+  .btn-line:hover{border-color:var(--ink)}
+  .btn-danger{color:var(--ember-dark);font-weight:700;font-size:.82rem}
+  .btn-sm{padding:7px 14px;font-size:.8rem}
+
+  /* ---- Login ---- */
+  .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(120% 90% at 50% 20%,#31205c,#120c24 74%)}
+  .login__card{background:#fff;border-radius:16px;padding:40px 36px;width:min(400px,100%);text-align:center}
+  .login__card .logo{font-family:'Anton',sans-serif;font-size:2.4rem;color:var(--ink);letter-spacing:1px}
+  .login__card .logo span{color:var(--ember)}
+  .login__card p{color:var(--muted);font-size:.9rem;margin:6px 0 24px}
+  .login__card input{width:100%;padding:13px 15px;border:1.6px solid var(--line);border-radius:var(--radius);margin-bottom:14px;text-align:center}
+  .login__card .btn{width:100%}
+  .login__err{color:var(--ember-dark);font-size:.85rem;margin-top:12px;min-height:20px;font-weight:700}
+
+  /* ---- Layout ---- */
+  .app{display:none;min-height:100vh;grid-template-columns:238px 1fr}
+  .app.on{display:grid}
+  aside{background:var(--ink);color:#fff;padding:26px 18px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+  aside .logo{font-family:'Anton',sans-serif;font-size:1.7rem;letter-spacing:1px;padding:0 10px 4px}
+  aside .logo span{color:var(--ember)}
+  aside small{padding:0 10px 22px;color:#8e93a6;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--radius);font-weight:700;font-size:.9rem;color:#c3c6d2;text-align:left;width:100%}
+  .nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .nav-item.active{background:var(--ember);color:#fff}
+  .nav-item .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6}
+  aside .foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:18px;border-top:1px solid rgba(255,255,255,.12)}
+  aside .foot a,aside .foot button{font-size:.83rem;color:#a6aab8;padding:6px 10px;text-align:left;text-decoration:none}
+  aside .foot a:hover,aside .foot button:hover{color:#fff}
+
+  main{padding:30px 34px 70px;overflow-x:hidden}
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:24px;flex-wrap:wrap}
+  .head h1{font-size:1.9rem}
+  .head p{color:var(--muted);font-size:.9rem}
+  .view{display:none}
+  .view.on{display:block}
+
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-bottom:28px}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .stat b{display:block;font-family:'Anton',sans-serif;font-size:1.9rem;line-height:1.1}
+  .stat span{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+  .toolbar input,.toolbar select{padding:10px 14px;border:1.6px solid var(--line);border-radius:999px;background:#fff}
+  .toolbar input{min-width:230px}
+  .toolbar .spacer{flex:1}
+
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:13px 16px;border-bottom:1px solid var(--line);background:#fafafa}
+  td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:.9rem;vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  .thumb{width:58px;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#f0ece6}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .thumb svg{width:84%}
+  .cell-name{display:flex;align-items:center;gap:12px}
+  .cell-name b{display:block;font-size:.95rem}
+  .cell-name small{color:var(--muted);font-size:.78rem}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:.74rem;font-weight:800}
+  .pill.on{background:#e3f5ec;color:var(--ok)}
+  .pill.off{background:#f0f0f0;color:var(--muted)}
+  .pill.warn{background:#fff0ec;color:var(--ember-dark)}
+  .old-price{text-decoration:line-through;color:var(--muted);font-size:.8rem;margin-right:6px}
+  .row-actions{display:flex;gap:10px;justify-content:flex-end}
+  .empty{padding:44px;text-align:center;color:var(--muted)}
+
+  /* ---- Form drawer ---- */
+  .scrim{position:fixed;inset:0;background:rgba(11,13,20,.55);z-index:50;opacity:0;pointer-events:none;transition:.22s}
+  .scrim.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:min(560px,100%);background:#fff;z-index:60;transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column}
+  .drawer.on{transform:none}
+  .drawer__head{padding:22px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .drawer__head h2{font-size:1.25rem}
+  .drawer__body{padding:22px 26px;overflow:auto;flex:1}
+  .drawer__foot{padding:18px 26px;border-top:1px solid var(--line);display:flex;gap:10px;background:#fafafa}
+  .drawer__foot .btn{flex:1}
+  .close{width:34px;height:34px;border-radius:50%;background:#f0f0ef;font-size:1.1rem;line-height:1}
+  .close:hover{background:#e3e3e1}
+
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:.75rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#444;margin-bottom:6px}
+  .field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1.6px solid var(--line);border-radius:8px;background:#fbfbfa}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ink)}
+  .field textarea{min-height:82px;resize:vertical}
+  .field small{display:block;color:var(--muted);font-size:.78rem;margin-top:5px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+  .check{display:flex;align-items:center;gap:9px;font-size:.88rem;font-weight:700;margin-bottom:12px}
+  .check input{width:18px;height:18px}
+  .size-chips{display:flex;flex-wrap:wrap;gap:7px}
+  .size-chip{padding:8px 12px;border:1.6px solid var(--line);border-radius:8px;font-weight:700;font-size:.85rem;background:#fff}
+  .size-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .color-row{display:grid;grid-template-columns:1fr 54px 34px;gap:9px;margin-bottom:8px;align-items:center}
+  .color-row input[type=color]{padding:3px;height:42px}
+  .img-preview{width:100%;height:170px;border:1.6px dashed var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fafafa;margin-bottom:10px}
+  .img-preview img{width:100%;height:100%;object-fit:contain}
+  .img-preview svg{width:62%}
+  .img-preview span{color:var(--muted);font-size:.85rem}
+
+  .order-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:14px}
+  .order-card__top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+  .order-card h3{font-size:1rem}
+  .order-card small{color:var(--muted);font-size:.8rem}
+  .order-items{font-size:.87rem;color:#333;margin:10px 0;padding-left:16px}
+  .order-items li{margin-bottom:3px}
+  .order-card__foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+  .order-card select{padding:8px 12px;border:1.6px solid var(--line);border-radius:999px;background:#fff;font-weight:700;font-size:.82rem}
+  .total{font-family:'Anton',sans-serif;font-size:1.3rem}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:700;font-size:.86rem;opacity:0;pointer-events:none;transition:.25s;z-index:90}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+
+  @media(max-width:900px){
+    .app.on{grid-template-columns:1fr}
+    aside{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px;padding:16px}
+    aside .logo{font-size:1.3rem;padding:0 8px 0 0}
+    aside small,aside .foot{display:none}
+    .nav-item{width:auto;padding:9px 13px}
+    main{padding:22px 18px 60px}
+    .grid2,.grid3{grid-template-columns:1fr}
+    th:nth-child(3),td:nth-child(3){display:none}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="s-low" viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
+  <symbol id="s-high" viewBox="0 0 260 140"><path d="M10 118c-3-13 3-22 14-26 9-3 14-8 17-16 3-9 4-20 4-32 0-9 5-14 14-14h44c9 0 13 5 13 14 0 14 3 25 12 33 7 6 16 9 27 10 16 2 36 2 52 8 13 5 21 14 22 24 1 8-3 13-11 13H20c-6 0-9-2-10-4Z" fill="currentColor"/><path d="M150 62c20-2 44 2 60 16" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
+  <symbol id="s-boot" viewBox="0 0 260 140"><path d="M52 14h60c8 0 12 5 12 13v46c0 14 6 24 18 30 12 6 30 8 48 10 18 2 34 6 44 14 8 6 11 13 9 20H24c-8 0-12-5-11-13 1-9 7-15 16-19 8-4 12-10 12-19V27c0-8 4-13 11-13Z" fill="currentColor"/><path d="M20 122c40 6 160 6 224-2" stroke="rgba(0,0,0,.28)" stroke-width="9" fill="none" stroke-linecap="round"/></symbol>
+</defs></svg>
+
+<!-- ============ LOGIN ============ -->
+<div class="login" id="loginView">
+  <form class="login__card" id="loginForm">
+    <div class="logo">k<span>AI</span>RO</div>
+    <p>Panel de administración</p>
+    <input type="password" id="pass" placeholder="Contraseña" autocomplete="current-password" required>
+    <button class="btn btn-primary" type="submit">Entrar</button>
+    <div class="login__err" id="loginErr"></div>
+  </form>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app" id="app">
+  <aside>
+    <div class="logo">k<span>AI</span>RO</div>
+    <small>Administración</small>
+    <button class="nav-item active" data-view="resumen"><span class="dot"></span>Resumen</button>
+    <button class="nav-item" data-view="productos"><span class="dot"></span>Productos</button>
+    <button class="nav-item" data-view="promos"><span class="dot"></span>Promociones</button>
+    <button class="nav-item" data-view="pedidos"><span class="dot"></span>Pedidos</button>
+    <button class="nav-item" data-view="ajustes"><span class="dot"></span>Ajustes</button>
+    <div class="foot">
+      <a href="/" target="_blank">Ver la tienda</a>
+      <button onclick="logout()">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- Resumen -->
+    <section class="view on" id="view-resumen">
+      <div class="head"><div><h1 class="display">Resumen</h1><p>Estado de la tienda en este momento.</p></div></div>
+      <div class="stats" id="stats"></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Últimos pedidos</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+          <tbody id="recentOrders"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Productos -->
+    <section class="view" id="view-productos">
+      <div class="head">
+        <div><h1 class="display">Productos</h1><p>Agrega modelos, cambia precios, tallas, colores e imágenes.</p></div>
+        <button class="btn btn-primary" onclick="openProductForm()">Nuevo producto</button>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="prodSearch" placeholder="Buscar por nombre" oninput="renderProducts()">
+        <select id="prodBrand" onchange="renderProducts()">
+          <option value="">Todas las marcas</option>
+          <option>Nike</option><option>Jordan</option><option>Adidas</option><option>Timberland</option>
+        </select>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="productRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Promociones -->
+    <section class="view" id="view-promos">
+      <div class="head">
+        <div><h1 class="display">Promociones</h1><p>Avisos que aparecen en la franja de promociones de la tienda.</p></div>
+        <button class="btn btn-primary" onclick="openPromoForm()">Nueva promoción</button>
+      </div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Promoción</th><th>Descuento</th><th>Aplica a</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="promoRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Pedidos -->
+    <section class="view" id="view-pedidos">
+      <div class="head">
+        <div><h1 class="display">Pedidos</h1><p>Cada compra de la tienda llega aquí y también por WhatsApp.</p></div>
+        <button class="btn btn-line btn-sm" onclick="loadAll()">Actualizar</button>
+      </div>
+      <div id="orderList"></div>
+    </section>
+
+    <!-- Ajustes -->
+    <section class="view" id="view-ajustes">
+      <div class="head"><div><h1 class="display">Ajustes</h1><p>Datos de la tienda, WhatsApp y portada.</p></div></div>
+      <div class="panel" style="padding:26px;max-width:720px">
+        <div class="grid2">
+          <div class="field"><label for="setName">Nombre de la tienda</label><input id="setName"></div>
+          <div class="field"><label for="setTag">Bajada del logo</label><input id="setTag"></div>
+        </div>
+        <div class="field">
+          <label for="setWa">WhatsApp de pedidos</label>
+          <input id="setWa" placeholder="573145312045">
+          <small>Con indicativo del país y sin signos: 57 + número.</small>
+        </div>
+        <div class="grid2">
+          <div class="field"><label for="setWord">Palabra de fondo del hero</label><input id="setWord"></div>
+          <div class="field"><label for="setTheme">Color inicial del hero</label>
+            <select id="setTheme"><option value="indigo">Índigo</option><option value="carmesi">Carmesí</option><option value="ember">Ember</option><option value="tinta">Tinta</option></select>
+          </div>
+        </div>
+        <div class="field"><label for="setHeadline">Frase del hero</label><input id="setHeadline"></div>
+        <div class="field"><label for="setShipping">Nota de envío</label><input id="setShipping"></div>
+        <div class="field">
+          <label>Logo del hero (imagen o PNG 3D)</label>
+          <div class="img-preview" id="logoPreview"><span>Sin imagen: se usa el logo de texto</span></div>
+          <input type="file" id="logoFile" accept="image/*" onchange="uploadLogo(this)">
+          <small>Si subes una imagen, reemplaza al logo de texto en la portada.</small>
+        </div>
+        <div class="field">
+          <label for="setPass">Cambiar contraseña del panel</label>
+          <input id="setPass" type="password" placeholder="Déjalo vacío para no cambiarla">
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()">Guardar ajustes</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ DRAWER PRODUCTO ============ -->
+<div class="scrim" id="scrim" onclick="closeDrawers()"></div>
+
+<div class="drawer" id="productDrawer">
+  <div class="drawer__head"><h2 class="display" id="prodTitle">Nuevo producto</h2><button class="close" onclick="closeDrawers()">×</button></div>
+  <div class="drawer__body">
+    <div class="field">
+      <label>Imagen del producto</label>
+      <div class="img-preview" id="prodPreview"><span>Sin imagen: se usa una silueta de color</span></div>
+      <input type="file" id="prodFile" accept="image/*" onchange="uploadProductImage(this)">
+      <small>Recomendado: PNG con fondo transparente.</small>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="pName">Nombre</label><input id="pName" placeholder="Air Max 270"></div>
+      <div class="field"><label for="pBrand">Marca</label>
+        <input id="pBrand" list="brandList" placeholder="Nike">
+        <datalist id="brandList"><option>Nike</option><option>Jordan</option><option>Adidas</option><option>Timberland</option></datalist>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label for="pPrice">Precio</label><input id="pPrice" type="number" min="0" placeholder="749900"></div>
+      <div class="field"><label for="pSale">Precio oferta</label><input id="pSale" type="number" min="0" placeholder="Opcional"></div>
+      <div class="field"><label for="pStock">Stock</label><input id="pStock" type="number" min="0" value="10"></div>
+    </div>
+    <div class="field"><label for="pTag">Etiqueta</label><input id="pTag" placeholder="Running, Clásico, Edición limitada…"></div>
+    <div class="field"><label for="pDesc">Descripción</label><textarea id="pDesc" placeholder="Materiales, horma, amortiguación…"></textarea></div>
+
+    <div class="field">
+      <label>Tallas disponibles</label>
+      <div class="size-chips" id="sizeChips"></div>
+    </div>
+
+    <div class="field">
+      <label>Colores</label>
+      <div id="colorRows"></div>
+      <button class="btn btn-line btn-sm" onclick="addColorRow()">Agregar color</button>
+    </div>
+
+    <div class="grid3">
+      <div class="field"><label for="pShape">Silueta</label>
+        <select id="pShape"><option value="s-low">Baja</option><option value="s-high">Caña alta</option><option value="s-boot">Bota</option></select>
+      </div>
+      <div class="field"><label for="pShoeColor">Color silueta</label><input id="pShoeColor" type="color" value="#1d2733"></div>
+      <div class="field"><label for="pBg">Fondo tarjeta</label><input id="pBg" type="color" value="#f3ece3"></div>
+    </div>
+
+    <label class="check"><input type="checkbox" id="pActive" checked> Visible en la tienda</label>
+    <label class="check"><input type="checkbox" id="pFeatured"> Destacado en la portada</label>
+  </div>
+  <div class="drawer__foot">
+    <button class="btn btn-line" onclick="closeDrawers()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveProduct()">Guardar producto</button>
+  </div>
+</div>
+
+<!-- ============ DRAWER PROMO ============ -->
+<div class="drawer" id="promoDrawer">
+  <div class="drawer__head"><h2 class="display" id="promoTitle">Nueva promoción</h2><button class="close" onclick="closeDrawers()">×</button></div>
+  <div class="drawer__body">
+    <div class="field"><label for="mTitle">Título</label><input id="mTitle" placeholder="Segunda unidad al 30%"></div>
+    <div class="field"><label for="mDesc">Descripción</label><textarea id="mDesc" placeholder="Cómo funciona la promoción"></textarea></div>
+    <div class="grid2">
+      <div class="field"><label for="mBadge">Etiqueta corta</label><input id="mBadge" placeholder="Envío gratis"></div>
+      <div class="field"><label for="mDiscount">Descuento %</label><input id="mDiscount" type="number" min="0" max="100" value="0"></div>
+    </div>
+    <div class="field"><label for="mScope">Aplica a</label>
+      <select id="mScope"><option>Todos</option><option>Nike</option><option>Jordan</option><option>Adidas</option><option>Timberland</option></select>
+    </div>
+    <label class="check"><input type="checkbox" id="mActive" checked> Promoción activa</label>
+  </div>
+  <div class="drawer__foot">
+    <button class="btn btn-line" onclick="closeDrawers()">Cancelar</button>
+    <button class="btn btn-primary" onclick="savePromo()">Guardar promoción</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- Estado ---------------- */
+let TOKEN = null;
+let products = [], promos = [], orders = [], settings = {};
+let editingProduct = null, editingPromo = null;
+let prodImage = '', logoImage = '';
+const ALL_SIZES = [33,34,35,36,37,38,39,40,41,42,43,44,45,46];
+let pickedSizes = new Set();
+
+const $ = id => document.getElementById(id);
+const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(window._t); window._t = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+async function api(path, options = {}){
+  const res = await fetch('/api' + path, Object.assign({
+    headers: Object.assign({'Content-Type':'application/json'}, TOKEN ? {'x-admin-token':TOKEN} : {})
+  }, options));
+  const data = await res.json().catch(() => ({}));
+  if(res.status === 401 && TOKEN){ logout(); throw new Error('Sesión vencida'); }
+  if(!res.ok) throw new Error(data.error || 'Error de conexión');
+  return data;
+}
+
+/* ---------------- Login ---------------- */
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('loginErr').textContent = '';
+  try{
+    const r = await api('/login', {method:'POST', body: JSON.stringify({password: $('pass').value})});
+    TOKEN = r.token;
+    $('loginView').style.display = 'none';
+    $('app').classList.add('on');
+    loadAll();
+  }catch(err){ $('loginErr').textContent = err.message; }
+});
+function logout(){
+  TOKEN = null;
+  $('app').classList.remove('on');
+  $('loginView').style.display = 'flex';
+  $('pass').value = '';
+}
+
+/* ---------------- Navegación ---------------- */
+document.querySelectorAll('.nav-item').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+  b.classList.add('active');
+  $('view-' + b.dataset.view).classList.add('on');
+}));
+
+/* ---------------- Carga ---------------- */
+async function loadAll(){
+  try{
+    [products, promos, orders, settings] = await Promise.all([
+      api('/admin/products'), api('/admin/promos'), api('/admin/orders'), api('/admin/settings')
+    ]);
+    orders.sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    renderStats(); renderProducts(); renderPromos(); renderOrders(); fillSettings();
+  }catch(err){ toast(err.message); }
+}
+
+async function renderStats(){
+  const s = await api('/admin/stats');
+  $('stats').innerHTML = `
+    <div class="stat"><b>${s.activeProducts}</b><span>Productos visibles</span></div>
+    <div class="stat"><b>${s.promos}</b><span>Promos activas</span></div>
+    <div class="stat"><b>${s.newOrders}</b><span>Pedidos nuevos</span></div>
+    <div class="stat"><b>${money(s.revenue)}</b><span>Total vendido</span></div>
+    <div class="stat"><b>${s.storage === 'sqlite' ? 'SQLite' : 'JSON'}</b><span>Base de datos</span></div>`;
+  $('recentOrders').innerHTML = orders.slice(0,5).map(o => `
+    <tr>
+      <td><b>${esc(o.id)}</b><br><small>${new Date(o.createdAt).toLocaleString('es-CO')}</small></td>
+      <td>${esc(o.customer.nombre || '—')}</td>
+      <td>${money(o.total)}</td>
+      <td><span class="pill ${o.status === 'Nuevo' ? 'warn' : 'on'}">${esc(o.status)}</span></td>
+    </tr>`).join('') || '<tr><td colspan="4" class="empty">Todavía no hay pedidos.</td></tr>';
+}
+
+/* ---------------- Productos ---------------- */
+function thumbHTML(p){
+  return p.image
+    ? `<div class="thumb" style="background:${esc(p.bg || '#f0ece6')}"><img src="${esc(p.image)}" alt=""></div>`
+    : `<div class="thumb" style="background:${esc(p.bg || '#f0ece6')}"><svg viewBox="0 0 260 140" style="color:${esc(p.shoeColor || '#1d2733')}"><use href="#${esc(p.shape || 's-low')}"/></svg></div>`;
+}
+
+function renderProducts(){
+  const q = ($('prodSearch').value || '').toLowerCase();
+  const brand = $('prodBrand').value;
+  const list = products.filter(p =>
+    (!brand || p.brand === brand) &&
+    (!q || (p.name + ' ' + p.brand).toLowerCase().includes(q)));
+
+  $('productRows').innerHTML = list.map(p => `
+    <tr>
+      <td><div class="cell-name">${thumbHTML(p)}<div><b>${esc(p.name)}</b><small>${esc(p.brand)} · ${esc(p.tag || 'Sin etiqueta')}</small></div></div></td>
+      <td>${p.salePrice ? `<span class="old-price">${money(p.price)}</span>${money(p.salePrice)}` : money(p.price)}</td>
+      <td>${p.stock ?? 0}</td>
+      <td>
+        <span class="pill ${p.active === false ? 'off' : 'on'}">${p.active === false ? 'Oculto' : 'Visible'}</span>
+        ${p.featured ? '<span class="pill warn" style="margin-left:6px">Portada</span>' : ''}
+      </td>
+      <td><div class="row-actions">
+        <button class="btn btn-line btn-sm" onclick="openProductForm('${esc(p.id)}')">Editar</button>
+        <button class="btn-danger" onclick="removeItem('products','${esc(p.id)}')">Eliminar</button>
+      </div></td>
+    </tr>`).join('') || '<tr><td colspan="5" class="empty">No hay productos con ese filtro.</td></tr>';
+}
+
+function openProductForm(id){
+  editingProduct = id ? products.find(p => p.id === id) : null;
+  const p = editingProduct || {};
+  $('prodTitle').textContent = editingProduct ? 'Editar producto' : 'Nuevo producto';
+  $('pName').value = p.name || '';
+  $('pBrand').value = p.brand || '';
+  $('pPrice').value = p.price || '';
+  $('pSale').value = p.salePrice || '';
+  $('pStock').value = p.stock ?? 10;
+  $('pTag').value = p.tag || '';
+  $('pDesc').value = p.desc || '';
+  $('pShape').value = p.shape || 's-low';
+  $('pShoeColor').value = p.shoeColor || '#1d2733';
+  $('pBg').value = p.bg || '#f3ece3';
+  $('pActive').checked = p.active !== false;
+  $('pFeatured').checked = !!p.featured;
+  prodImage = p.image || '';
+  pickedSizes = new Set(p.sizes && p.sizes.length ? p.sizes : [36,37,38,39,40,41,42,43]);
+  renderSizeChips();
+  renderColorRows(p.colors && p.colors.length ? p.colors : [{n:'Negro',h:'#1d2733'}]);
+  renderProdPreview();
+  $('prodFile').value = '';
+  openDrawer('productDrawer');
+}
+
+function renderProdPreview(){
+  $('prodPreview').innerHTML = prodImage
+    ? `<img src="${esc(prodImage)}" alt="">`
+    : `<svg viewBox="0 0 260 140" style="color:${$('pShoeColor').value}"><use href="#${$('pShape').value}"/></svg>`;
+  $('prodPreview').style.background = $('pBg').value;
+}
+['pShape','pShoeColor','pBg'].forEach(id => $(id).addEventListener('input', renderProdPreview));
+
+function renderSizeChips(){
+  $('sizeChips').innerHTML = ALL_SIZES.map(s =>
+    `<button type="button" class="size-chip ${pickedSizes.has(s) ? 'on' : ''}" onclick="toggleSize(${s},this)">${s}</button>`).join('');
+}
+function toggleSize(s, el){
+  if(pickedSizes.has(s)) pickedSizes.delete(s); else pickedSizes.add(s);
+  el.classList.toggle('on');
+}
+
+function renderColorRows(colors){
+  $('colorRows').innerHTML = colors.map(c => colorRowHTML(c.n, c.h)).join('');
+}
+function colorRowHTML(n, h){
+  return `<div class="color-row">
+    <input type="text" value="${esc(n)}" placeholder="Nombre del color">
+    <input type="color" value="${esc(h)}">
+    <button class="btn-danger" onclick="this.parentElement.remove()">✕</button>
+  </div>`;
+}
+function addColorRow(){ $('colorRows').insertAdjacentHTML('beforeend', colorRowHTML('', '#333333')); }
+
+async function uploadProductImage(input){
+  const file = input.files[0]; if(!file) return;
+  try{
+    const data = await fileToDataURL(file);
+    const r = await api('/admin/upload', {method:'POST', body: JSON.stringify({name: file.name, data})});
+    prodImage = r.url; renderProdPreview(); toast('Imagen subida');
+  }catch(err){ toast(err.message); }
+}
+function fileToDataURL(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(new Error('No se pudo leer la imagen'));
+    r.readAsDataURL(file);
+  });
+}
+
+async function saveProduct(){
+  const colors = [...$('colorRows').querySelectorAll('.color-row')].map(row => ({
+    n: row.children[0].value.trim() || 'Color',
+    h: row.children[1].value
+  }));
+  const body = {
+    name: $('pName').value.trim(),
+    brand: $('pBrand').value.trim() || 'Otra',
+    price: Number($('pPrice').value) || 0,
+    salePrice: Number($('pSale').value) || null,
+    stock: Number($('pStock').value) || 0,
+    tag: $('pTag').value.trim(),
+    desc: $('pDesc').value.trim(),
+    sizes: [...pickedSizes].sort((a,b) => a-b),
+    colors: colors.length ? colors : [{n:'Único', h:'#1d2733'}],
+    image: prodImage,
+    shape: $('pShape').value,
+    shoeColor: $('pShoeColor').value,
+    bg: $('pBg').value,
+    active: $('pActive').checked,
+    featured: $('pFeatured').checked
+  };
+  if(!body.name || !body.price){ toast('Falta el nombre o el precio'); return; }
+  try{
+    if(editingProduct) await api('/admin/products/' + editingProduct.id, {method:'PUT', body: JSON.stringify(body)});
+    else await api('/admin/products', {method:'POST', body: JSON.stringify(body)});
+    closeDrawers(); await loadAll(); toast('Producto guardado');
+  }catch(err){ toast(err.message); }
+}
+
+/* ---------------- Promociones ---------------- */
+function renderPromos(){
+  $('promoRows').innerHTML = promos.map(p => `
+    <tr>
+      <td><b>${esc(p.title)}</b><br><small>${esc(p.description || '')}</small></td>
+      <td>${p.discount ? p.discount + '%' : '—'}</td>
+      <td>${esc(p.scope || 'Todos')}</td>
+      <td><span class="pill ${p.active === false ? 'off' : 'on'}">${p.active === false ? 'Inactiva' : 'Activa'}</span></td>
+      <td><div class="row-actions">
+        <button class="btn btn-line btn-sm" onclick="openPromoForm('${esc(p.id)}')">Editar</button>
+        <button class="btn-danger" onclick="removeItem('promos','${esc(p.id)}')">Eliminar</button>
+      </div></td>
+    </tr>`).join('') || '<tr><td colspan="5" class="empty">Aún no hay promociones.</td></tr>';
+}
+
+function openPromoForm(id){
+  editingPromo = id ? promos.find(p => p.id === id) : null;
+  const p = editingPromo || {};
+  $('promoTitle').textContent = editingPromo ? 'Editar promoción' : 'Nueva promoción';
+  $('mTitle').value = p.title || '';
+  $('mDesc').value = p.description || '';
+  $('mBadge').value = p.badge || '';
+  $('mDiscount').value = p.discount || 0;
+  $('mScope').value = p.scope || 'Todos';
+  $('mActive').checked = p.active !== false;
+  openDrawer('promoDrawer');
+}
+
+async function savePromo(){
+  const body = {
+    title: $('mTitle').value.trim(),
+    description: $('mDesc').value.trim(),
+    badge: $('mBadge').value.trim(),
+    discount: Number($('mDiscount').value) || 0,
+    scope: $('mScope').value,
+    active: $('mActive').checked
+  };
+  if(!body.title){ toast('Ponle un título a la promoción'); return; }
+  try{
+    if(editingPromo) await api('/admin/promos/' + editingPromo.id, {method:'PUT', body: JSON.stringify(body)});
+    else await api('/admin/promos', {method:'POST', body: JSON.stringify(body)});
+    closeDrawers(); await loadAll(); toast('Promoción guardada');
+  }catch(err){ toast(err.message); }
+}
+
+/* ---------------- Pedidos ---------------- */
+function renderOrders(){
+  $('orderList').innerHTML = orders.map(o => {
+    const c = o.customer || {};
+    const wa = (c.telefono || '').replace(/\D/g, '');
+    return `<div class="order-card">
+      <div class="order-card__top">
+        <div>
+          <h3>${esc(c.nombre || 'Sin nombre')} · <span style="color:var(--muted);font-weight:600">${esc(o.id)}</span></h3>
+          <small>${new Date(o.createdAt).toLocaleString('es-CO')} · ${esc(c.ciudad || '')} ${esc(c.direccion || '')}</small>
+        </div>
+        <span class="total">${money(o.total)}</span>
+      </div>
+      <ul class="order-items">
+        ${(o.items || []).map(i => `<li>${esc(i.brand)} ${esc(i.name)} — talla ${esc(i.size)} — ${esc(i.color)} × ${i.qty}</li>`).join('')}
+      </ul>
+      <div class="order-card__foot">
+        <select onchange="setOrderStatus('${esc(o.id)}', this.value)">
+          ${['Nuevo','Confirmado','Enviado','Entregado','Cancelado'].map(s => `<option ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        <span class="pill off">${esc(c.pago || 'Sin método')}</span>
+        ${wa ? `<a class="btn btn-line btn-sm" target="_blank" href="https://wa.me/57${wa.slice(-10)}">Escribir al cliente</a>` : ''}
+        <button class="btn-danger" style="margin-left:auto" onclick="removeItem('orders','${esc(o.id)}')">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="panel"><p class="empty">Todavía no hay pedidos registrados.</p></div>';
+}
+
+async function setOrderStatus(id, status){
+  try{ await api('/admin/orders/' + id, {method:'PUT', body: JSON.stringify({status})}); await loadAll(); toast('Pedido actualizado'); }
+  catch(err){ toast(err.message); }
+}
+
+/* ---------------- Ajustes ---------------- */
+function fillSettings(){
+  $('setName').value = settings.storeName || '';
+  $('setTag').value = settings.tagline || '';
+  $('setWa').value = settings.whatsapp || '';
+  $('setWord').value = settings.heroWord || '';
+  $('setTheme').value = settings.heroTheme || 'indigo';
+  $('setHeadline').value = settings.heroHeadline || '';
+  $('setShipping').value = settings.shippingNote || '';
+  logoImage = settings.heroLogo || '';
+  $('logoPreview').innerHTML = logoImage ? `<img src="${esc(logoImage)}" alt="">` : '<span>Sin imagen: se usa el logo de texto</span>';
+}
+async function uploadLogo(input){
+  const file = input.files[0]; if(!file) return;
+  try{
+    const data = await fileToDataURL(file);
+    const r = await api('/admin/upload', {method:'POST', body: JSON.stringify({name:'logo', data})});
+    logoImage = r.url;
+    $('logoPreview').innerHTML = `<img src="${esc(logoImage)}" alt="">`;
+    toast('Logo subido, recuerda guardar');
+  }catch(err){ toast(err.message); }
+}
+async function saveSettings(){
+  const body = {
+    storeName: $('setName').value.trim(),
+    tagline: $('setTag').value.trim(),
+    whatsapp: $('setWa').value.replace(/\D/g, ''),
+    heroWord: $('setWord').value.trim(),
+    heroTheme: $('setTheme').value,
+    heroHeadline: $('setHeadline').value.trim(),
+    shippingNote: $('setShipping').value.trim(),
+    heroLogo: logoImage
+  };
+  if($('setPass').value.trim()) body.adminPassword = $('setPass').value.trim();
+  try{
+    await api('/admin/settings', {method:'PUT', body: JSON.stringify(body)});
+    $('setPass').value = '';
+    await loadAll();
+    toast('Ajustes guardados');
+  }catch(err){ toast(err.message); }
+}
+
+/* ---------------- Comunes ---------------- */
+async function removeItem(table, id){
+  if(!confirm('¿Eliminar este registro? No se puede deshacer.')) return;
+  try{ await api(`/admin/${table}/${id}`, {method:'DELETE'}); await loadAll(); toast('Eliminado'); }
+  catch(err){ toast(err.message); }
+}
+function openDrawer(id){ $(id).classList.add('on'); $('scrim').classList.add('on'); }
+function closeDrawers(){
+  document.querySelectorAll('.drawer').forEach(d => d.classList.remove('on'));
+  $('scrim').classList.remove('on');
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeDrawers(); });
+</script>
+</body>
+</html>
