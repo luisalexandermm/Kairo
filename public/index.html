@@ -235,7 +235,7 @@
       <div class="field"><label>Método de pago</label>
         <div class="pay-opts">
           <label><input type="radio" name="pago" value="Contraentrega" checked> Contraentrega</label>
-          <label><input type="radio" name="pago" value="Pago anticipado"> Pago anticipado</label>
+          <label><input type="radio" name="pago" value="Nequi / Daviplata"> Nequi / Daviplata</label>
         </div>
         <p class="payment-hint form-note" id="paymentHint">Contraentrega: primero pagas $25.000 del envío y el saldo del producto al recibir.</p>
       </div>
@@ -455,7 +455,7 @@ function updatePaymentHint() {
   const pago = document.querySelector('input[name="pago"]:checked')?.value || 'Contraentrega';
   $('paymentHint').textContent = pago === 'Contraentrega'
     ? `Contraentrega: primero pagas ${money(25000)} del envío y el saldo de ${money(cartTotal())} al recibir.`
-    : `Pago anticipado: pagas ${money(cartTotal())} antes del envío.`;
+    : `Nequi / Daviplata: pagas ${money(cartTotal())} antes del envío. Te enviaremos los datos para realizar el pago.`;
 }
 function closeCheckout() {
   $('checkoutModal').classList.remove('open');
@@ -485,7 +485,7 @@ $('orderForm').addEventListener('submit', async e => {
     v('fb') ? `Barrio/Ref: ${v('fb')}` : null,
     `Ciudad: ${v('fci')}${v('fdp') ? ', ' + v('fdp') : ''}`,
     `Pago: ${pago}`,
-    pago === 'Contraentrega' ? `Anticipo de envío: ${money(shippingAdvance)}` : `Total pagado antes del envío: ${money(cartTotal())}`,
+    pago === 'Contraentrega' ? `Anticipo de envío: ${money(shippingAdvance)}` : `Pago por Nequi / Daviplata antes del envío: ${money(cartTotal())}`,
     pago === 'Contraentrega' ? `Saldo al recibir: ${money(balanceDue)}` : null,
     'Empaque: sin caja por el momento',
     v('fnot') ? `Notas: ${v('fnot')}` : null
