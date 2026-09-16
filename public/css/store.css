@@ -135,6 +135,7 @@ footer{background:#161a2b;color:#c9cbd6;padding:64px 0 26px}
 .foot-col h4{color:#fff;font-size:.79rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:13px}
 .foot-col a{display:block;font-size:.86rem;margin-bottom:10px;color:#b6b8c6}.foot-col a:hover{color:#fff}
 .foot-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:.78rem;color:#82859a}
+.admin-entry{display:inline-block;margin-left:8px;color:inherit;opacity:.35;font-size:1rem;line-height:0;transition:opacity .2s}.admin-entry:hover{opacity:.9;color:#fff}
 .socials{display:flex;gap:9px;margin-top:13px}.socials a{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center}.socials svg{width:15px;height:15px}
 
 /* ---- overlays ---- */
