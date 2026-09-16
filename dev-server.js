@@ -42,6 +42,17 @@ function parseBody(req) {
 }
 
 http.createServer(async (req, res) => {
+  res.status = code => {
+    res.statusCode = code;
+    return res;
+  };
+  res.json = data => {
+    if (!res.getHeader('Content-Type')) {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    }
+    res.end(JSON.stringify(data));
+  };
+
   const url  = new URL(req.url, `http://localhost:${PORT}`);
   const path_  = url.pathname;
 
