@@ -191,7 +191,7 @@
     <div class="opt-label">Cantidad</div>
     <div class="qty"><button type="button" onclick="chgQty(-1)" aria-label="Quitar">−</button><span id="mQty">1</span><button type="button" onclick="chgQty(1)" aria-label="Agregar">+</button></div>
     <button class="btn btn-dark" id="addBtn" onclick="addToCart()">Añadir al carrito</button>
-    <p class="modal-note">Envío a toda Colombia · Confirmación por WhatsApp</p>
+    <p class="modal-note">Envío a toda Colombia · Sin caja por el momento · Confirmación por WhatsApp</p>
   </div>
 </div></div>
 
@@ -234,13 +234,13 @@
       <div class="field"><label>Método de pago</label>
         <div class="pay-opts">
           <label><input type="radio" name="pago" value="Contraentrega" checked> Contraentrega</label>
-          <label><input type="radio" name="pago" value="Nequi / Daviplata"> Nequi / Daviplata</label>
-          <label><input type="radio" name="pago" value="Transferencia"> Transferencia</label>
+          <label><input type="radio" name="pago" value="Pago anticipado"> Pago anticipado</label>
         </div>
+        <p class="payment-hint form-note" id="paymentHint">Contraentrega: primero pagas $25.000 del envío y el saldo del producto al recibir.</p>
       </div>
       <div class="field"><label for="fnot">Notas para la entrega</label><textarea id="fnot" placeholder="Horario preferido, punto de referencia…"></textarea></div>
       <button type="submit" class="btn btn-wa"><svg style="width:19px;height:19px"><use href="#i-wa"/></svg>Enviar pedido por WhatsApp</button>
-      <p class="form-note">Tu pedido se envía con los productos, tallas y colores que elegiste.</p>
+      <p class="form-note">Tu pedido se envía con los productos, tallas y colores que elegiste. Se entrega sin caja por el momento.</p>
     </form>
   </div>
 </div></div>
@@ -265,8 +265,8 @@ const priceOf = p => (p.salePrice && p.salePrice > 0) ? p.salePrice : p.price;
 const priceHTML = p => (p.salePrice && p.salePrice > 0)
   ? `<span class="was">${money(p.price)}</span>${money(p.salePrice)}`
   : money(p.price);
-const artHTML = (p, cls = '') => p.image
-  ? `<img class="${cls}" src="${p.image}" alt="${p.name || ''}" style="max-width:100%;max-height:300px;object-fit:contain">`
+const artHTML = (p, cls = '', color = null) => (color?.image || p.image)
+  ? `<img class="${cls}" src="${color?.image || p.image}" alt="${p.name || ''}" style="max-width:100%;max-height:300px;object-fit:contain">`
   : `<svg class="${cls}" viewBox="0 0 260 140" style="width:88%;color:${p.shoeColor || '#1d2733'}"><use href="#${p.shape || 's-low'}"/></svg>`;
 const stars = () => Array(5).fill('<svg style="width:12px;height:12px"><use href="#i-star"/></svg>').join('');
 
@@ -354,7 +354,7 @@ function openProduct(id, buyNow) {
   $('mPrice').innerHTML = priceHTML(p);
   $('mDesc').textContent = p.desc || '';
   $('modalMedia').style.background = p.bg || '#f1ece5';
-  $('modalArt').innerHTML = artHTML(p, 'shoe');
+  $('modalArt').innerHTML = artHTML(p, 'shoe', sel.color);
   $('mQty').textContent = '1';
   $('sHint').textContent = 'Elige una';
   $('cHint').textContent = p.colors?.[0]?.n || '';
@@ -379,6 +379,7 @@ function pickSize(s, el) {
 }
 function pickColor(i, el) {
   sel.color = sel.product.colors[i];
+  $('modalArt').innerHTML = artHTML(sel.product, 'shoe', sel.color);
   document.querySelectorAll('#mColors .color').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   $('cHint').textContent = sel.color.n;
@@ -392,7 +393,7 @@ function addToCart() {
   const key = p.id + '-' + sel.size + '-' + (sel.color?.n || '');
   const found = cart.find(i => i.key === key);
   if (found) found.qty += sel.qty;
-  else cart.push({ key, id: p.id, brand: p.brand, name: p.name, price: priceOf(p), image: p.image || '', shape: p.shape || 's-low', shoeColor: p.shoeColor || '#1d2733', bg: p.bg || '#f1ece5', size: sel.size, color: sel.color?.n || '', qty: sel.qty });
+  else cart.push({ key, id: p.id, brand: p.brand, name: p.name, price: priceOf(p), image: sel.color?.image || p.image || '', shape: p.shape || 's-low', shoeColor: p.shoeColor || '#1d2733', bg: p.bg || '#f1ece5', size: sel.size, color: sel.color?.n || '', qty: sel.qty });
   const go = sel.buyNow;
   renderCart(); closeProd();
   if (go) openCheckout();
@@ -441,11 +442,18 @@ function closeCart() {
 function openCheckout() {
   if (!cart.length) return;
   $('cSummary').innerHTML = cart.map(i => `<div><span>${i.brand} ${i.name} · T${i.size} · ${i.color} ×${i.qty}</span><span>${money(i.price * i.qty)}</span></div>`).join('')
-    + `<div class="tot"><span>Total</span><span>${money(cartTotal())}</span></div>`;
+    + `<div class="tot"><span>Total productos</span><span>${money(cartTotal())}</span></div>`;
+  updatePaymentHint();
   $('cartDrawer').classList.remove('open');
   $('checkoutModal').classList.add('open');
   $('overlay').classList.add('open');
   document.body.classList.add('locked');
+}
+function updatePaymentHint() {
+  const pago = document.querySelector('input[name="pago"]:checked')?.value || 'Contraentrega';
+  $('paymentHint').textContent = pago === 'Contraentrega'
+    ? `Contraentrega: primero pagas ${money(25000)} del envío y el saldo de ${money(cartTotal())} al recibir.`
+    : `Pago anticipado: pagas ${money(cartTotal())} antes del envío.`;
 }
 function closeCheckout() {
   $('checkoutModal').classList.remove('open');
@@ -459,6 +467,8 @@ $('orderForm').addEventListener('submit', async e => {
   const v = id => ($(id)?.value || '').trim();
   if (!v('fn') || !v('ft') || !v('fd') || !v('fci')) { toast('Completa los campos obligatorios (*)'); return; }
   const pago = document.querySelector('input[name="pago"]:checked')?.value || 'Contraentrega';
+  const shippingAdvance = pago === 'Contraentrega' ? 25000 : 0;
+  const balanceDue = pago === 'Contraentrega' ? cartTotal() : 0;
   const itemLines = cart.map(i => `• ${i.brand} ${i.name} — T${i.size} — ${i.color} ×${i.qty} — ${money(i.price * i.qty)}`).join('\n');
   const msg = [
     '¡Hola kAIRO! Quiero confirmar este pedido:', '',
@@ -473,6 +483,9 @@ $('orderForm').addEventListener('submit', async e => {
     v('fb') ? `Barrio/Ref: ${v('fb')}` : null,
     `Ciudad: ${v('fci')}${v('fdp') ? ', ' + v('fdp') : ''}`,
     `Pago: ${pago}`,
+    pago === 'Contraentrega' ? `Anticipo de envío: ${money(shippingAdvance)}` : `Total pagado antes del envío: ${money(cartTotal())}`,
+    pago === 'Contraentrega' ? `Saldo al recibir: ${money(balanceDue)}` : null,
+    'Empaque: sin caja por el momento',
     v('fnot') ? `Notas: ${v('fnot')}` : null
   ].filter(Boolean).join('\n');
 
@@ -483,7 +496,7 @@ $('orderForm').addEventListener('submit', async e => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items: cart, total: cartTotal(),
-        customer: { nombre: v('fn'), telefono: v('ft'), cedula: v('fcc'), correo: v('fe'), direccion: v('fd'), barrio: v('fb'), ciudad: v('fci'), departamento: v('fdp'), pago, notas: v('fnot') }
+        customer: { nombre: v('fn'), telefono: v('ft'), cedula: v('fcc'), correo: v('fe'), direccion: v('fd'), barrio: v('fb'), ciudad: v('fci'), departamento: v('fdp'), pago, shippingAdvance, balanceDue, packaging: 'Sin caja por el momento', notas: v('fnot') }
       })
     });
   } catch (_) { /* sin servidor: continúa igual */ }
@@ -491,6 +504,7 @@ $('orderForm').addEventListener('submit', async e => {
   window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
   toast('Abriendo WhatsApp con tu pedido…');
 });
+document.querySelectorAll('input[name="pago"]').forEach(input => input.addEventListener('change', updatePaymentHint));
 
 /* ===== LOAD FROM API ===== */
 function applySettings() {

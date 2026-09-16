@@ -154,6 +154,7 @@
       <label>Colores</label>
       <div id="colorRows"></div>
       <button class="btn btn-line btn-sm" type="button" onclick="addColorRow()">+ Agregar color</button>
+      <small>Cada color puede tener su propia imagen. Los productos se entregan sin caja por el momento.</small>
     </div>
     <div class="g3">
       <div class="field"><label>Silueta</label>
@@ -394,16 +395,30 @@ function renderSizeChips() {
 function toggleSize(s, el) { if (pickedSizes.has(s)) pickedSizes.delete(s); else pickedSizes.add(s); el.classList.toggle('on'); }
 
 function renderColorRows(colors) {
-  $('colorRows').innerHTML = colors.map(c => colorRowHTML(c.n, c.h)).join('');
+  $('colorRows').innerHTML = colors.map(c => colorRowHTML(c.n, c.h, c.image)).join('');
 }
-function colorRowHTML(n, h) {
-  return `<div class="color-row">
+function colorRowHTML(n, h, image = '') {
+  return `<div class="color-row" data-image="${esc(image)}">
     <input type="text" value="${esc(n)}" placeholder="Nombre del color">
     <input type="color" value="${esc(h)}">
+    <input class="color-image" type="file" accept="image/*" onchange="uploadColorFile(this)">
+    <div class="color-image-preview">${image ? `<img src="${esc(image)}" alt="">` : '<span>Sin imagen</span>'}</div>
     <button type="button" onclick="this.closest('.color-row').remove()" style="font-size:1rem;color:var(--ember-dark)">✕</button>
   </div>`;
 }
 function addColorRow() { $('colorRows').insertAdjacentHTML('beforeend', colorRowHTML('', '#333333')); }
+
+async function uploadColorFile(input) {
+  const file = input.files[0]; if (!file) return;
+  const row = input.closest('.color-row');
+  try {
+    const dataUrl = await fileToDataURL(file);
+    const r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: dataUrl } });
+    row.dataset.image = r.url;
+    row.querySelector('.color-image-preview').innerHTML = `<img src="${esc(r.url)}" alt="">`;
+    toast('Imagen del color subida ✓');
+  } catch (err) { toast('Error al subir: ' + err.message); }
+}
 
 async function uploadProductFile(input) {
   const file = input.files[0]; if (!file) return;
@@ -426,7 +441,8 @@ function fileToDataURL(file) {
 async function saveProduct() {
   const colors = [...$('colorRows').querySelectorAll('.color-row')].map(row => ({
     n: row.children[0].value.trim() || 'Color',
-    h: row.children[1].value
+    h: row.children[1].value,
+    image: row.dataset.image || ''
   }));
   const body = {
     name: $('pName').value.trim(),
@@ -515,6 +531,9 @@ function renderOrders() {
           ${['Nuevo','Confirmado','Enviado','Entregado','Cancelado'].map(s => `<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
         </select>
         <span class="pill off">${esc(c.pago || 'Sin método')}</span>
+        ${c.shippingAdvance ? `<span class="pill warn">Envío pagado: ${money(c.shippingAdvance)}</span>` : ''}
+        ${c.balanceDue ? `<span class="pill off">Saldo: ${money(c.balanceDue)}</span>` : ''}
+        ${c.packaging ? `<small>${esc(c.packaging)}</small>` : '<small>Sin caja por el momento</small>'}
         ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}">Escribir al cliente</a>` : ''}
         <button class="btn-danger" style="margin-left:auto" onclick="removeRecord('orders','${esc(o.id)}')">Eliminar</button>
       </div>
