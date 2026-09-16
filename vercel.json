@@ -1,16 +1,23 @@
 {
-  "rewrites": [
-    { "source": "/api/catalog",         "destination": "/api/catalog" },
-    { "source": "/api/login",           "destination": "/api/login" },
-    { "source": "/api/orders",          "destination": "/api/orders" },
-    { "source": "/api/admin/:path*",    "destination": "/api/admin" },
-    { "source": "/(.*)",                "destination": "/public/$1" }
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" },
+    { "src": "public/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
   ],
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin",  "value": "*" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
         { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type,x-admin-token" }
       ]
