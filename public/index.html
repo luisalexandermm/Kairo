@@ -184,6 +184,7 @@
     <div class="card__stars" id="mStars"></div>
     <div class="modal__price display" id="mPrice"></div>
     <p class="modal__desc" id="mDesc"></p>
+    <span class="packaging-note packaging-note--detail">Sin caja por el momento</span>
     <div class="opt-label">Talla <em id="sHint">Elige una</em></div>
     <div class="sizes" id="mSizes"></div>
     <div class="opt-label">Color <em id="cHint"></em></div>
@@ -302,6 +303,7 @@ function renderGrid() {
       <div class="card__body">
         <span class="card__brand">${p.brand}</span>
         <h3>${p.name}</h3>
+        <span class="packaging-note">Sin caja por el momento</span>
         <div class="card__stars">${stars()}</div>
         <div class="card__row"><span class="card__price">${priceHTML(p)}</span><span class="card__cta">Elegir talla →</span></div>
       </div>

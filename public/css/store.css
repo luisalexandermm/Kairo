@@ -88,6 +88,7 @@ header .wrap{height:var(--hh);display:flex;align-items:center;justify-content:sp
 .card__body{padding:16px;display:flex;flex-direction:column;gap:5px;flex:1}
 .card__brand{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .card__body h3{font-size:1rem;line-height:1.3}
+.packaging-note{display:inline-flex;align-self:flex-start;background:#fff0ec;color:var(--ember-dark);border:1px solid #ffc9bf;border-radius:999px;padding:4px 9px;font-size:.64rem;font-weight:800;line-height:1.1}.packaging-note--detail{margin:0 0 16px;font-size:.7rem}
 .card__stars{display:flex;gap:3px;color:var(--ember)}.card__stars svg{width:12px;height:12px}
 .card__row{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:11px}
 .card__price{font-weight:800;font-size:1.08rem}.was{text-decoration:line-through;color:var(--muted);font-size:.8rem;font-weight:600;margin-right:6px}
