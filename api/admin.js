@@ -98,10 +98,12 @@ module.exports = async (req, res) => {
     const ext = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif' }[m[1]] || '.png';
     const path = `${slug(fileName || 'imagen')}-${Date.now().toString(36)}${ext}`;
     const buf = Buffer.from(m[2], 'base64');
+    // The service key can provision the storage bucket on first upload.
+    await supabase.storage.createBucket(bucket, { public: true }).catch(() => {});
     const { data: up, error: ue } = await supabase.storage.from(bucket).upload(path, buf, {
       contentType: m[1], upsert: false
     });
-    if (ue) return err(res, 'Error al subir la imagen: ' + ue.message, 500);
+    if (ue) return err(res, 'Error al subir la imagen. Verifica el bucket kairo-images en Supabase: ' + ue.message, 500);
     const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
     return ok(res, { url: urlData.publicUrl }, 201);
   }
