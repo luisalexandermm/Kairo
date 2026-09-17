@@ -68,6 +68,12 @@ git push -u origin main
    - `TOKEN_SECRET` (cualquier texto largo y aleatorio)
 4. Haz clic en **Deploy**.
 5. Vercel te da una URL pública. ¡Listo!
+
+### Notificaciones y recibos por WhatsApp
+
+La tienda guarda cada pedido, muestra un recibo al cliente y permite imprimirlo/guardarlo como PDF. Para que además Twilio envíe automáticamente el aviso al negocio (`3145312045`) y el recibo al cliente, agrega en Vercel las variables `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` y `ADMIN_WHATSAPP_TO`. En pruebas, configura primero el WhatsApp Sandbox de Twilio; en producción necesitas un remitente de WhatsApp aprobado por Meta/Twilio.
+
+La tienda y el panel son instalables desde Chrome Android mediante **Añadir a pantalla de inicio**. El panel muestra avisos del navegador mientras permanece abierto y sincroniza pedidos nuevos cada 30 segundos.
 ---
 
 ## PASO 7 — Primeras acciones en el panel

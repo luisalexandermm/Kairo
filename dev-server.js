@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 const PUBLIC = path.join(__dirname, 'public');
 const MIME = {
   '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'application/javascript',
-  '.json':'application/json', '.png':'image/png', '.jpg':'image/jpeg',
+  '.json':'application/json', '.webmanifest':'application/manifest+json', '.png':'image/png', '.jpg':'image/jpeg',
   '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon'
 };
 

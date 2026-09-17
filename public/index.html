@@ -4,6 +4,8 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>kAIRO — Sneaker Store</title>
 <link rel="icon" type="image/png" href="/img/logo.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b0d14">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -247,9 +249,18 @@
   </div>
 </div></div>
 
+<div class="receipt-modal" id="receiptModal" role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
+  <div class="receipt-panel">
+    <div class="receipt-head"><div><span class="eyebrow">Pedido recibido</span><h3 class="display" id="receiptTitle">Tu recibo kAIRO</h3></div><button class="modal__close" onclick="closeReceipt()" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button></div>
+    <div class="receipt-body" id="receiptBody"></div>
+    <div class="receipt-actions"><button class="btn btn-dark" onclick="printReceipt()">Imprimir / Guardar PDF</button><button class="btn btn-primary" onclick="closeReceipt()">Listo</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 /* ===== STATE ===== */
 let WA = '573145312045';
 let PRODUCTS = [];
@@ -467,7 +478,22 @@ function closeCheckout() {
   $('overlay').classList.remove('open');
   document.body.classList.remove('locked');
 }
-function closeAll() { closeProd(); closeCart(); closeCheckout(); }
+function closeReceipt() {
+  $('receiptModal').classList.remove('open');
+  document.body.classList.remove('locked');
+}
+function printReceipt() { window.print(); }
+function showReceipt(orderId, customer, payment) {
+  const date = new Date().toLocaleString('es-CO');
+  $('receiptBody').innerHTML = `<div class="receipt-meta"><span>Pedido <b>${orderId}</b></span><span>${date}</span></div>
+    <p class="receipt-thanks">Gracias, ${customer.nombre}. Confirmaremos tu pedido por WhatsApp.</p>
+    <div class="receipt-items">${cart.map(i => `<div><span>${i.brand} ${i.name}<small>Talla ${i.size} · ${i.color} · x${i.qty}</small></span><b>${money(i.price * i.qty)}</b></div>`).join('')}</div>
+    <div class="receipt-total"><span>Total productos</span><b>${money(cartTotal())}</b></div>
+    <div class="receipt-info"><p><b>Entrega</b><br>${customer.direccion}, ${customer.ciudad}${customer.departamento ? ', ' + customer.departamento : ''}</p><p><b>Pago</b><br>${payment}</p></div>`;
+  $('receiptModal').classList.add('open');
+  document.body.classList.add('locked');
+}
+function closeAll() { closeProd(); closeCart(); closeCheckout(); closeReceipt(); }
 
 $('orderForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -497,18 +523,23 @@ $('orderForm').addEventListener('submit', async e => {
   ].filter(Boolean).join('\n');
 
   /* save to DB silently */
+  let orderId = 'local-' + Date.now().toString(36);
+  const customer = { nombre: v('fn'), telefono: v('ft'), cedula: v('fcc'), correo: v('fe'), direccion: v('fd'), barrio: v('fb'), ciudad: v('fci'), departamento: v('fdp'), pago, shippingAdvance, balanceDue, packaging: 'Sin caja por el momento', notas: v('fnot') };
   try {
-    await fetch('/api/orders', {
+    const response = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         items: cart, total: cartTotal(),
-        customer: { nombre: v('fn'), telefono: v('ft'), cedula: v('fcc'), correo: v('fe'), direccion: v('fd'), barrio: v('fb'), ciudad: v('fci'), departamento: v('fdp'), pago, shippingAdvance, balanceDue, packaging: 'Sin caja por el momento', notas: v('fnot') }
+        customer
       })
     });
+    const saved = await response.json();
+    if (saved.id) orderId = saved.id;
   } catch (_) { /* sin servidor: continúa igual */ }
 
   window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
+  showReceipt(orderId, customer, pago);
   toast('Abriendo WhatsApp con tu pedido…');
 });
 document.querySelectorAll('input[name="pago"]').forEach(input => input.addEventListener('change', updatePaymentHint));

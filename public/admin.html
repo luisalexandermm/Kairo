@@ -4,6 +4,8 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>kAIRO · Panel de administración</title>
 <link rel="icon" type="image/png" href="/img/logo.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b0d14">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -205,9 +207,12 @@
 <div class="toast" id="toast"></div>
 
 <script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 /* ===== STATE ===== */
 let TOKEN = sessionStorage.getItem('kairo_token') || null;
 let products = [], promos = [], orders = [], settings = {};
+let knownOrderIds = new Set();
+let ordersLoaded = false;
 let editingProduct = null, editingPromo = null;
 let prodImageUrl = '', logoImageUrl = '';
 const ALL_SIZES = [33,34,35,36,37,38,39,40,41,42,43,44,45,46];
@@ -324,9 +329,27 @@ async function loadAll() {
       api('/admin/orders'), api('/admin/settings')
     ]);
     orders.sort((a, b) => (b.created_at || b.createdAt || '').localeCompare(a.created_at || a.createdAt || ''));
+    notifyNewOrders(orders);
     renderStats(); renderProductTable(); renderPromoTable(); renderOrders(); fillSettings();
   } catch (err) { toast('Error: ' + err.message); }
 }
+
+function notifyNewOrders(currentOrders) {
+  const fresh = ordersLoaded ? currentOrders.filter(order => !knownOrderIds.has(order.id)) : [];
+  knownOrderIds = new Set(currentOrders.map(order => order.id));
+  ordersLoaded = true;
+  if (!fresh.length) return;
+  const order = fresh[0];
+  const message = `${order.customer?.nombre || 'Cliente'} · ${money(order.total)}`;
+  toast(`Nuevo pedido: ${message}`);
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification('Nuevo pedido kAIRO', { body: message, icon: '/img/logo.png' });
+  }
+}
+
+setInterval(() => {
+  if (TOKEN && document.visibilityState === 'visible') loadAll();
+}, 30000);
 
 /* ===== STATS ===== */
 async function renderStats() {
@@ -557,6 +580,7 @@ function renderOrders() {
         ${c.balanceDue ? `<span class="pill off">Saldo: ${money(c.balanceDue)}</span>` : ''}
         ${c.packaging ? `<small>${esc(c.packaging)}</small>` : '<small>Sin caja por el momento</small>'}
         ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}">Escribir al cliente</a>` : ''}
+        <button class="btn btn-line btn-sm" onclick="printOrderReceipt('${esc(o.id)}')">Ver recibo</button>
         <button class="btn-danger" style="margin-left:auto" onclick="removeRecord('orders','${esc(o.id)}')">Eliminar</button>
       </div>
     </div>`;
@@ -566,6 +590,16 @@ function renderOrders() {
 async function updateOrderStatus(id, status) {
   try { await api('/admin/orders/' + id, { method: 'PUT', body: { status } }); await loadAll(); toast('Estado actualizado ✓'); }
   catch (err) { toast(err.message); }
+}
+
+function printOrderReceipt(id) {
+  const order = orders.find(o => o.id === id); if (!order) return;
+  const c = order.customer || {};
+  const items = (order.items || []).map(i => `<tr><td>${esc(i.brand)} ${esc(i.name)}<small>Talla ${esc(String(i.size))} · ${esc(i.color)} · x${i.qty}</small></td><td>${money(i.price * i.qty)}</td></tr>`).join('');
+  const popup = window.open('', '_blank', 'width=720,height=800');
+  if (!popup) return toast('Permite ventanas emergentes para ver el recibo');
+  popup.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo ${esc(order.id)}</title><style>body{font-family:Arial,sans-serif;color:#0b0d14;max-width:680px;margin:40px auto;padding:0 24px}h1{margin:0 0 4px}p{color:#555}.meta{display:flex;justify-content:space-between;border-bottom:2px solid #0b0d14;padding:14px 0;margin-bottom:18px}table{width:100%;border-collapse:collapse}td{padding:12px 0;border-bottom:1px solid #ddd}td:last-child{text-align:right;font-weight:bold}small{display:block;color:#777;margin-top:4px}.total{display:flex;justify-content:space-between;font-size:1.2rem;font-weight:bold;padding:18px 0}@media print{button{display:none}}</style></head><body><h1>kAIRO</h1><p>Recibo de pedido</p><div class="meta"><span>${esc(order.id)}</span><span>${new Date(order.created_at || order.createdAt).toLocaleString('es-CO')}</span></div><p><b>Cliente:</b> ${esc(c.nombre || '')}<br><b>Teléfono:</b> ${esc(c.telefono || '')}<br><b>Entrega:</b> ${esc(c.direccion || '')}, ${esc(c.ciudad || '')} ${esc(c.departamento || '')}</p><table>${items}</table><div class="total"><span>Total</span><span>${money(order.total)}</span></div><p><b>Pago:</b> ${esc(c.pago || 'Sin método')}</p><button onclick="print()">Imprimir / Guardar PDF</button></body></html>`);
+  popup.document.close();
 }
 
 /* ===== SETTINGS ===== */
