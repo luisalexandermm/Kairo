@@ -35,6 +35,7 @@
 </header>
 
 <!-- MOBILE MENU -->
+<div class="menu-backdrop" id="menuBackdrop" onclick="toggleMenu(false)"></div>
 <div class="mob-menu" id="mobMenu">
   <div class="top"><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark">kAIRO</span></span>
     <button class="icon-btn" style="background:rgba(255,255,255,.12);color:#fff" onclick="toggleMenu(false)"><svg><use href="#i-close"/></svg></button></div>
@@ -275,7 +276,11 @@ function toast(m) {
   const t = $('toast'); t.textContent = m; t.classList.add('show');
   clearTimeout(window._tt); window._tt = setTimeout(() => t.classList.remove('show'), 2600);
 }
-function toggleMenu(o) { $('mobMenu').classList.toggle('open', o); }
+function toggleMenu(o) {
+  $('mobMenu').classList.toggle('open', o);
+  $('menuBackdrop').classList.toggle('open', o);
+  document.body.classList.toggle('locked', o);
+}
 window.addEventListener('scroll', () => $('hdr').classList.toggle('scrolled', scrollY > 40));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
 

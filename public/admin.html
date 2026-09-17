@@ -39,12 +39,17 @@
     <button class="nav-item" data-view="pedidos">📦 Pedidos</button>
     <button class="nav-item" data-view="ajustes">⚙️ Ajustes</button>
     <div class="foot">
-      <a href="/" target="_blank">Ver la tienda →</a>
+      <a href="/" target="_blank">← Volver a la tienda</a>
       <button onclick="logout()">Cerrar sesión</button>
     </div>
   </aside>
+  <div class="admin-nav-backdrop" id="adminNavBackdrop"></div>
 
   <main>
+    <div class="mobile-bar">
+      <button class="icon-btn" id="adminMenuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
+      <span class="display">kAIRO</span>
+    </div>
     <!-- Resumen -->
     <section class="view on" id="view-resumen">
       <div class="head"><div><h1 class="display">Resumen</h1><p>Estado de la tienda en tiempo real.</p></div><button class="btn btn-line btn-sm" onclick="loadAll()">Actualizar</button></div>
@@ -213,6 +218,21 @@ const $ = id => document.getElementById(id);
 const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+document.getElementById('adminMenuBtn').addEventListener('click', () => {
+  const app = document.getElementById('app');
+  const open = app.classList.toggle('menu-open');
+  document.getElementById('adminMenuBtn').setAttribute('aria-expanded', String(open));
+});
+document.getElementById('adminNavBackdrop').addEventListener('click', () => {
+  document.getElementById('app').classList.remove('menu-open');
+  document.getElementById('adminMenuBtn').setAttribute('aria-expanded', 'false');
+});
+document.querySelector('main').addEventListener('click', event => {
+  if (event.target.closest('.mobile-bar')) return;
+  document.getElementById('app').classList.remove('menu-open');
+  document.getElementById('adminMenuBtn').setAttribute('aria-expanded', 'false');
+});
+
 function toast(msg, dur = 2600) {
   const t = $('toast'); t.textContent = msg; t.classList.add('on');
   clearTimeout(window._t); window._t = setTimeout(() => t.classList.remove('on'), dur);
@@ -291,6 +311,8 @@ document.querySelectorAll('.nav-item[data-view]').forEach(b => b.addEventListene
   document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
   b.classList.add('active');
   $('view-' + b.dataset.view).classList.add('on');
+  $('app').classList.remove('menu-open');
+  $('adminMenuBtn').setAttribute('aria-expanded', 'false');
 }));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawers(); });
 

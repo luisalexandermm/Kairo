@@ -27,7 +27,8 @@ header .wrap{height:var(--hh);display:flex;align-items:center;justify-content:sp
 .icon-btn:hover{background:rgba(255,255,255,.26)}.icon-btn svg{width:19px;height:19px}
 .badge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--ember);color:#fff;font-size:.68rem;font-weight:800;display:flex;align-items:center;justify-content:center}
 .badge.hide{display:none}.burger{display:none}
-.mob-menu{position:fixed;inset:0;z-index:200;background:var(--ink);display:flex;flex-direction:column;padding:22px 28px;transform:translateX(100%);transition:.35s}
+.menu-backdrop{position:fixed;inset:0;z-index:190;background:rgba(11,13,20,.55);opacity:0;pointer-events:none;transition:.35s}.menu-backdrop.open{opacity:1;pointer-events:auto}
+.mob-menu{position:fixed;inset:0 auto 0 0;z-index:200;background:var(--ink);display:flex;flex-direction:column;width:min(330px,88vw);padding:22px 28px;transform:translateX(-100%);transition:.35s;box-shadow:22px 0 50px -30px rgba(0,0,0,.7)}
 .mob-menu.open{transform:none}.mob-menu .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:40px}
 .mob-menu a{display:block;font-family:'Anton',sans-serif;font-size:1.9rem;color:#fff;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.1)}
 
