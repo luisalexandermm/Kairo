@@ -253,14 +253,14 @@
   <div class="receipt-panel">
     <div class="receipt-head"><div><span class="eyebrow">Pedido recibido</span><h3 class="display" id="receiptTitle">Tu recibo kAIRO</h3></div><button class="modal__close" onclick="closeReceipt()" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button></div>
     <div class="receipt-body" id="receiptBody"></div>
-    <div class="receipt-actions"><button class="btn btn-dark" onclick="printReceipt()">Imprimir / Guardar PDF</button><button class="btn btn-primary" onclick="closeReceipt()">Listo</button></div>
+    <div class="receipt-actions"><button class="btn btn-dark" onclick="downloadReceiptAndOpenWhatsApp()">Descargar recibo y continuar a WhatsApp</button><button class="btn btn-primary" onclick="closeReceipt()">Listo</button></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=2').catch(() => {});
 /* ===== STATE ===== */
 let WA = '573145312045';
 let PRODUCTS = [];
@@ -270,6 +270,7 @@ let cart = [];
 let sel = { product: null, size: null, color: null, qty: 1, buyNow: false };
 let curBrand = 'Todos';
 let heroIdx = 0;
+let pendingWhatsApp = null;
 
 /* ===== UTILS ===== */
 const $ = id => document.getElementById(id);
@@ -482,7 +483,23 @@ function closeReceipt() {
   $('receiptModal').classList.remove('open');
   document.body.classList.remove('locked');
 }
-function printReceipt() { window.print(); }
+function downloadReceiptAndOpenWhatsApp() {
+  if (!pendingWhatsApp) return;
+  const { orderId, message } = pendingWhatsApp;
+  const receiptMarkup = $('receiptBody').innerHTML;
+  const receiptHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo kAIRO ${orderId}</title><style>body{font-family:Arial,sans-serif;color:#0b0d14;max-width:680px;margin:40px auto;padding:0 20px}.eyebrow{color:#d1301f;font-size:12px;font-weight:bold;text-transform:uppercase}h1{font-size:24px;margin:0 0 8px}.receipt-meta,.receipt-items>div,.receipt-total,.receipt-info{display:flex;justify-content:space-between;gap:18px}.receipt-meta{color:#6a707c;font-size:12px;border-bottom:1px solid #e0e2e0;padding:12px 0}.receipt-thanks{margin:20px 0}.receipt-items{border-top:1px solid #e0e2e0}.receipt-items>div{padding:12px 0;border-bottom:1px solid #e0e2e0}.receipt-items small{display:block;color:#6a707c;margin-top:4px}.receipt-total{padding:16px 0;font-weight:bold}.receipt-info{border-top:1px solid #e0e2e0;padding-top:16px;font-size:13px}.receipt-info p{flex:1}</style></head><body><span class="eyebrow">kAIRO · Recibo de pedido</span><h1>Pedido ${esc(orderId)}</h1>${receiptMarkup}</body></html>`;
+  const blob = new Blob([receiptHtml], { type: 'text/html;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `recibo-kairo-${orderId}.html`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(message)}`, '_blank');
+  toast('Recibo descargado. Abriendo WhatsApp…');
+  pendingWhatsApp = null;
+}
 function showReceipt(orderId, customer, payment) {
   const date = new Date().toLocaleString('es-CO');
   $('receiptBody').innerHTML = `<div class="receipt-meta"><span>Pedido <b>${orderId}</b></span><span>${date}</span></div>
@@ -490,6 +507,7 @@ function showReceipt(orderId, customer, payment) {
     <div class="receipt-items">${cart.map(i => `<div><span>${i.brand} ${i.name}<small>Talla ${i.size} · ${i.color} · x${i.qty}</small></span><b>${money(i.price * i.qty)}</b></div>`).join('')}</div>
     <div class="receipt-total"><span>Total productos</span><b>${money(cartTotal())}</b></div>
     <div class="receipt-info"><p><b>Entrega</b><br>${customer.direccion}, ${customer.ciudad}${customer.departamento ? ', ' + customer.departamento : ''}</p><p><b>Pago</b><br>${payment}</p></div>`;
+  pendingWhatsApp = { orderId, message: window.pendingOrderMessage };
   $('receiptModal').classList.add('open');
   document.body.classList.add('locked');
 }
@@ -538,9 +556,9 @@ $('orderForm').addEventListener('submit', async e => {
     if (saved.id) orderId = saved.id;
   } catch (_) { /* sin servidor: continúa igual */ }
 
-  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(msg)}`, '_blank');
+  window.pendingOrderMessage = msg;
   showReceipt(orderId, customer, pago);
-  toast('Abriendo WhatsApp con tu pedido…');
+  toast('Descarga primero tu recibo para continuar a WhatsApp');
 });
 document.querySelectorAll('input[name="pago"]').forEach(input => input.addEventListener('change', updatePaymentHint));
 
