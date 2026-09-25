@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peticiones, quejas y reclamos (PQR) — kAIRO</title>
+<meta name="description" content="Envía una petición, queja, reclamo o solicitud sobre tus datos personales y recibe un número de radicado.">
+<link rel="icon" type="image/png" href="/img/logo.png">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/legal.css">
+<script src="/js/negocio.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header class="l-head"><div class="in"><a class="l-brand" href="/"><img src="/img/logo.png" alt="" width="34" height="34">kAIRO</a><nav aria-label="Volver"><a href="/">← Volver a la tienda</a></nav></div></header>
+
+<main id="contenido">
+  <span class="eyebrow">Atención al cliente</span>
+  <h1>Peticiones, quejas y reclamos</h1>
+  <p class="meta">Al enviar el formulario recibes un número de radicado para hacer seguimiento. También puedes escribirnos por WhatsApp al <a data-negocio="telefonoVisible" target="_blank" rel="noopener"></a> o al correo <a data-negocio="correo"></a>.</p>
+
+  <section aria-labelledby="h-form">
+    <h2 id="h-form">Formulario</h2>
+    <p class="hint" style="margin-bottom:16px">Los campos marcados con <span aria-hidden="true">*</span><span class="sr-only">asterisco</span> son obligatorios.</p>
+    <form id="pqrForm" novalidate>
+      <div class="field">
+        <label for="tipo">Tipo de solicitud *</label>
+        <select id="tipo" name="tipo" required aria-describedby="tipo-err">
+          <option value="">Elige una opción</option>
+          <option>Petición</option>
+          <option>Queja</option>
+          <option>Reclamo</option>
+          <option>Retracto</option>
+          <option>Reversión del pago</option>
+          <option>Garantía</option>
+          <option>Solicitud sobre mis datos personales</option>
+        </select>
+        <p class="error" id="tipo-err" hidden></p>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="nombre">Nombre completo *</label>
+          <input id="nombre" name="nombre" type="text" required autocomplete="name" maxlength="120" aria-describedby="nombre-err">
+          <p class="error" id="nombre-err" hidden></p>
+        </div>
+        <div class="field">
+          <label for="pedido">Número de pedido</label>
+          <input id="pedido" name="pedido" type="text" maxlength="40" aria-describedby="pedido-hint" placeholder="ord-…">
+          <p class="hint" id="pedido-hint">Opcional. Aparece en tu recibo.</p>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="celular">Celular</label>
+          <input id="celular" name="celular" type="tel" autocomplete="tel-national" inputmode="tel" maxlength="20" aria-describedby="contacto-hint contacto-err">
+        </div>
+        <div class="field">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" name="correo" type="email" autocomplete="email" maxlength="120" aria-describedby="contacto-hint contacto-err">
+        </div>
+      </div>
+      <p class="hint" id="contacto-hint" style="margin:-8px 0 6px">Escribe al menos uno de los dos para poder responderte.</p>
+      <p class="error" id="contacto-err" hidden style="margin-bottom:12px"></p>
+      <div class="field">
+        <label for="mensaje">Cuéntanos qué pasó o qué necesitas *</label>
+        <textarea id="mensaje" name="mensaje" required maxlength="3000" aria-describedby="mensaje-err"></textarea>
+        <p class="error" id="mensaje-err" hidden></p>
+      </div>
+      <div class="consent">
+        <input type="checkbox" id="autorizo" name="autorizo" required aria-describedby="autorizo-err">
+        <label for="autorizo">Autorizo a <span data-negocio="nombreComercial"></span> a tratar los datos de este formulario para responder mi solicitud, según la <a href="/privacidad.html" target="_blank">política de tratamiento de datos</a> (se abre en otra pestaña). *</label>
+      </div>
+      <p class="error" id="autorizo-err" hidden style="margin:-6px 0 14px"></p>
+      <button class="btn" type="submit" id="enviar">Enviar solicitud</button>
+      <div class="result" id="resultado" role="status" aria-live="polite" tabindex="-1"></div>
+    </form>
+  </section>
+
+  <section aria-labelledby="h-plazos">
+    <h2 id="h-plazos">Tiempos de respuesta</h2>
+    <ul>
+      <li>Peticiones, quejas y reclamos de consumo: máximo 15 días hábiles.</li>
+      <li>Consultas sobre tus datos personales: máximo 10 días hábiles. Reclamos sobre datos: máximo 15 días hábiles.</li>
+      <li>Retracto: reembolso en máximo 15 días calendario. Detalles en <a href="/cambios-y-devoluciones.html">cambios y devoluciones</a>.</li>
+    </ul>
+  </section>
+</main>
+
+<footer class="l-foot"><nav class="in" aria-label="Información legal">
+  <a href="/terminos.html">Términos y condiciones</a><a href="/privacidad.html">Privacidad</a><a href="/cookies.html">Cookies</a><a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a><a href="/pqr.html" aria-current="page">PQR</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio</a>
+</nav></footer>
+
+<script>
+(function () {
+  var form = document.getElementById('pqrForm');
+  var out = document.getElementById('resultado');
+  var btn = document.getElementById('enviar');
+  var params = new URLSearchParams(location.search);
+  if (params.get('pedido')) document.getElementById('pedido').value = params.get('pedido').slice(0, 40);
+  if (params.get('tipo')) document.getElementById('tipo').value = params.get('tipo');
+
+  function setError(fieldIds, errId, msg) {
+    var err = document.getElementById(errId);
+    fieldIds.forEach(function (id) { document.getElementById(id).setAttribute('aria-invalid', msg ? 'true' : 'false'); });
+    err.textContent = msg || ''; err.hidden = !msg;
+  }
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var errores = [];
+    var checks = [
+      [['tipo'], 'tipo-err', val('tipo') ? '' : 'Elige el tipo de solicitud.'],
+      [['nombre'], 'nombre-err', val('nombre') ? '' : 'Escribe tu nombre.'],
+      [['celular', 'correo'], 'contacto-err', (val('celular') || val('correo')) ? ((val('correo') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('correo'))) ? 'El correo no parece válido. Revisa que tenga @ y un dominio.' : '') : 'Escribe un celular o un correo para poder responderte.'],
+      [['mensaje'], 'mensaje-err', val('mensaje').length >= 10 ? '' : 'Cuéntanos un poco más (mínimo 10 caracteres).'],
+      [['autorizo'], 'autorizo-err', document.getElementById('autorizo').checked ? '' : 'Necesitamos tu autorización para responderte.']
+    ];
+    checks.forEach(function (c) { setError(c[0], c[1], c[2]); if (c[2]) errores.push(c[0][0]); });
+    if (errores.length) { document.getElementById(errores[0]).focus(); return; }
+
+    btn.disabled = true; btn.textContent = 'Enviando…'; out.innerHTML = '';
+    try {
+      var r = await fetch('/api/pqr', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: val('tipo'), nombre: val('nombre'), pedido: val('pedido'),
+          celular: val('celular'), correo: val('correo'), mensaje: val('mensaje'),
+          autorizacion: { datos: true, version: window.NEGOCIO.versionPoliticas }
+        })
+      });
+      var ct = r.headers.get('content-type') || '';
+      var d = ct.indexOf('application/json') > -1 ? await r.json() : {};
+      if (!r.ok || !d.radicado) throw new Error(d.error || 'No se pudo registrar');
+      form.reset();
+      out.innerHTML = '';
+      var p = document.createElement('p'); p.className = 'callout ok';
+      p.innerHTML = '<b>Solicitud recibida.</b> Tu número de radicado es <b></b>. Guárdalo para hacer seguimiento.';
+      p.querySelectorAll('b')[1].textContent = d.radicado;
+      out.appendChild(p);
+    } catch (err) {
+      var wa = 'https://wa.me/' + window.NEGOCIO.whatsapp + '?text=' + encodeURIComponent(val('tipo') + ' — ' + val('mensaje'));
+      out.innerHTML = '<p class="callout">No pudimos registrar tu solicitud en este momento. Puedes enviarla por <a target="_blank" rel="noopener">WhatsApp</a> y pedir tu número de radicado.</p>';
+      out.querySelector('a').href = wa;
+    } finally {
+      btn.disabled = false; btn.textContent = 'Enviar solicitud';
+      out.focus();
+    }
+  });
+})();
+</script>
+</body>
+</html>

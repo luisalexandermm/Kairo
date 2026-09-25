@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>kAIRO — Sneaker Store</title>
+<title>kAIRO — Tienda de tenis</title>
+<meta name="description" content="Tienda de tenis Nike, Jordan, Adidas y Timberland con envíos en Colombia y pedidos por WhatsApp.">
 <link rel="icon" type="image/png" href="/img/logo.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0b0d14">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/store.css">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/store.css?v=3">
+<script src="/js/negocio.js"></script>
 </head>
 <body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="i-burger" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
 <symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
 <symbol id="i-cart" viewBox="0 0 24 24"><path d="M4 5h2l2.4 11.2a2 2 0 0 0 2 1.6h7a2 2 0 0 0 2-1.6L21 8H7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="21" r="1.4" fill="currentColor"/><circle cx="18" cy="21" r="1.4" fill="currentColor"/></symbol>
-<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.7 7-6.3-3.8L5.7 21l1.7-7L2 9.2l7.1-.6z" fill="currentColor"/></symbol>
 <symbol id="i-wa" viewBox="0 0 24 24"><path d="M17.5 6.5a7.9 7.9 0 0 0-13.4 8.7L3 21l6-1.6a7.9 7.9 0 0 0 11.4-7A7.8 7.8 0 0 0 17.5 6.5Zm-5.5 12a6.5 6.5 0 0 1-3.3-.9l-.24-.14-2.7.7.72-2.63-.16-.27a6.6 6.6 0 1 1 5.68 3.24Zm3.6-4.9c-.2-.1-1.17-.58-1.35-.64-.18-.07-.32-.1-.45.1-.13.2-.5.64-.62.77-.11.13-.23.14-.43.05a5.4 5.4 0 0 1-1.6-1c-.6-.53-1-1.19-1.11-1.39-.12-.2-.01-.3.09-.4l.3-.35c.1-.11.13-.2.2-.33.07-.13.03-.25-.02-.35-.05-.1-.45-1.08-.61-1.48-.16-.38-.33-.33-.45-.34h-.38c-.13 0-.35.05-.53.25s-.7.68-.7 1.66.72 1.93.82 2.06c.1.13 1.4 2.15 3.4 3.01.48.2.85.33 1.14.42.48.15.91.13 1.26.08.38-.06 1.17-.48 1.34-.94.16-.46.16-.86.11-.94-.05-.08-.18-.13-.38-.23Z" fill="currentColor"/></symbol>
 <symbol id="s-low" viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M60 44c8-5 20-8 33-7 15 1 25 8 30 17" stroke="rgba(255,255,255,.5)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 60l10-16M58 66l11-17M71 71l11-18" stroke="rgba(255,255,255,.6)" stroke-width="3.2" stroke-linecap="round"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
 <symbol id="s-high" viewBox="0 0 260 140"><path d="M10 118c-3-13 3-22 14-26 9-3 14-8 17-16 3-9 4-20 4-32 0-9 5-14 14-14h44c9 0 13 5 13 14 0 14 3 25 12 33 7 6 16 9 27 10 16 2 36 2 52 8 13 5 21 14 22 24 1 8-3 13-11 13H20c-6 0-9-2-10-4Z" fill="currentColor"/><path d="M60 36h44M60 52h44M60 68h44" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/><path d="M150 62c20-2 44 2 60 16" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
@@ -27,242 +27,253 @@
 <!-- HEADER -->
 <header id="hdr">
   <div class="wrap">
-    <a href="#inicio" class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark" id="brandMark">kAIRO</span><span class="brand__tag" id="brandTag">Sneaker Store</span></a>
-    <nav class="nav-links"><a href="#productos">Tenis</a><a href="#destacado">Destacado</a><a href="#colecciones">Colecciones</a><a href="#opiniones">Opiniones</a></nav>
+    <a href="#inicio" class="brand"><img class="brand__logo" src="/img/logo.png" alt="" width="38" height="38"><span class="brand__mark" id="brandMark">kAIRO</span><span class="brand__tag" id="brandTag">Sneaker Store</span></a>
+    <nav class="nav-links" aria-label="Principal"><a href="#productos">Tenis</a><a href="#destacado">Destacado</a><a href="#colecciones">Colecciones</a><a href="#ayuda">Ayuda</a></nav>
     <div class="nav-actions">
-      <button class="icon-btn" onclick="openCart()" aria-label="Carrito"><svg><use href="#i-cart"/></svg><span class="badge hide" id="cartBadge">0</span></button>
-      <button class="icon-btn burger" onclick="toggleMenu(true)" aria-label="Menú"><svg><use href="#i-burger"/></svg></button>
+      <button type="button" class="icon-btn" id="cartBtn" onclick="openCart(this)" aria-label="Abrir carrito, 0 productos"><svg aria-hidden="true" focusable="false"><use href="#i-cart"/></svg><span class="badge hide" id="cartBadge" aria-hidden="true">0</span></button>
+      <button type="button" class="icon-btn burger" id="burgerBtn" onclick="toggleMenu(true)" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobMenu"><svg aria-hidden="true" focusable="false"><use href="#i-burger"/></svg></button>
     </div>
   </div>
 </header>
 
 <!-- MOBILE MENU -->
 <div class="menu-backdrop" id="menuBackdrop" onclick="toggleMenu(false)"></div>
-<div class="mob-menu" id="mobMenu">
-  <div class="top"><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark">kAIRO</span></span>
-    <button class="icon-btn" style="background:rgba(255,255,255,.12);color:#fff" onclick="toggleMenu(false)"><svg><use href="#i-close"/></svg></button></div>
+<nav class="mob-menu" id="mobMenu" aria-label="Menú móvil">
+  <div class="top"><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" width="38" height="38"><span class="brand__mark">kAIRO</span></span>
+    <button type="button" class="icon-btn" onclick="toggleMenu(false)" aria-label="Cerrar menú"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button></div>
   <a href="#inicio" onclick="toggleMenu(false)">Inicio</a>
   <a href="#productos" onclick="toggleMenu(false)">Tenis</a>
   <a href="#destacado" onclick="toggleMenu(false)">Destacado</a>
   <a href="#colecciones" onclick="toggleMenu(false)">Colecciones</a>
-  <a href="#opiniones" onclick="toggleMenu(false)">Opiniones</a>
-</div>
+  <a href="#ayuda" onclick="toggleMenu(false)">Ayuda</a>
+</nav>
+
+<main id="contenido" tabindex="-1">
+<h1 class="sr-only">kAIRO, tienda de tenis</h1>
 
 <!-- HERO -->
-<section class="hero" id="inicio" data-theme="indigo">
-  <svg class="hero__arc" viewBox="0 0 600 400" aria-hidden="true">
+<section class="hero" id="inicio" data-theme="indigo" aria-label="Portada">
+  <svg class="hero__arc" viewBox="0 0 600 400" aria-hidden="true" focusable="false">
     <path d="M10 390C60 180 210 40 430 20c90-8 160 26 160 84 0 62-84 108-190 112"/>
     <path d="M150 300c40-120 150-210 300-224" opacity=".6"/>
   </svg>
-  <div class="hero__ghost display" id="heroWord">SNEAKERS</div>
+  <div class="hero__ghost display" id="heroWord" aria-hidden="true">SNEAKERS</div>
   <div class="hero__stage">
     <div class="hero__logo" id="heroLogo">
-      <div class="logo3d display">k<span>AI</span>RO</div>
+      <div class="logo3d display" aria-hidden="true">k<span>AI</span>RO</div>
     </div>
   </div>
-  <div class="hero__dots" id="heroDots"></div>
+  <div class="hero__dots" id="heroDots" role="group" aria-label="Modelos destacados"></div>
   <div class="wrap hero__bottom">
     <div class="hero__colors">
-      <span class="hero__label">Elige el color:</span>
-      <div class="theme-swatches" id="themeSwatches">
-        <button data-theme="indigo"  style="background:linear-gradient(140deg,#412b7a,#170f2c)" class="active" title="Índigo"></button>
-        <button data-theme="carmesi" style="background:linear-gradient(140deg,#a4123a,#2b0611)" title="Carmesí"></button>
-        <button data-theme="ember"   style="background:linear-gradient(140deg,#ff4433,#3c0d05)" title="Ember"></button>
-        <button data-theme="tinta"   style="background:linear-gradient(140deg,#3a4254,#06070c)" title="Tinta"></button>
+      <span class="hero__label" id="themeLabel">Color de fondo:</span>
+      <div class="theme-swatches" id="themeSwatches" role="group" aria-labelledby="themeLabel">
+        <button type="button" data-theme="indigo"  style="background:linear-gradient(140deg,#412b7a,#170f2c)" class="active" aria-pressed="true" aria-label="Fondo índigo"></button>
+        <button type="button" data-theme="carmesi" style="background:linear-gradient(140deg,#a4123a,#2b0611)" aria-pressed="false" aria-label="Fondo carmesí"></button>
+        <button type="button" data-theme="ember"   style="background:linear-gradient(140deg,#c4291a,#3c0d05)" aria-pressed="false" aria-label="Fondo ember"></button>
+        <button type="button" data-theme="tinta"   style="background:linear-gradient(140deg,#3a4254,#06070c)" aria-pressed="false" aria-label="Fondo tinta"></button>
       </div>
     </div>
     <div class="hero__cta">
-      <button class="btn btn-light"  onclick="openProduct(heroFeat()&&heroFeat().id,false)">Añadir al carrito</button>
-      <button class="btn btn-ghost"  onclick="openProduct(heroFeat()&&heroFeat().id,true)">Comprar ahora</button>
+      <button type="button" class="btn btn-light" id="heroAdd" onclick="openProduct(heroFeat()&&heroFeat().id,false,this)">Elegir talla y añadir</button>
+      <button type="button" class="btn btn-ghost" id="heroBuy" onclick="openProduct(heroFeat()&&heroFeat().id,true,this)">Comprar ahora</button>
     </div>
-    <div class="hero__product">
+    <div class="hero__product" aria-live="polite">
       <div class="hero__price"><span id="heroPrice"></span><em id="heroBrand"></em></div>
-      <h1 id="heroName"></h1>
+      <h2 id="heroName">Modelo destacado</h2>
       <p id="heroDesc"></p>
     </div>
   </div>
 </section>
 
 <!-- BRANDS -->
-<section class="brands">
+<section class="brands" aria-label="Filtrar por marca">
   <div class="wrap">
-    <span onclick="filterBrand('Nike')">NIKE</span>
-    <span onclick="filterBrand('Jordan')">JORDAN</span>
-    <span onclick="filterBrand('Adidas')">ADIDAS</span>
-    <span onclick="filterBrand('Timberland')">TIMBERLAND</span>
-    <span onclick="filterBrand('Todos')">VER TODO</span>
+    <button type="button" onclick="filterBrand('Nike')" aria-label="Ver tenis Nike">NIKE</button>
+    <button type="button" onclick="filterBrand('Jordan')" aria-label="Ver tenis Jordan">JORDAN</button>
+    <button type="button" onclick="filterBrand('Adidas')" aria-label="Ver tenis Adidas">ADIDAS</button>
+    <button type="button" onclick="filterBrand('Timberland')" aria-label="Ver botas Timberland">TIMBERLAND</button>
+    <button type="button" onclick="filterBrand('Todos')" aria-label="Ver todos los modelos">VER TODO</button>
   </div>
 </section>
 
 <!-- PROMOS -->
-<section class="promos" id="promosSection" style="display:none"><div class="wrap">
-  <span class="eyebrow">Promociones</span>
+<section class="promos" id="promosSection" aria-labelledby="promosTitle" hidden><div class="wrap">
+  <h2 class="eyebrow" id="promosTitle">Promociones</h2>
   <div class="promo-strip" id="promoStrip"></div>
 </div></section>
 
-<!-- FILTERS -->
-<section class="filters"><div class="wrap" id="chipBar">
-  <button class="chip active" data-brand="Todos">Todos</button>
-  <button class="chip" data-brand="Nike">Nike</button>
-  <button class="chip" data-brand="Jordan">Jordan</button>
-  <button class="chip" data-brand="Adidas">Adidas</button>
-  <button class="chip" data-brand="Timberland">Timberland</button>
-</div></section>
-
 <!-- PRODUCTS -->
-<section class="products" id="productos"><div class="wrap">
-  <div class="section-head">
-    <div><span class="eyebrow">Catálogo</span><h2 class="display">Elige tu par</h2></div>
-    <p>Toca un modelo para elegir talla, color y añadirlo al carrito.</p>
+<section class="products" id="productos" aria-labelledby="catTitle"><div class="wrap">
+  <div class="filters" id="chipBar" role="group" aria-label="Filtrar catálogo por marca">
+    <button type="button" class="chip active" data-brand="Todos" aria-pressed="true">Todos</button>
+    <button type="button" class="chip" data-brand="Nike" aria-pressed="false">Nike</button>
+    <button type="button" class="chip" data-brand="Jordan" aria-pressed="false">Jordan</button>
+    <button type="button" class="chip" data-brand="Adidas" aria-pressed="false">Adidas</button>
+    <button type="button" class="chip" data-brand="Timberland" aria-pressed="false">Timberland</button>
   </div>
+  <div class="section-head">
+    <div><span class="eyebrow">Catálogo</span><h2 class="display" id="catTitle">Elige tu par</h2></div>
+    <p>Abre un modelo para elegir talla, color y añadirlo al carrito. Precios finales en pesos colombianos.</p>
+  </div>
+  <p class="sr-only" id="gridStatus" role="status" aria-live="polite"></p>
   <div class="grid" id="productGrid"></div>
 </div></section>
 
 <!-- SPOTLIGHT -->
-<section class="spotlight" id="destacado"><div class="wrap">
+<section class="spotlight" id="destacado" aria-labelledby="spotName"><div class="wrap">
   <div class="spotlight__copy">
-    <span class="eyebrow">Modelo del mes</span>
+    <span class="eyebrow">Modelo destacado</span>
     <h2 class="display" id="spotName">Air Jordan 1 Mid</h2>
-    <p id="spotDesc">La silueta que empezó todo, en su versión media: cuero acolchado en el tobillo, unidad Air encapsulada y horma fiel a la talla.</p>
-    <div class="spec-list" id="spotSpecs">
-      <div><b>$759.900</b><span>Precio</span></div>
-      <div><b>34–44</b><span>Tallas</span></div>
-      <div><b>4</b><span>Colores</span></div>
-    </div>
-    <button class="btn btn-primary" id="spotBtn" onclick="openProduct('jordan-1-mid',false)">Elegir talla y comprar</button>
+    <p id="spotDesc">Caña media con cuello acolchado.</p>
+    <div class="spec-list" id="spotSpecs"></div>
+    <button type="button" class="btn btn-primary" id="spotBtn" onclick="openProduct('jordan-1-mid',false,this)">Elegir talla y comprar</button>
   </div>
-  <div class="spotlight__media"><svg viewBox="0 0 260 140" style="color:#f4f2ea"><use href="#s-high"/></svg></div>
+  <div class="spotlight__media"><svg viewBox="0 0 260 140" style="color:#f4f2ea" aria-hidden="true" focusable="false"><use href="#s-high"/></svg></div>
 </div></section>
 
 <!-- COLLECTIONS -->
-<section class="collections" id="colecciones"><div class="wrap">
-  <div class="section-head"><div><span class="eyebrow">Colecciones</span><h2 class="display">Elige tu terreno</h2></div></div>
+<section class="collections" id="colecciones" aria-labelledby="colTitle"><div class="wrap">
+  <div class="section-head"><div><span class="eyebrow">Colecciones</span><h2 class="display" id="colTitle">Elige tu terreno</h2></div></div>
   <div class="trio">
-    <div class="promo"><span class="promo__price display">Desde $499.900</span><h3>Calle</h3><p>Samba, Forum y Air Force: las bajas que combinan con todo.</p><svg viewBox="0 0 260 140" style="color:#0a1f30"><use href="#s-low"/></svg><button class="btn btn-light" onclick="filterBrand('Adidas')">Ver modelos</button></div>
-    <div class="promo"><span class="promo__price display">Desde $759.900</span><h3>Cancha</h3><p>Jordan de caña alta y media, listas para jugar o para salir.</p><svg viewBox="0 0 260 140" style="color:#450a1c"><use href="#s-high"/></svg><button class="btn btn-light" onclick="filterBrand('Jordan')">Ver modelos</button></div>
-    <div class="promo"><span class="promo__price display">Desde $879.900</span><h3>Camino</h3><p>Botas Timberland en nobuk, impermeables y para todo el año.</p><svg viewBox="0 0 260 140" style="color:#1f1408"><use href="#s-boot"/></svg><button class="btn btn-light" onclick="filterBrand('Timberland')">Ver modelos</button></div>
+    <article class="promo"><span class="promo__price display" data-desde="Adidas"></span><h3>Calle</h3><p>Modelos bajos de Adidas para el día a día.</p><svg viewBox="0 0 260 140" style="color:#0a1f30" aria-hidden="true" focusable="false"><use href="#s-low"/></svg><button type="button" class="btn btn-light" onclick="filterBrand('Adidas')">Ver modelos Adidas</button></article>
+    <article class="promo"><span class="promo__price display" data-desde="Jordan"></span><h3>Cancha</h3><p>Jordan de caña alta y media.</p><svg viewBox="0 0 260 140" style="color:#450a1c" aria-hidden="true" focusable="false"><use href="#s-high"/></svg><button type="button" class="btn btn-light" onclick="filterBrand('Jordan')">Ver modelos Jordan</button></article>
+    <article class="promo"><span class="promo__price display" data-desde="Timberland"></span><h3>Camino</h3><p>Botas Timberland en nobuk.</p><svg viewBox="0 0 260 140" style="color:#1f1408" aria-hidden="true" focusable="false"><use href="#s-boot"/></svg><button type="button" class="btn btn-light" onclick="filterBrand('Timberland')">Ver botas Timberland</button></article>
   </div>
 </div></section>
 
-<!-- REVIEWS -->
-<section class="reviews" id="opiniones"><div class="wrap">
-  <div class="section-head"><div><span class="eyebrow">Opiniones</span><h2 class="display">Lo que dicen los clientes</h2></div></div>
-  <div class="rev-grid">
-    <div class="rev-card"><div class="card__stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p>Pedí unos Samba OG un miércoles y llegaron el viernes. Me ayudaron con la talla por WhatsApp antes de confirmar.</p><div class="rev-name"><span class="rev-avatar">MJ</span><div><b>Mariana J.</b><small>Medellín</small></div></div></div>
-    <div class="rev-card"><div class="card__stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p>Los Jordan 1 Mid quedaron iguales a las fotos y el pago contraentrega funcionó sin problema.</p><div class="rev-name"><span class="rev-avatar">DR</span><div><b>David R.</b><small>Bogotá</small></div></div></div>
-    <div class="rev-card"><div class="card__stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p>Compré unas botas Timberland para mi hermano. Respondieron rápido y coordinamos la entrega el mismo día.</p><div class="rev-name"><span class="rev-avatar">LC</span><div><b>Laura C.</b><small>Cali</small></div></div></div>
-  </div>
+<!-- HELP / WA BANNER -->
+<section class="wa-banner" id="ayuda" aria-labelledby="ayudaTitle"><div class="wrap">
+  <h2 class="display" id="ayudaTitle">¿Dudas con la talla, el color o el envío? Escríbenos</h2>
+  <a class="btn btn-wa" id="waDirect" href="https://wa.me/573145312045" target="_blank" rel="noopener"><svg style="width:19px;height:19px" aria-hidden="true" focusable="false"><use href="#i-wa"/></svg>Chatear por WhatsApp<span class="sr-only"> (se abre en otra pestaña)</span></a>
 </div></section>
-
-<!-- WA BANNER -->
-<section class="wa-banner"><div class="wrap">
-  <h2 class="display">¿Dudas con la talla, el color o el envío? Escríbenos</h2>
-  <a class="btn btn-wa" id="waDirect" href="#" target="_blank" rel="noopener"><svg style="width:19px;height:19px"><use href="#i-wa"/></svg>Chatear por WhatsApp</a>
-</div></section>
+</main>
 
 <!-- FOOTER -->
 <footer><div class="wrap">
   <div class="foot-grid">
-    <div><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" aria-hidden="true"><span class="brand__mark">kAIRO</span></span><p>Nike, Jordan, Adidas y Timberland originales. Envíos a toda Colombia y atención directa por WhatsApp.</p>
-      <div class="socials"><a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" style="color:#fff"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg></a></div></div>
-    <div class="foot-col"><h4>Marcas</h4><a href="#productos" onclick="filterBrand('Nike');return false">Nike</a><a href="#productos" onclick="filterBrand('Jordan');return false">Jordan</a><a href="#productos" onclick="filterBrand('Adidas');return false">Adidas</a><a href="#productos" onclick="filterBrand('Timberland');return false">Timberland</a></div>
-    <div class="foot-col"><h4>Ayuda</h4><a href="#productos">Cómo comprar</a><a href="#">Guía de tallas</a><a href="#">Envíos y entregas</a><a href="#">Cambios y devoluciones</a></div>
-    <div class="foot-col"><h4>Contacto</h4><a id="waFooter" href="#" target="_blank" rel="noopener">WhatsApp 314 531 2045</a><a href="#" onclick="openCart();return false">Ver mi carrito</a></div>
+    <div><span class="brand"><img class="brand__logo" src="/img/logo.png" alt="" width="38" height="38"><span class="brand__mark">kAIRO</span></span><p>Tenis Nike, Jordan, Adidas y Timberland. Envíos en Colombia y atención directa por WhatsApp.</p>
+      <div class="socials"><a data-negocio="instagram" data-opcional hidden target="_blank" rel="noopener" aria-label="Instagram de kAIRO (se abre en otra pestaña)"><svg viewBox="0 0 24 24" style="color:#fff" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor"/></svg></a></div></div>
+    <nav class="foot-col" aria-labelledby="f-ayuda"><h2 id="f-ayuda">Ayuda</h2><a href="/terminos.html#compra">Cómo comprar</a><a href="/terminos.html#envios">Envíos y entregas</a><a href="/cambios-y-devoluciones.html">Cambios, devoluciones y garantía</a><a href="/pqr.html">Peticiones, quejas y reclamos</a></nav>
+    <nav class="foot-col" aria-labelledby="f-legal"><h2 id="f-legal">Legal</h2><a href="/terminos.html">Términos y condiciones</a><a href="/privacidad.html">Política de datos personales</a><a href="/cookies.html">Política de cookies</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio<span class="sr-only"> (se abre en otra pestaña)</span></a></nav>
+    <div class="foot-col"><h2>Contacto</h2><a id="waFooter" href="https://wa.me/573145312045" target="_blank" rel="noopener">WhatsApp 314 531 2045</a><a data-negocio="correo"></a><button type="button" class="foot-link" onclick="openCart(this)">Ver mi carrito</button></div>
   </div>
-  <div class="foot-bottom"><span>© 2026 kAIRO. Todos los derechos reservados.</span><span>Pedidos por WhatsApp <a class="admin-entry" href="/admin.html" title="Acceso privado" aria-label="Acceso privado">·</a></span></div>
+  <div class="foot-business" aria-label="Datos del negocio">
+    <p><b data-negocio="nombreComercial"></b> · Responsable: <span data-negocio="responsable"></span> · NIT <span data-negocio="nit"></span> · <span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span> · Horario: <span data-negocio="horario"></span></p>
+    <p>Nike, Jordan, Adidas y Timberland son marcas de sus respectivos titulares. kAIRO es una tienda independiente y no está afiliada ni patrocinada por esas empresas.</p>
+  </div>
+  <div class="foot-bottom"><span>© 2026 kAIRO. Todos los derechos reservados.</span><span>Pedidos por WhatsApp <a class="admin-entry" href="/admin.html" aria-label="Acceso privado del administrador">·</a></span></div>
 </div></footer>
 
 <!-- OVERLAYS -->
 <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
 <!-- PRODUCT MODAL -->
-<div class="modal" id="prodModal" role="dialog" aria-modal="true"><div class="modal__panel">
+<div class="modal" id="prodModal" role="dialog" aria-modal="true" aria-labelledby="mName"><div class="modal__panel">
   <div class="modal__media" id="modalMedia">
-    <button class="modal__close" onclick="closeProd()" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button>
+    <button type="button" class="modal__close" onclick="closeProd()" aria-label="Cerrar detalle del producto"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
     <div id="modalArt" style="width:100%;display:flex;align-items:center;justify-content:center"></div>
   </div>
   <div class="modal__info">
     <span class="modal__brand" id="mBrand"></span>
-    <h3 id="mName"></h3>
-    <div class="card__stars" id="mStars"></div>
+    <h2 id="mName" tabindex="-1"></h2>
     <div class="modal__price display" id="mPrice"></div>
     <p class="modal__desc" id="mDesc"></p>
-    <span class="packaging-note packaging-note--detail">Sin caja por el momento</span>
-    <div class="opt-label">Talla <em id="sHint">Elige una</em></div>
-    <div class="sizes" id="mSizes"></div>
-    <div class="opt-label">Color <em id="cHint"></em></div>
-    <div class="colors" id="mColors"></div>
-    <div class="opt-label">Cantidad</div>
-    <div class="qty"><button type="button" onclick="chgQty(-1)" aria-label="Quitar">−</button><span id="mQty">1</span><button type="button" onclick="chgQty(1)" aria-label="Agregar">+</button></div>
-    <button class="btn btn-dark" id="addBtn" onclick="addToCart()">Añadir al carrito</button>
-    <p class="modal-note">Envío a toda Colombia · Sin caja por el momento · Confirmación por WhatsApp</p>
+    <span class="packaging-note packaging-note--detail">Se entrega sin caja por el momento</span>
+    <div class="opt-label" id="sizeLabel">Talla <em id="sHint" aria-live="polite">Elige una</em></div>
+    <div class="sizes" id="mSizes" role="group" aria-labelledby="sizeLabel"></div>
+    <p class="field-error" id="sizeErr" hidden>Elige una talla para continuar.</p>
+    <div class="opt-label" id="colorLabel">Color <em id="cHint" aria-live="polite"></em></div>
+    <div class="colors" id="mColors" role="group" aria-labelledby="colorLabel"></div>
+    <div class="opt-label" id="qtyLabel">Cantidad</div>
+    <div class="qty" role="group" aria-labelledby="qtyLabel"><button type="button" onclick="chgQty(-1)" aria-label="Disminuir cantidad">−</button><span id="mQty" aria-live="polite">1</span><button type="button" onclick="chgQty(1)" aria-label="Aumentar cantidad">+</button></div>
+    <button type="button" class="btn btn-dark" id="addBtn" onclick="addToCart()">Añadir al carrito</button>
+    <p class="modal-note">Envíos en Colombia · Se entrega sin caja · Confirmación por WhatsApp</p>
   </div>
 </div></div>
 
 <!-- CART -->
-<aside class="drawer" id="cartDrawer" role="dialog" aria-label="Carrito">
-  <div class="drawer__head"><h3 class="display">Tu carrito</h3><button class="modal__close" style="position:static" onclick="closeCart()" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button></div>
+<div class="drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+  <div class="drawer__head"><h2 class="display" id="cartTitle" tabindex="-1">Tu carrito</h2><button type="button" class="modal__close" style="position:static" onclick="closeCart()" aria-label="Cerrar carrito"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button></div>
   <div class="drawer__items" id="cartItems"></div>
   <div class="drawer__foot">
-    <div class="totals"><span>Subtotal</span><span id="cSub">$0</span></div>
-    <div class="totals grand"><span>Total</span><span id="cTotal">$0</span></div>
-    <button class="btn btn-primary" id="buyBtn" onclick="openCheckout()" disabled>Comprar</button>
+    <div class="totals grand"><span>Total productos</span><span id="cTotal">$0</span></div>
+    <p class="drawer__note">El envío se muestra en el siguiente paso.</p>
+    <button type="button" class="btn btn-primary" id="buyBtn" onclick="openCheckout()" disabled>Continuar con la compra</button>
   </div>
-</aside>
+</div>
 
 <!-- CHECKOUT -->
-<div class="checkout" id="checkoutModal" role="dialog" aria-modal="true"><div class="checkout__panel">
+<div class="checkout" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="coTitle"><div class="checkout__panel">
   <div class="checkout__head">
-    <button class="modal__close" onclick="closeCheckout()" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button>
+    <button type="button" class="modal__close" onclick="closeCheckout()" aria-label="Cerrar formulario de compra"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
     <span class="eyebrow">Paso final</span>
-    <h3 class="display">Datos de envío</h3>
-    <p>Completa y se abrirá WhatsApp con tu pedido ya redactado.</p>
+    <h2 class="display" id="coTitle" tabindex="-1">Datos de envío</h2>
+    <p>Al enviar, verás tu recibo y luego se abrirá WhatsApp con el pedido ya escrito.</p>
   </div>
   <div class="checkout__body">
     <div class="summary" id="cSummary"></div>
     <form id="orderForm" novalidate>
+      <p class="form-note form-note--left">Los campos con <span aria-hidden="true">*</span><span class="sr-only">asterisco</span> son obligatorios.</p>
       <div class="field-row">
-        <div class="field"><label for="fn">Nombre completo *</label><input id="fn" type="text" required placeholder="Juliana Torres"></div>
-        <div class="field"><label for="ft">Celular *</label><input id="ft" type="tel" required placeholder="300 000 0000"></div>
+        <div class="field"><label for="fn">Nombre completo *</label><input id="fn" type="text" required autocomplete="name" maxlength="120" aria-describedby="fn-err"><p class="field-error" id="fn-err" hidden></p></div>
+        <div class="field"><label for="ft">Celular *</label><input id="ft" type="tel" required autocomplete="tel-national" inputmode="numeric" maxlength="16" placeholder="300 123 4567" aria-describedby="ft-err"><p class="field-error" id="ft-err" hidden></p></div>
+      </div>
+      <div class="field"><label for="fd">Dirección *</label><input id="fd" type="text" required autocomplete="street-address" maxlength="200" placeholder="Calle, número, apto" aria-describedby="fd-err"><p class="field-error" id="fd-err" hidden></p></div>
+      <div class="field-row">
+        <div class="field"><label for="fci">Ciudad *</label><input id="fci" type="text" required autocomplete="address-level2" maxlength="80" aria-describedby="fci-err"><p class="field-error" id="fci-err" hidden></p></div>
+        <div class="field"><label for="fdp">Departamento</label><input id="fdp" type="text" autocomplete="address-level1" maxlength="80"></div>
       </div>
       <div class="field-row">
-        <div class="field"><label for="fcc">Cédula</label><input id="fcc" type="text" placeholder="Para la guía de envío"></div>
-        <div class="field"><label for="fe">Correo</label><input id="fe" type="email" placeholder="Opcional"></div>
+        <div class="field"><label for="fb">Barrio y referencias</label><input id="fb" type="text" maxlength="160"></div>
+        <div class="field"><label for="fcc">Cédula</label><input id="fcc" type="text" inputmode="numeric" maxlength="20" aria-describedby="fcc-hint"><p class="field-hint" id="fcc-hint">Opcional. Solo si la transportadora la pide para la guía.</p></div>
       </div>
-      <div class="field"><label for="fd">Dirección *</label><input id="fd" type="text" required placeholder="Calle, número, apto"></div>
-      <div class="field-row">
-        <div class="field"><label for="fci">Ciudad *</label><input id="fci" type="text" required placeholder="Bogotá"></div>
-        <div class="field"><label for="fdp">Departamento</label><input id="fdp" type="text" placeholder="Cundinamarca"></div>
-      </div>
-      <div class="field"><label for="fb">Barrio y referencias</label><input id="fb" type="text" placeholder="Opcional"></div>
-      <div class="field"><label>Método de pago</label>
+      <fieldset class="field">
+        <legend>Método de pago *</legend>
         <div class="pay-opts">
           <label><input type="radio" name="pago" value="Contraentrega" checked> Contraentrega</label>
           <label><input type="radio" name="pago" value="Nequi / Daviplata"> Nequi / Daviplata</label>
         </div>
-        <p class="payment-hint form-note" id="paymentHint">Contraentrega: primero pagas $25.000 del envío y el saldo del producto al recibir.</p>
+        <p class="payment-hint form-note" id="paymentHint" aria-live="polite"></p>
+      </fieldset>
+      <div class="field"><label for="fnot">Notas para la entrega</label><textarea id="fnot" maxlength="500" placeholder="Horario preferido, punto de referencia…"></textarea></div>
+
+      <div class="privacy-notice" id="avisoPrivacidad">
+        <b>Aviso de privacidad.</b> <span data-negocio="nombreComercial"></span> (NIT <span data-negocio="nit"></span>) usará estos datos solo para confirmar, entregar y dar garantía a tu pedido, y los comparte con la transportadora y con los proveedores tecnológicos que usamos para operar. No los usamos para publicidad. Puedes conocerlos, corregirlos o pedir que los borremos escribiendo a <a data-negocio="correo"></a> o desde <a href="/pqr.html" target="_blank">PQR</a>. Detalles en la <a href="/privacidad.html" target="_blank">política de tratamiento de datos</a>.
       </div>
-      <div class="field"><label for="fnot">Notas para la entrega</label><textarea id="fnot" placeholder="Horario preferido, punto de referencia…"></textarea></div>
-      <button type="submit" class="btn btn-wa"><svg style="width:19px;height:19px"><use href="#i-wa"/></svg>Enviar pedido por WhatsApp</button>
-      <p class="form-note">Tu pedido se envía con los productos, tallas y colores que elegiste. Se entrega sin caja por el momento.</p>
+      <div class="consent">
+        <input type="checkbox" id="cDatos" aria-describedby="cDatos-err avisoPrivacidad">
+        <label for="cDatos">Autorizo el tratamiento de mis datos personales según la <a href="/privacidad.html" target="_blank">política de tratamiento de datos</a>. *</label>
+      </div>
+      <p class="field-error" id="cDatos-err" hidden></p>
+      <div class="consent">
+        <input type="checkbox" id="cTerminos" aria-describedby="cTerminos-err">
+        <label for="cTerminos">Leí y acepto los <a href="/terminos.html" target="_blank">términos y condiciones</a> y la <a href="/cambios-y-devoluciones.html" target="_blank">política de cambios y devoluciones</a>. *</label>
+      </div>
+      <p class="field-error" id="cTerminos-err" hidden></p>
+
+      <button type="submit" class="btn btn-wa" id="submitOrder"><svg style="width:19px;height:19px" aria-hidden="true" focusable="false"><use href="#i-wa"/></svg>Confirmar pedido</button>
+      <p class="form-note" id="formStatus" role="status" aria-live="polite"></p>
     </form>
   </div>
 </div></div>
 
 <div class="receipt-modal" id="receiptModal" role="dialog" aria-modal="true" aria-labelledby="receiptTitle">
   <div class="receipt-panel">
-    <div class="receipt-head"><div><span class="eyebrow">Pedido recibido</span><h3 class="display" id="receiptTitle">Tu recibo kAIRO</h3></div><button class="modal__close" onclick="closeReceipt()" aria-label="Cerrar"><svg><use href="#i-close"/></svg></button></div>
+    <div class="receipt-head"><div><span class="eyebrow">Pedido registrado</span><h2 class="display" id="receiptTitle" tabindex="-1">Tu recibo kAIRO</h2></div><button type="button" class="modal__close" onclick="closeReceipt()" aria-label="Cerrar recibo"><svg aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button></div>
     <div class="receipt-body" id="receiptBody"></div>
-    <div class="receipt-actions"><button class="btn btn-dark" onclick="downloadReceiptAndOpenWhatsApp()">Descargar recibo y continuar a WhatsApp</button><button class="btn btn-primary" onclick="closeReceipt()">Listo</button></div>
+    <div class="receipt-actions"><button type="button" class="btn btn-dark" onclick="downloadReceiptAndOpenWhatsApp()">Descargar recibo y abrir WhatsApp</button><button type="button" class="btn btn-primary" onclick="closeReceipt()">Cerrar</button></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=2').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=3').catch(() => {});
 /* ===== STATE ===== */
-let WA = '573145312045';
+const NEG = window.NEGOCIO || {};
+let WA = NEG.whatsapp || '573145312045';
+const ANTICIPO = Number(NEG.anticipoEnvioContraentrega || 25000);
 let PRODUCTS = [];
 let SETTINGS = {};
 let PROMOS = [];
@@ -274,57 +285,110 @@ let pendingWhatsApp = null;
 
 /* ===== UTILS ===== */
 const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
 const priceOf = p => (p.salePrice && p.salePrice > 0) ? p.salePrice : p.price;
 const priceHTML = p => (p.salePrice && p.salePrice > 0)
-  ? `<span class="was">${money(p.price)}</span>${money(p.salePrice)}`
+  ? `<span class="was"><span class="sr-only">Antes </span>${money(p.price)}</span><span class="sr-only">Ahora </span>${money(p.salePrice)}`
   : money(p.price);
-const artHTML = (p, cls = '', color = null) => (color?.image || p.image)
-  ? `<img class="${cls}" src="${color?.image || p.image}" alt="${p.name || ''}" style="max-width:100%;max-height:300px;object-fit:contain">`
-  : `<svg class="${cls}" viewBox="0 0 260 140" style="width:88%;color:${p.shoeColor || '#1d2733'}"><use href="#${p.shape || 's-low'}"/></svg>`;
-const stars = () => Array(5).fill('<svg style="width:12px;height:12px"><use href="#i-star"/></svg>').join('');
+const safeUrl = u => /^(https:\/\/|\/)/.test(String(u || '')) ? String(u) : '';
+const safeColor = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : '#1d2733';
+const safeShape = s => ['s-low', 's-high', 's-boot'].includes(s) ? s : 's-low';
+const artHTML = (p, cls = '', color = null) => {
+  const img = safeUrl(color?.image || p.image);
+  const alt = `${p.brand || ''} ${p.name || ''}${color?.n ? ', color ' + color.n : ''}`.trim();
+  return img
+    ? `<img class="${cls}" src="${esc(img)}" alt="${esc(alt)}" loading="lazy" style="max-width:100%;max-height:300px;object-fit:contain">`
+    : `<svg class="${cls}" viewBox="0 0 260 140" style="width:88%;color:${safeColor(p.shoeColor)}" role="img" aria-label="${esc('Ilustración de ' + alt)}"><use href="#${safeShape(p.shape)}"/></svg>`;
+};
 
 function toast(m) {
   const t = $('toast'); t.textContent = m; t.classList.add('show');
-  clearTimeout(window._tt); window._tt = setTimeout(() => t.classList.remove('show'), 2600);
+  clearTimeout(window._tt); window._tt = setTimeout(() => t.classList.remove('show'), 3200);
 }
+
+/* ===== DIALOG FOCUS (teclado) ===== */
+const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+let lastFocus = [];
+let activeDialog = null;
+function openDialog(el, focusEl, trigger) {
+  lastFocus.push(trigger || document.activeElement);
+  activeDialog = el;
+  el.classList.add('open');
+  setTimeout(() => (focusEl || el.querySelector(FOCUSABLE))?.focus(), 60);
+}
+function closeDialog(el) {
+  if (!el.classList.contains('open')) return;
+  el.classList.remove('open');
+  const open = [...document.querySelectorAll('.modal.open,.drawer.open,.checkout.open,.receipt-modal.open,.mob-menu.open')];
+  activeDialog = open[open.length - 1] || null;
+  const back = lastFocus.pop();
+  if (back && document.contains(back) && back.offsetParent !== null) back.focus();
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if ($('mobMenu').classList.contains('open')) toggleMenu(false); else closeTop(); return; }
+  if (e.key !== 'Tab' || !activeDialog) return;
+  const items = [...activeDialog.querySelectorAll(FOCUSABLE)].filter(x => x.offsetParent !== null);
+  if (!items.length) return;
+  const first = items[0], last = items[items.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  else if (!activeDialog.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+});
+function closeTop() {
+  if ($('receiptModal').classList.contains('open')) return closeReceipt();
+  if ($('checkoutModal').classList.contains('open')) return closeCheckout();
+  if ($('prodModal').classList.contains('open')) return closeProd();
+  if ($('cartDrawer').classList.contains('open')) return closeCart();
+}
+function syncOverlay() {
+  const any = ['prodModal', 'cartDrawer', 'checkoutModal'].some(id => $(id).classList.contains('open'));
+  $('overlay').classList.toggle('open', any);
+  document.body.classList.toggle('locked', any || $('receiptModal').classList.contains('open') || $('mobMenu').classList.contains('open'));
+}
+
 function toggleMenu(o) {
-  $('mobMenu').classList.toggle('open', o);
+  if (o) openDialog($('mobMenu'), $('mobMenu').querySelector('a'), $('burgerBtn'));
+  else closeDialog($('mobMenu'));
   $('menuBackdrop').classList.toggle('open', o);
-  document.body.classList.toggle('locked', o);
+  $('burgerBtn').setAttribute('aria-expanded', String(o));
+  syncOverlay();
 }
-window.addEventListener('scroll', () => $('hdr').classList.toggle('scrolled', scrollY > 40));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+window.addEventListener('scroll', () => $('hdr').classList.toggle('scrolled', scrollY > 40), { passive: true });
 
 /* ===== BRANDS / FILTERS ===== */
 function filterBrand(b) {
   curBrand = b;
-  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c.dataset.brand === b));
+  document.querySelectorAll('.chip').forEach(c => { const on = c.dataset.brand === b; c.classList.toggle('active', on); c.setAttribute('aria-pressed', String(on)); });
   renderGrid();
-  setTimeout(() => $('productos').scrollIntoView({ behavior: 'smooth' }), 50);
+  const n = visibleProducts().length;
+  $('gridStatus').textContent = b === 'Todos' ? `Mostrando todos los modelos: ${n}` : `Mostrando ${n} modelos ${b}`;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  setTimeout(() => { $('productos').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); $('catTitle').setAttribute('tabindex', '-1'); $('catTitle').focus({ preventScroll: true }); }, 50);
 }
 document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => filterBrand(ch.dataset.brand)));
 
 /* ===== GRID ===== */
+const visibleProducts = () => PRODUCTS.filter(p => p.active !== false && (curBrand === 'Todos' || p.brand === curBrand));
 function renderGrid() {
   const g = $('productGrid');
-  const list = PRODUCTS.filter(p => p.active !== false && (curBrand === 'Todos' || p.brand === curBrand));
+  const list = visibleProducts();
   if (!list.length) { g.innerHTML = '<p class="empty">No hay modelos de esta marca por ahora.</p>'; return; }
   g.innerHTML = list.map(p => `
-    <button class="card" onclick="openProduct('${p.id}', false)">
-      <div class="card__media" style="background:${p.bg || '#f3ece3'}">
-        ${p.tag ? `<span class="card__tag">${p.tag}</span>` : ''}
+    <article class="card">
+      <div class="card__media" style="background:${safeColor(p.bg)}">
+        ${p.tag ? `<span class="card__tag">${esc(p.tag)}</span>` : ''}
         ${p.salePrice ? '<span class="card__off">Oferta</span>' : ''}
         ${artHTML(p)}
       </div>
       <div class="card__body">
-        <span class="card__brand">${p.brand}</span>
-        <h3>${p.name}</h3>
-        <span class="packaging-note">Sin caja por el momento</span>
-        <div class="card__stars">${stars()}</div>
-        <div class="card__row"><span class="card__price">${priceHTML(p)}</span><span class="card__cta">Elegir talla →</span></div>
+        <span class="card__brand">${esc(p.brand)}</span>
+        <h3><button type="button" class="card__link" data-id="${esc(p.id)}">${esc(p.name)}<span class="sr-only">, ver tallas y colores</span></button></h3>
+        <span class="packaging-note" title="Se entrega sin caja por el momento">Sin caja</span>
+        <div class="card__row"><span class="card__price">${priceHTML(p)}</span><span class="card__cta" aria-hidden="true">Elegir talla →</span></div>
       </div>
-    </button>`).join('');
+    </article>`).join('');
+  g.querySelectorAll('.card__link').forEach(b => b.addEventListener('click', () => openProduct(b.dataset.id, false, b)));
 }
 
 /* ===== HERO ===== */
@@ -337,266 +401,316 @@ function renderHero() {
   const list = heroList();
   if (!list.length) return;
   if (heroIdx >= list.length) heroIdx = 0;
-  $('heroDots').innerHTML = list.map((_, i) =>
-    `<button aria-label="Modelo ${i + 1}" onclick="setHero(${i})" class="${i === heroIdx ? 'active' : ''}"></button>`).join('');
+  $('heroDots').innerHTML = list.map((p, i) =>
+    `<button type="button" aria-label="${esc(p.name)}" aria-pressed="${i === heroIdx}" onclick="setHero(${i})" class="${i === heroIdx ? 'active' : ''}"></button>`).join('');
   const p = heroFeat(); if (!p) return;
   $('heroPrice').innerHTML = priceHTML(p);
   $('heroBrand').textContent = p.brand;
   $('heroName').textContent = p.name;
   $('heroDesc').textContent = p.desc || '';
-  /* update spotlight with first featured */
-  const feat = PRODUCTS.find(x => x.featured && x.active !== false);
+  $('heroAdd').setAttribute('aria-label', `Elegir talla y añadir ${p.name} al carrito`);
+  $('heroBuy').setAttribute('aria-label', `Comprar ahora ${p.name}`);
+  const feat = PRODUCTS.find(x => x.featured && x.active !== false) || PRODUCTS[0];
   if (feat) {
     $('spotName').textContent = feat.name;
     $('spotDesc').textContent = feat.desc || '';
-    $('spotSpecs').innerHTML = `<div><b>${priceOf(feat).toLocaleString('es-CO')} COP</b><span>Precio</span></div><div><b>${(feat.sizes || []).join('–')}</b><span>Tallas</span></div><div><b>${(feat.colors || []).length}</b><span>Colores</span></div>`;
-    $('spotBtn').onclick = () => openProduct(feat.id, false);
+    const sz = (feat.sizes || []);
+    $('spotSpecs').innerHTML = `<div><b>${money(priceOf(feat))}</b><span>Precio</span></div>${sz.length ? `<div><b>${esc(Math.min(...sz))}–${esc(Math.max(...sz))}</b><span>Tallas</span></div>` : ''}<div><b>${(feat.colors || []).length}</b><span>Colores</span></div>`;
+    $('spotBtn').onclick = function () { openProduct(feat.id, false, this); };
   }
+  document.querySelectorAll('[data-desde]').forEach(el => {
+    const prices = PRODUCTS.filter(x => x.active !== false && x.brand === el.dataset.desde).map(priceOf).filter(Boolean);
+    el.textContent = prices.length ? 'Desde ' + money(Math.min(...prices)) : '';
+  });
 }
-function setHero(i) { heroIdx = i; renderHero(); }
+function setHero(i) { heroIdx = i; renderHero(); $('heroDots').children[i]?.focus(); }
 
 /* theme switcher */
 document.querySelectorAll('#themeSwatches button').forEach(b => b.addEventListener('click', () => {
   $('inicio').dataset.theme = b.dataset.theme;
-  document.querySelectorAll('#themeSwatches button').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
+  document.querySelectorAll('#themeSwatches button').forEach(x => { x.classList.remove('active'); x.setAttribute('aria-pressed', 'false'); });
+  b.classList.add('active'); b.setAttribute('aria-pressed', 'true');
 }));
 
 /* ===== PRODUCT MODAL ===== */
-function openProduct(id, buyNow) {
+function openProduct(id, buyNow, trigger) {
   if (!id) return;
   const p = PRODUCTS.find(x => x.id === id); if (!p) return;
   sel = { product: p, size: null, color: p.colors?.[0] || null, qty: 1, buyNow: !!buyNow };
   $('mBrand').textContent = p.brand;
   $('mName').textContent = p.name;
-  $('mStars').innerHTML = Array(5).fill('<svg style="width:13px;height:13px"><use href="#i-star"/></svg>').join('');
   $('mPrice').innerHTML = priceHTML(p);
   $('mDesc').textContent = p.desc || '';
-  $('modalMedia').style.background = p.bg || '#f1ece5';
+  $('modalMedia').style.background = safeColor(p.bg || '#f1ece5');
   $('modalArt').innerHTML = artHTML(p, 'shoe', sel.color);
   $('mQty').textContent = '1';
   $('sHint').textContent = 'Elige una';
+  $('sizeErr').hidden = true;
   $('cHint').textContent = p.colors?.[0]?.n || '';
-  $('mSizes').innerHTML = (p.sizes || []).map(s => `<button type="button" class="size" onclick="pickSize(${s},this)">${s}</button>`).join('');
-  $('mColors').innerHTML = (p.colors || []).map((c, i) => `<button type="button" class="color ${i === 0 ? 'active' : ''}" style="background:${c.h}" title="${c.n}" aria-label="${c.n}" onclick="pickColor(${i},this)"></button>`).join('');
+  $('mSizes').innerHTML = (p.sizes || []).map(s => `<button type="button" class="size" aria-pressed="false" data-size="${esc(s)}">${esc(s)}</button>`).join('');
+  $('mSizes').querySelectorAll('.size').forEach(b => b.addEventListener('click', () => pickSize(Number(b.dataset.size), b)));
+  $('mColors').innerHTML = (p.colors || []).map((c, i) => `<button type="button" class="color ${i === 0 ? 'active' : ''}" style="background:${safeColor(c.h)}" aria-pressed="${i === 0}" aria-label="${esc(c.n)}" data-i="${i}"></button>`).join('');
+  $('mColors').querySelectorAll('.color').forEach(b => b.addEventListener('click', () => pickColor(Number(b.dataset.i), b)));
   $('addBtn').textContent = buyNow ? 'Comprar ahora' : 'Añadir al carrito';
-  $('prodModal').classList.add('open');
-  $('overlay').classList.add('open');
-  document.body.classList.add('locked');
+  openDialog($('prodModal'), $('mName'), trigger);
+  syncOverlay();
 }
-function closeProd() {
-  $('prodModal').classList.remove('open');
-  if (!$('cartDrawer').classList.contains('open') && !$('checkoutModal').classList.contains('open')) {
-    $('overlay').classList.remove('open'); document.body.classList.remove('locked');
-  }
-}
+function closeProd() { closeDialog($('prodModal')); syncOverlay(); }
 function pickSize(s, el) {
   sel.size = s;
-  document.querySelectorAll('#mSizes .size').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('#mSizes .size').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+  el.classList.add('active'); el.setAttribute('aria-pressed', 'true');
   $('sHint').textContent = 'Talla ' + s;
+  $('sizeErr').hidden = true;
 }
 function pickColor(i, el) {
   sel.color = sel.product.colors[i];
   $('modalArt').innerHTML = artHTML(sel.product, 'shoe', sel.color);
-  document.querySelectorAll('#mColors .color').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('#mColors .color').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
+  el.classList.add('active'); el.setAttribute('aria-pressed', 'true');
   $('cHint').textContent = sel.color.n;
 }
 function chgQty(d) { sel.qty = Math.max(1, Math.min(9, sel.qty + d)); $('mQty').textContent = sel.qty; }
 
 /* ===== CART ===== */
 function addToCart() {
-  if (!sel.size) { toast('Elige una talla primero'); return; }
+  if (!sel.size) {
+    $('sizeErr').hidden = false;
+    $('mSizes').querySelector('.size')?.focus();
+    return;
+  }
   const p = sel.product;
   const key = p.id + '-' + sel.size + '-' + (sel.color?.n || '');
   const found = cart.find(i => i.key === key);
-  if (found) found.qty += sel.qty;
-  else cart.push({ key, id: p.id, brand: p.brand, name: p.name, price: priceOf(p), image: sel.color?.image || p.image || '', shape: p.shape || 's-low', shoeColor: p.shoeColor || '#1d2733', bg: p.bg || '#f1ece5', size: sel.size, color: sel.color?.n || '', qty: sel.qty });
+  if (found) found.qty = Math.min(9, found.qty + sel.qty);
+  else cart.push({ key, id: p.id, brand: p.brand, name: p.name, price: priceOf(p), image: safeUrl(sel.color?.image || p.image), shape: safeShape(p.shape), shoeColor: safeColor(p.shoeColor), bg: safeColor(p.bg || '#f1ece5'), size: sel.size, color: sel.color?.n || '', qty: sel.qty });
   const go = sel.buyNow;
-  renderCart(); closeProd();
-  if (go) openCheckout();
-  else { openCart(); toast(p.name + ' añadido al carrito'); }
+  renderCart();
+  const trigger = lastFocus[lastFocus.length - 1];
+  closeDialog($('prodModal'));
+  if (go) openCheckout(trigger);
+  else openCart(trigger); /* el carrito abierto ya confirma la acción */
+  syncOverlay();
 }
-function removeItem(key) { cart = cart.filter(i => i.key !== key); renderCart(); }
-function itemQty(key, d) { const it = cart.find(i => i.key === key); if (!it) return; it.qty += d; if (it.qty < 1) cart = cart.filter(i => i.key !== key); renderCart(); }
+function removeItem(key) { cart = cart.filter(i => i.key !== key); renderCart(); $('cartTitle').focus(); $('gridStatus').textContent = 'Producto quitado del carrito'; }
+function itemQty(key, d) {
+  const it = cart.find(i => i.key === key); if (!it) return;
+  it.qty = Math.min(9, it.qty + d);
+  if (it.qty < 1) return removeItem(key);
+  renderCart();
+  document.querySelector(`[data-qty="${CSS.escape(key)}"][data-d="${d}"]`)?.focus();
+}
 function cartTotal() { return cart.reduce((s, i) => s + i.price * i.qty, 0); }
 
 function renderCart() {
   const box = $('cartItems');
-  box.innerHTML = cart.length ? cart.map(i => `
-    <div class="cart-item">
+  box.innerHTML = cart.length ? '<ul class="cart-list">' + cart.map(i => `
+    <li class="cart-item">
       <div class="cart-item__thumb" style="background:${i.bg}">
-        ${i.image ? `<img src="${i.image}" alt="${i.name}">` : `<svg viewBox="0 0 260 140" style="color:${i.shoeColor};width:100%;height:100%"><use href="#${i.shape}"/></svg>`}
+        ${i.image ? `<img src="${esc(i.image)}" alt="">` : `<svg viewBox="0 0 260 140" style="color:${i.shoeColor};width:100%;height:100%" aria-hidden="true" focusable="false"><use href="#${i.shape}"/></svg>`}
       </div>
       <div>
-        <h4>${i.brand} ${i.name}</h4>
-        <small>Talla ${i.size} · ${i.color}</small>
-        <div class="qty" style="margin:7px 0 0;transform:scale(.83);transform-origin:left">
-          <button onclick="itemQty('${i.key}',-1)" aria-label="Quitar uno">−</button>
+        <h3>${esc(i.brand)} ${esc(i.name)}</h3>
+        <small>Talla ${esc(i.size)} · ${esc(i.color)}</small>
+        <div class="qty qty--sm" role="group" aria-label="Cantidad de ${esc(i.name)}">
+          <button type="button" data-qty="${esc(i.key)}" data-d="-1" aria-label="Quitar uno de ${esc(i.name)}">−</button>
           <span>${i.qty}</span>
-          <button onclick="itemQty('${i.key}',1)" aria-label="Agregar uno">+</button>
+          <button type="button" data-qty="${esc(i.key)}" data-d="1" aria-label="Agregar uno de ${esc(i.name)}">+</button>
         </div>
       </div>
-      <div><div class="cart-item__price">${money(i.price * i.qty)}</div><button class="cart-item__remove" onclick="removeItem('${i.key}')">Quitar</button></div>
-    </div>`).join('') : '<p class="cart-empty">Tu carrito está vacío.<br>Elige un modelo del catálogo.</p>';
-  const total = cartTotal();
-  $('cSub').textContent = money(total);
-  $('cTotal').textContent = money(total);
+      <div><div class="cart-item__price">${money(i.price * i.qty)}</div><button type="button" class="cart-item__remove" data-remove="${esc(i.key)}">Quitar<span class="sr-only"> ${esc(i.name)} del carrito</span></button></div>
+    </li>`).join('') + '</ul>' : '<p class="cart-empty">Tu carrito está vacío.<br>Elige un modelo del catálogo.</p>';
+  box.querySelectorAll('[data-qty]').forEach(b => b.addEventListener('click', () => itemQty(b.dataset.qty, Number(b.dataset.d))));
+  box.querySelectorAll('[data-remove]').forEach(b => b.addEventListener('click', () => removeItem(b.dataset.remove)));
+  $('cTotal').textContent = money(cartTotal());
   $('buyBtn').disabled = !cart.length;
   const count = cart.reduce((s, i) => s + i.qty, 0);
   $('cartBadge').textContent = count;
   $('cartBadge').classList.toggle('hide', !count);
+  $('cartBtn').setAttribute('aria-label', `Abrir carrito, ${count} ${count === 1 ? 'producto' : 'productos'}`);
 }
 
-function openCart() { $('cartDrawer').classList.add('open'); $('overlay').classList.add('open'); document.body.classList.add('locked'); }
-function closeCart() {
-  $('cartDrawer').classList.remove('open');
-  if (!$('checkoutModal').classList.contains('open') && !$('prodModal').classList.contains('open')) {
-    $('overlay').classList.remove('open'); document.body.classList.remove('locked');
-  }
-}
+function openCart(trigger) { openDialog($('cartDrawer'), $('cartTitle'), trigger instanceof Element ? trigger : null); syncOverlay(); }
+function closeCart() { closeDialog($('cartDrawer')); syncOverlay(); }
 
 /* ===== CHECKOUT ===== */
-function openCheckout() {
-  if (!cart.length) return;
-  $('cSummary').innerHTML = cart.map(i => `<div><span>${i.brand} ${i.name} · T${i.size} · ${i.color} ×${i.qty}</span><span>${money(i.price * i.qty)}</span></div>`).join('')
-    + `<div class="tot"><span>Total productos</span><span>${money(cartTotal())}</span></div>`;
-  updatePaymentHint();
-  $('cartDrawer').classList.remove('open');
-  $('checkoutModal').classList.add('open');
-  $('overlay').classList.add('open');
-  document.body.classList.add('locked');
-}
-function updatePaymentHint() {
-  const pago = document.querySelector('input[name="pago"]:checked')?.value || 'Contraentrega';
+function pagoActual() { return document.querySelector('input[name="pago"]:checked')?.value || 'Contraentrega'; }
+function renderSummary() {
+  const pago = pagoActual();
+  const envio = pago === 'Contraentrega'
+    ? `<div><span>Envío (anticipo)</span><span>${money(ANTICIPO)}</span></div><div class="tot"><span>Total a pagar</span><span>${money(cartTotal() + ANTICIPO)}</span></div>`
+    : `<div><span>Envío</span><span>Te lo confirmamos por WhatsApp antes de pagar</span></div><div class="tot"><span>Total productos</span><span>${money(cartTotal())}</span></div>`;
+  $('cSummary').innerHTML = '<h3 class="sr-only">Resumen del pedido</h3>' + cart.map(i => `<div><span>${esc(i.brand)} ${esc(i.name)} · Talla ${esc(i.size)} · ${esc(i.color)} ×${i.qty}</span><span>${money(i.price * i.qty)}</span></div>`).join('')
+    + `<div><span>Productos</span><span>${money(cartTotal())}</span></div>` + envio;
   $('paymentHint').textContent = pago === 'Contraentrega'
-    ? `Contraentrega: primero pagas ${money(25000)} del envío y el saldo de ${money(cartTotal())} al recibir.`
-    : `Nequi / Daviplata: pagas ${money(cartTotal())} antes del envío. Te enviaremos los datos para realizar el pago.`;
+    ? `Contraentrega: pagas primero ${money(ANTICIPO)} del envío y ${money(cartTotal())} de los productos al recibirlos.`
+    : `Nequi / Daviplata: pagas ${money(cartTotal())} de los productos más el envío antes del despacho. Te enviamos los datos de pago por WhatsApp.`;
 }
-function closeCheckout() {
-  $('checkoutModal').classList.remove('open');
-  $('overlay').classList.remove('open');
-  document.body.classList.remove('locked');
+function openCheckout(trigger) {
+  if (!cart.length) return;
+  renderSummary();
+  const t = trigger instanceof Element ? trigger : ($('cartDrawer').classList.contains('open') ? $('cartBtn') : null);
+  closeDialog($('cartDrawer'));
+  openDialog($('checkoutModal'), $('coTitle'), t);
+  syncOverlay();
 }
-function closeReceipt() {
-  $('receiptModal').classList.remove('open');
-  document.body.classList.remove('locked');
-}
+function closeCheckout() { closeDialog($('checkoutModal')); syncOverlay(); }
+function closeReceipt() { closeDialog($('receiptModal')); syncOverlay(); }
+function closeAll() { closeProd(); closeCart(); closeCheckout(); }
+
 function downloadReceiptAndOpenWhatsApp() {
   if (!pendingWhatsApp) return;
   const { orderId, message } = pendingWhatsApp;
   const receiptMarkup = $('receiptBody').innerHTML;
-  const safeOrderId = String(orderId).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
-  const receiptHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo kAIRO ${safeOrderId}</title><style>body{font-family:Arial,sans-serif;color:#0b0d14;max-width:680px;margin:40px auto;padding:0 20px}.eyebrow{color:#d1301f;font-size:12px;font-weight:bold;text-transform:uppercase}h1{font-size:24px;margin:0 0 8px}.receipt-meta,.receipt-items>div,.receipt-total,.receipt-info{display:flex;justify-content:space-between;gap:18px}.receipt-meta{color:#6a707c;font-size:12px;border-bottom:1px solid #e0e2e0;padding:12px 0}.receipt-thanks{margin:20px 0}.receipt-items{border-top:1px solid #e0e2e0}.receipt-items>div{padding:12px 0;border-bottom:1px solid #e0e2e0}.receipt-items small{display:block;color:#6a707c;margin-top:4px}.receipt-total{padding:16px 0;font-weight:bold}.receipt-info{border-top:1px solid #e0e2e0;padding-top:16px;font-size:13px}.receipt-info p{flex:1}</style></head><body><span class="eyebrow">kAIRO · Recibo de pedido</span><h1>Pedido ${safeOrderId}</h1>${receiptMarkup}</body></html>`;
+  const safeOrderId = esc(orderId);
+  const receiptHtml = `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo kAIRO ${safeOrderId}</title><style>body{font-family:Arial,sans-serif;color:#0b0d14;max-width:680px;margin:40px auto;padding:0 20px}.eyebrow{color:#c4291a;font-size:12px;font-weight:bold;text-transform:uppercase}h1{font-size:24px;margin:0 0 8px}.receipt-meta,.receipt-items>div,.receipt-total,.receipt-info{display:flex;justify-content:space-between;gap:18px}.receipt-meta{color:#5f6571;font-size:12px;border-bottom:1px solid #e0e2e0;padding:12px 0}.receipt-thanks{margin:20px 0}.receipt-items{border-top:1px solid #e0e2e0}.receipt-items>div{padding:12px 0;border-bottom:1px solid #e0e2e0}.receipt-items small{display:block;color:#5f6571;margin-top:4px}.receipt-total{padding:16px 0;font-weight:bold}.receipt-info{border-top:1px solid #e0e2e0;padding-top:16px;font-size:13px}.receipt-info p{flex:1}.receipt-legal{font-size:12px;color:#5f6571;margin-top:18px}</style></head><body><span class="eyebrow">kAIRO · Recibo de pedido</span><h1>Pedido ${safeOrderId}</h1>${receiptMarkup}</body></html>`;
   const blob = new Blob([receiptHtml], { type: 'text/html;charset=utf-8' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `recibo-kairo-${orderId}.html`;
+  link.download = `recibo-kairo-${String(orderId).replace(/[^\w-]/g, '')}.html`;
   document.body.appendChild(link);
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(message)}`, '_blank');
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
   toast('Recibo descargado. Abriendo WhatsApp…');
-  pendingWhatsApp = null;
 }
-function showReceipt(orderId, customer, payment) {
+function showReceipt(orderId, customer, pago, items, total) {
   const date = new Date().toLocaleString('es-CO');
-  $('receiptBody').innerHTML = `<div class="receipt-meta"><span>Pedido <b>${orderId}</b></span><span>${date}</span></div>
-    <p class="receipt-thanks">Gracias, ${customer.nombre}. Confirmaremos tu pedido por WhatsApp.</p>
-    <div class="receipt-items">${cart.map(i => `<div><span>${i.brand} ${i.name}<small>Talla ${i.size} · ${i.color} · x${i.qty}</small></span><b>${money(i.price * i.qty)}</b></div>`).join('')}</div>
-    <div class="receipt-total"><span>Total productos</span><b>${money(cartTotal())}</b></div>
-    <div class="receipt-info"><p><b>Entrega</b><br>${customer.direccion}, ${customer.ciudad}${customer.departamento ? ', ' + customer.departamento : ''}</p><p><b>Pago</b><br>${payment}</p></div>`;
-  pendingWhatsApp = { orderId, message: window.pendingOrderMessage };
-  $('receiptModal').classList.add('open');
-  document.body.classList.add('locked');
+  const envio = pago === 'Contraentrega' ? `<br>Anticipo de envío: ${money(ANTICIPO)}` : '<br>Envío: se confirma por WhatsApp';
+  $('receiptBody').innerHTML = `<div class="receipt-meta"><span>Pedido <b>${esc(orderId)}</b></span><span>${esc(date)}</span></div>
+    <p class="receipt-thanks">Gracias, ${esc(customer.nombre)}. Confirmaremos disponibilidad, envío y fecha de entrega por WhatsApp.</p>
+    <div class="receipt-items">${items.map(i => `<div><span>${esc(i.brand)} ${esc(i.name)}<small>Talla ${esc(i.size)} · ${esc(i.color)} · x${i.qty}</small></span><b>${money(i.price * i.qty)}</b></div>`).join('')}</div>
+    <div class="receipt-total"><span>Total productos</span><b>${money(total)}</b></div>
+    <div class="receipt-info"><p><b>Entrega</b><br>${esc(customer.direccion)}, ${esc(customer.ciudad)}${customer.departamento ? ', ' + esc(customer.departamento) : ''}</p><p><b>Pago</b><br>${esc(pago)}${envio}</p></div>
+    <p class="receipt-legal">Tienes 5 días hábiles desde la entrega para ejercer el derecho de retracto. Para cambios, garantías o reclamos usa este número de pedido en <a href="/pqr.html?pedido=${encodeURIComponent(orderId)}">PQR</a>.</p>`;
+  closeDialog($('checkoutModal'));
+  openDialog($('receiptModal'), $('receiptTitle'), $('cartBtn'));
+  syncOverlay();
 }
-function closeAll() { closeProd(); closeCart(); closeCheckout(); closeReceipt(); }
+
+/* ===== VALIDACIÓN DEL FORMULARIO ===== */
+function fieldError(id, msg) {
+  const input = $(id), err = $(id + '-err');
+  input.setAttribute('aria-invalid', msg ? 'true' : 'false');
+  if (err) { err.textContent = msg || ''; err.hidden = !msg; }
+  return !msg;
+}
+const soloCelular = raw => { let d = String(raw).replace(/\D/g, ''); if (d.length === 12 && d.startsWith('57')) d = d.slice(2); return /^3\d{9}$/.test(d) ? d : null; };
 
 $('orderForm').addEventListener('submit', async e => {
   e.preventDefault();
   const v = id => ($(id)?.value || '').trim();
-  if (!v('fn') || !v('ft') || !v('fd') || !v('fci')) { toast('Completa los campos obligatorios (*)'); return; }
-  const pago = document.querySelector('input[name="pago"]:checked')?.value || 'Contraentrega';
-  const shippingAdvance = pago === 'Contraentrega' ? 25000 : 0;
-  const balanceDue = pago === 'Contraentrega' ? cartTotal() : 0;
-  const itemLines = cart.map(i => `• ${i.brand} ${i.name} — T${i.size} — ${i.color} ×${i.qty} — ${money(i.price * i.qty)}`).join('\n');
-  const msg = [
-    '¡Hola kAIRO! Quiero confirmar este pedido:', '',
-    itemLines,
-    `Total: ${money(cartTotal())}`, '',
-    'DATOS DE ENVÍO',
-    `Nombre: ${v('fn')}`,
-    `Celular: ${v('ft')}`,
-    v('fcc') ? `Cédula: ${v('fcc')}` : null,
-    v('fe') ? `Correo: ${v('fe')}` : null,
-    `Dirección: ${v('fd')}`,
-    v('fb') ? `Barrio/Ref: ${v('fb')}` : null,
-    `Ciudad: ${v('fci')}${v('fdp') ? ', ' + v('fdp') : ''}`,
-    `Pago: ${pago}`,
-    pago === 'Contraentrega' ? `Anticipo de envío: ${money(shippingAdvance)}` : `Pago por Nequi / Daviplata antes del envío: ${money(cartTotal())}`,
-    pago === 'Contraentrega' ? `Saldo al recibir: ${money(balanceDue)}` : null,
-    'Empaque: sin caja por el momento',
-    v('fnot') ? `Notas: ${v('fnot')}` : null
-  ].filter(Boolean).join('\n');
+  const checks = [
+    fieldError('fn', v('fn') ? '' : 'Escribe tu nombre completo.'),
+    fieldError('ft', !v('ft') ? 'Escribe tu celular.' : (soloCelular(v('ft')) ? '' : 'Escribe un celular colombiano de 10 dígitos, por ejemplo 300 123 4567.')),
+    fieldError('fd', v('fd') ? '' : 'Escribe la dirección de entrega.'),
+    fieldError('fci', v('fci') ? '' : 'Escribe la ciudad.'),
+    fieldError('cDatos', $('cDatos').checked ? '' : 'Para enviar el pedido necesitamos tu autorización de tratamiento de datos.'),
+    fieldError('cTerminos', $('cTerminos').checked ? '' : 'Debes aceptar los términos y la política de cambios para continuar.')
+  ];
+  if (checks.includes(false)) {
+    const firstBad = ['fn', 'ft', 'fd', 'fci', 'cDatos', 'cTerminos'].find(id => $(id).getAttribute('aria-invalid') === 'true');
+    $(firstBad).focus();
+    $('formStatus').textContent = 'Revisa los campos marcados.';
+    return;
+  }
+  const pago = pagoActual();
+  const version = NEG.versionPoliticas || '';
+  const customer = { nombre: v('fn'), telefono: soloCelular(v('ft')), cedula: v('fcc'), direccion: v('fd'), barrio: v('fb'), ciudad: v('fci'), departamento: v('fdp'), pago, notas: v('fnot') };
+  const btn = $('submitOrder');
+  btn.disabled = true; $('formStatus').textContent = 'Registrando tu pedido…';
 
-  /* save to DB silently */
   let orderId = 'local-' + Date.now().toString(36);
-  const customer = { nombre: v('fn'), telefono: v('ft'), cedula: v('fcc'), correo: v('fe'), direccion: v('fd'), barrio: v('fb'), ciudad: v('fci'), departamento: v('fdp'), pago, shippingAdvance, balanceDue, packaging: 'Sin caja por el momento', notas: v('fnot') };
+  let items = cart.map(i => ({ ...i }));
+  let total = cartTotal();
   try {
     const response = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: cart, total: cartTotal(),
-        customer
+        items: cart.map(i => ({ id: i.id, name: i.name, size: i.size, color: i.color, qty: i.qty })),
+        customer,
+        consent: { datos: true, terminos: true, version }
       })
     });
-    const saved = await response.json();
-    if (saved.id) orderId = saved.id;
-  } catch (_) { /* sin servidor: continúa igual */ }
+    const saved = await response.json().catch(() => ({}));
+    if (response.status === 400 && saved.error) {
+      $('formStatus').textContent = saved.error;
+      btn.disabled = false;
+      return;
+    }
+    if (saved.id) { orderId = saved.id; if (saved.total) total = saved.total; }
+  } catch (_) { /* sin servidor: el pedido igual se envía por WhatsApp */ }
+  btn.disabled = false; $('formStatus').textContent = '';
 
-  window.pendingOrderMessage = msg;
-  showReceipt(orderId, customer, pago);
-  toast('Descarga primero tu recibo para continuar a WhatsApp');
+  const itemLines = items.map(i => `• ${i.brand} ${i.name} — Talla ${i.size} — ${i.color} ×${i.qty} — ${money(i.price * i.qty)}`).join('\n');
+  const msg = [
+    `¡Hola kAIRO! Quiero confirmar el pedido ${orderId}:`, '',
+    itemLines,
+    `Total productos: ${money(total)}`, '',
+    'DATOS DE ENVÍO',
+    `Nombre: ${customer.nombre}`,
+    `Celular: ${customer.telefono}`,
+    customer.cedula ? `Cédula: ${customer.cedula}` : null,
+    `Dirección: ${customer.direccion}`,
+    customer.barrio ? `Barrio/Ref: ${customer.barrio}` : null,
+    `Ciudad: ${customer.ciudad}${customer.departamento ? ', ' + customer.departamento : ''}`,
+    `Pago: ${pago}`,
+    pago === 'Contraentrega' ? `Anticipo de envío: ${money(ANTICIPO)}` : 'Envío: por confirmar antes de pagar',
+    pago === 'Contraentrega' ? `Saldo al recibir: ${money(total)}` : null,
+    'Empaque: sin caja por el momento',
+    customer.notas ? `Notas: ${customer.notas}` : null, '',
+    `Autoricé el tratamiento de mis datos y acepté los términos (versión ${version}).`
+  ].filter(x => x !== null).join('\n');
+
+  pendingWhatsApp = { orderId, message: msg };
+  showReceipt(orderId, customer, pago, items, total);
+  cart = []; renderCart();
+  $('orderForm').reset(); renderSummary();
 });
-document.querySelectorAll('input[name="pago"]').forEach(input => input.addEventListener('change', updatePaymentHint));
+document.querySelectorAll('input[name="pago"]').forEach(input => input.addEventListener('change', renderSummary));
+['fn', 'ft', 'fd', 'fci'].forEach(id => $(id).addEventListener('input', () => { if ($(id).getAttribute('aria-invalid') === 'true') fieldError(id, ''); }));
+['cDatos', 'cTerminos'].forEach(id => $(id).addEventListener('change', () => { if ($(id).checked) fieldError(id, ''); }));
 
 /* ===== LOAD FROM API ===== */
 function applySettings() {
-  if (SETTINGS.whatsapp) WA = SETTINGS.whatsapp;
+  if (SETTINGS.whatsapp && /^\d{10,15}$/.test(SETTINGS.whatsapp)) WA = SETTINGS.whatsapp;
   if (SETTINGS.storeName) {
     document.querySelectorAll('.brand__mark').forEach(el => el.textContent = SETTINGS.storeName);
     document.title = SETTINGS.storeName + ' — Tienda de tenis';
   }
   if (SETTINGS.tagline) document.querySelectorAll('.brand__tag').forEach(el => el.textContent = SETTINGS.tagline);
   if (SETTINGS.heroWord) $('heroWord').textContent = SETTINGS.heroWord;
-  if (SETTINGS.heroTheme) {
+  if (SETTINGS.heroTheme && ['indigo', 'carmesi', 'ember', 'tinta'].includes(SETTINGS.heroTheme)) {
     $('inicio').dataset.theme = SETTINGS.heroTheme;
-    document.querySelectorAll('#themeSwatches button').forEach(b => b.classList.toggle('active', b.dataset.theme === SETTINGS.heroTheme));
+    document.querySelectorAll('#themeSwatches button').forEach(b => { const on = b.dataset.theme === SETTINGS.heroTheme; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
   }
-  if (SETTINGS.heroLogo) $('heroLogo').innerHTML = `<img class="hero__logo-img" src="${SETTINGS.heroLogo}" alt="${SETTINGS.storeName || 'kAIRO'}">`;
+  if (safeUrl(SETTINGS.heroLogo)) $('heroLogo').innerHTML = `<img class="hero__logo-img" src="${esc(safeUrl(SETTINGS.heroLogo))}" alt="${esc(SETTINGS.storeName || 'kAIRO')}">`;
+  setWaLinks();
+}
+function setWaLinks() {
   const waMsg = encodeURIComponent(`Hola ${SETTINGS.storeName || 'kAIRO'}, quiero hacer una consulta sobre sus tenis.`);
   $('waDirect').href = `https://wa.me/${WA}?text=${waMsg}`;
   $('waFooter').href = `https://wa.me/${WA}?text=${waMsg}`;
-  $('waFooter').textContent = 'WhatsApp ' + WA.replace(/^57/, '');
+  $('waFooter').textContent = 'WhatsApp ' + WA.replace(/^57/, '').replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
 }
 
 function renderPromos() {
-  if (!PROMOS.length) { $('promosSection').style.display = 'none'; return; }
-  $('promosSection').style.display = '';
+  const sec = $('promosSection');
+  if (!PROMOS.length) { sec.hidden = true; return; }
+  sec.hidden = false;
   $('promoStrip').innerHTML = PROMOS.map(pr =>
-    `<article class="promo-card">${pr.badge ? `<span class="promo-card__badge">${pr.badge}</span>` : ''}<h3>${pr.title}</h3><p>${pr.description || ''}</p>${pr.discount ? `<span class="promo-card__off">-${pr.discount}%</span>` : ''}</article>`
+    `<article class="promo-card">${pr.badge ? `<span class="promo-card__badge">${esc(pr.badge)}</span>` : ''}<h3>${esc(pr.title)}</h3><p>${esc(pr.description || '')}</p>${Number(pr.discount) ? `<span class="promo-card__off">-${Number(pr.discount)}%</span>` : ''}</article>`
   ).join('');
 }
 
-/* Seed products shown immediately before API responds */
+/* Catálogo de ejemplo mientras responde la API (se reemplaza por el de la base de datos) */
 PRODUCTS = [
-  { id: 'nike-air-max-270', brand: 'Nike', name: 'Air Max 270', price: 749900, tag: 'Lifestyle', shape: 's-low', shoeColor: '#1d2733', bg: '#f3ece3', desc: 'Unidad Air de 32 mm en el talón, la más alta de la línea.', sizes: [34,35,36,37,38,39,40,41,42,43,44], colors: [{ n: 'Negro/Rojo', h: '#1d2733' }, { n: 'Blanco', h: '#e9e6df' }], active: true, featured: true },
-  { id: 'jordan-1-mid', brand: 'Jordan', name: 'Air Jordan 1 Mid', price: 759900, tag: 'Icono', shape: 's-high', shoeColor: '#a4123a', bg: '#f1e7ea', desc: 'Caña media con cuello acolchado y unidad Air encapsulada.', sizes: [34,35,36,37,38,39,40,41,42,43,44], colors: [{ n: 'Rojo/Blanco', h: '#a4123a' }, { n: 'Negro', h: '#16181d' }], active: true, featured: true },
-  { id: 'adidas-samba-og', brand: 'Adidas', name: 'Samba OG', price: 549900, tag: 'Clásico', shape: 's-low', shoeColor: '#17181c', bg: '#efece5', desc: 'Cuero suave, punta de gamuza y suela de goma color miel.', sizes: [34,35,36,37,38,39,40,41,42,43,44], colors: [{ n: 'Negro', h: '#17181c' }, { n: 'Blanco/Verde', h: '#dedbd2' }], active: true, featured: true },
-  { id: 'timberland-6-inch', brand: 'Timberland', name: 'Bota 6-Inch Premium', price: 1099900, tag: 'Impermeable', shape: 's-boot', shoeColor: '#b47a29', bg: '#f3ebdd', desc: 'Nobuk impermeable, costuras selladas y forro acolchado.', sizes: [37,38,39,40,41,42,43,44], colors: [{ n: 'Trigo', h: '#b47a29' }, { n: 'Negro', h: '#22201d' }], active: true, featured: true }
+  { id: 'nike-air-max-270', brand: 'Nike', name: 'Air Max 270', price: 749900, tag: 'Lifestyle', shape: 's-low', shoeColor: '#1d2733', bg: '#f3ece3', desc: 'Unidad Air visible en el talón y parte superior en malla.', sizes: [34,35,36,37,38,39,40,41,42,43,44], colors: [{ n: 'Negro/Rojo', h: '#1d2733' }, { n: 'Blanco', h: '#e9e6df' }], active: true, featured: true },
+  { id: 'jordan-1-mid', brand: 'Jordan', name: 'Air Jordan 1 Mid', price: 759900, tag: 'Caña media', shape: 's-high', shoeColor: '#a4123a', bg: '#f1e7ea', desc: 'Caña media con cuello acolchado y unidad Air encapsulada.', sizes: [34,35,36,37,38,39,40,41,42,43,44], colors: [{ n: 'Rojo/Blanco', h: '#a4123a' }, { n: 'Negro', h: '#16181d' }], active: true, featured: true },
+  { id: 'adidas-samba-og', brand: 'Adidas', name: 'Samba OG', price: 549900, tag: 'Clásico', shape: 's-low', shoeColor: '#17181c', bg: '#efece5', desc: 'Cuero, punta de gamuza y suela de goma color miel.', sizes: [34,35,36,37,38,39,40,41,42,43,44], colors: [{ n: 'Negro', h: '#17181c' }, { n: 'Blanco/Verde', h: '#dedbd2' }], active: true, featured: true },
+  { id: 'timberland-6-inch', brand: 'Timberland', name: 'Bota 6-Inch Premium', price: 1099900, tag: 'Bota', shape: 's-boot', shoeColor: '#b47a29', bg: '#f3ebdd', desc: 'Bota de caña alta en nobuk con forro acolchado.', sizes: [37,38,39,40,41,42,43,44], colors: [{ n: 'Trigo', h: '#b47a29' }, { n: 'Negro', h: '#22201d' }], active: true, featured: true }
 ];
 
 async function loadCatalog() {
@@ -610,10 +724,7 @@ async function loadCatalog() {
     SETTINGS = d.settings || {};
     applySettings();
   } catch (_) {
-    /* sin servidor: funciona con el catálogo de ejemplo */
-    const m = encodeURIComponent('Hola kAIRO, quiero hacer una consulta.');
-    $('waDirect').href = `https://wa.me/${WA}?text=${m}`;
-    $('waFooter').href = `https://wa.me/${WA}?text=${m}`;
+    setWaLinks();
   }
   renderPromos();
   renderGrid();

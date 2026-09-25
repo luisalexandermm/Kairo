@@ -6,9 +6,7 @@
 <link rel="icon" type="image/png" href="/img/logo.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0b0d14">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/admin.css?v=3">
 </head>
 <body>
@@ -39,6 +37,7 @@
     <button class="nav-item" data-view="productos">👟 Productos</button>
     <button class="nav-item" data-view="promos">🎁 Promociones</button>
     <button class="nav-item" data-view="pedidos">📦 Pedidos</button>
+    <button class="nav-item" data-view="pqr">📨 PQR</button>
     <button class="nav-item" data-view="ajustes">⚙️ Ajustes</button>
     <div class="foot">
       <a href="/" target="_blank">← Volver a la tienda</a>
@@ -100,6 +99,12 @@
     </section>
 
     <!-- Ajustes -->
+    <!-- PQR -->
+    <section class="view" id="view-pqr">
+      <div class="head"><div><h1 class="display">PQR</h1><p>Peticiones, quejas, reclamos y solicitudes de datos personales. Respóndelas dentro del plazo legal (15 días hábiles; consultas de datos: 10 días hábiles).</p></div><button class="btn btn-line btn-sm" onclick="loadPqr()">Actualizar</button></div>
+      <div id="pqrList"></div>
+    </section>
+
     <section class="view" id="view-ajustes">
       <div class="head"><div><h1 class="display">Ajustes</h1><p>Datos de la tienda, hero y contraseña.</p></div></div>
       <div class="panel" style="padding:26px;max-width:720px">
@@ -207,10 +212,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=2').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=3').catch(() => {});
 /* ===== STATE ===== */
 let TOKEN = sessionStorage.getItem('kairo_token') || null;
-let products = [], promos = [], orders = [], settings = {};
+let products = [], promos = [], orders = [], settings = {}, pqrs = [];
 let knownOrderIds = new Set();
 let ordersLoaded = false;
 let editingProduct = null, editingPromo = null;
@@ -332,6 +337,41 @@ async function loadAll() {
     notifyNewOrders(orders);
     renderStats(); renderProductTable(); renderPromoTable(); renderOrders(); fillSettings();
   } catch (err) { toast('Error: ' + err.message); }
+  loadPqr();
+}
+
+/* ===== PQR ===== */
+async function loadPqr() {
+  try { pqrs = await api('/admin/pqr'); renderPqr(); }
+  catch (err) { $('pqrList').innerHTML = `<div class="panel"><p class="empty">${esc(err.message)}</p></div>`; }
+}
+function diasHabilesDesde(fecha) {
+  let d = new Date(fecha), n = 0; const hoy = new Date();
+  while (d < hoy) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 0 && w !== 6 && d <= hoy) n++; }
+  return n;
+}
+function renderPqr() {
+  $('pqrList').innerHTML = pqrs.map(q => {
+    const dias = diasHabilesDesde(q.created_at);
+    const limite = q.tipo === 'Solicitud sobre mis datos personales' ? 10 : 15;
+    const abierta = !['Respondida', 'Cerrada'].includes(q.estado);
+    const alerta = abierta && dias >= limite - 3 ? `<span class="pill warn">${dias} días hábiles · límite ${limite}</span>` : `<small>${dias} días hábiles</small>`;
+    const wa = (q.celular || '').replace(/\D/g, '');
+    return `<div class="order-card">
+      <div class="order-card__top"><div><h3>${esc(q.tipo)} · <span style="color:var(--muted);font-weight:400;font-size:.88rem">${esc(q.id)}</span></h3>
+        <small>${new Date(q.created_at).toLocaleString('es-CO')} · ${esc(q.nombre)} ${q.pedido ? '· Pedido ' + esc(q.pedido) : ''}</small></div>${alerta}</div>
+      <p style="white-space:pre-wrap;margin:10px 0">${esc(q.mensaje)}</p>
+      <div class="order-card__foot">
+        <select aria-label="Estado de ${esc(q.id)}" onchange="updatePqr('${esc(q.id)}',this.value)">${['Radicada','En trámite','Respondida','Cerrada'].map(s => `<option ${q.estado===s?'selected':''}>${s}</option>`).join('')}</select>
+        ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}?text=${encodeURIComponent('Hola ' + q.nombre + ', te escribimos de kAIRO sobre tu solicitud ' + q.id + '.')}">WhatsApp</a>` : ''}
+        ${q.correo ? `<a class="btn btn-line btn-sm" href="mailto:${esc(q.correo)}?subject=${encodeURIComponent('Respuesta a tu solicitud ' + q.id)}">Correo</a>` : ''}
+        <button class="btn-danger" style="margin-left:auto" onclick="removeRecord('pqr','${esc(q.id)}')">Eliminar</button>
+      </div></div>`;
+  }).join('') || '<div class="panel"><p class="empty">No hay solicitudes registradas.</p></div>';
+}
+async function updatePqr(id, estado) {
+  try { await api('/admin/pqr/' + id, { method: 'PUT', body: { estado } }); await loadPqr(); toast('Estado actualizado ✓'); }
+  catch (err) { toast(err.message); }
 }
 
 function notifyNewOrders(currentOrders) {
@@ -579,6 +619,7 @@ function renderOrders() {
         ${c.shippingAdvance ? `<span class="pill warn">Envío pagado: ${money(c.shippingAdvance)}</span>` : ''}
         ${c.balanceDue ? `<span class="pill off">Saldo: ${money(c.balanceDue)}</span>` : ''}
         ${c.packaging ? `<small>${esc(c.packaging)}</small>` : '<small>Sin caja por el momento</small>'}
+        ${c.consent ? `<span class="pill on" title="Autorización registrada el ${esc(new Date(c.consent.fecha).toLocaleString('es-CO'))}">Autorizó datos · v${esc(c.consent.version)}</span>` : '<span class="pill off">Sin registro de autorización</span>'}
         ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}">Escribir al cliente</a>` : ''}
         <button class="btn btn-line btn-sm" onclick="printOrderReceipt('${esc(o.id)}')">Ver recibo</button>
         <button class="btn-danger" style="margin-left:auto" onclick="removeRecord('orders','${esc(o.id)}')">Eliminar</button>

@@ -1,6 +1,6 @@
 'use strict';
 const supabase = require('../lib/supabase');
-const { ok, err, allowCors, checkToken, slug } = require('../lib/helpers');
+const { ok, err, allowCors, checkToken, slug, hashPassword } = require('../lib/helpers');
 
 /* ------------------------------------------------------------------ */
 /*  Column map: camelCase (front) ↔ snake_case (DB)                    */
@@ -65,11 +65,11 @@ module.exports = async (req, res) => {
     if (method === 'GET') {
       const { data, error } = await supabase.from('settings').select('*').eq('id', 'app').single();
       if (error) return err(res, error.message, 500);
+      // No devolvemos admin_password: el panel no la necesita para nada y así no viaja al navegador
       return ok(res, {
         storeName: data.store_name, tagline: data.tagline, whatsapp: data.whatsapp,
         heroWord: data.hero_word, heroTheme: data.hero_theme, heroLogo: data.hero_logo,
-        heroHeadline: data.hero_headline, shippingNote: data.shipping_note,
-        adminPassword: data.admin_password
+        heroHeadline: data.hero_headline, shippingNote: data.shipping_note
       });
     }
     if (method === 'PUT') {
@@ -82,7 +82,7 @@ module.exports = async (req, res) => {
       if (body.heroLogo      != null) update.hero_logo      = body.heroLogo;
       if (body.heroHeadline  != null) update.hero_headline  = body.heroHeadline;
       if (body.shippingNote  != null) update.shipping_note  = body.shippingNote;
-      if (body.adminPassword)         update.admin_password = body.adminPassword;
+      if (body.adminPassword)         update.admin_password = hashPassword(body.adminPassword);
       const { error } = await supabase.from('settings').update(update).eq('id', 'app');
       if (error) return err(res, error.message, 500);
       return ok(res, { ok: true });
@@ -190,6 +190,29 @@ module.exports = async (req, res) => {
     }
     if (method === 'DELETE' && id) {
       const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (error) return err(res, error.message, 500);
+      return ok(res, { ok: true });
+    }
+  }
+
+  /* -------- PQR -------- */
+  if (section === 'pqr') {
+    if (method === 'GET') {
+      const { data, error } = await supabase.from('pqrs').select('*').order('created_at', { ascending: false });
+      if (error) return err(res, 'No se pudo leer la tabla pqrs. ¿Ejecutaste lib/migracion-legal-2026-09.sql en Supabase?', 500);
+      return ok(res, data || []);
+    }
+    if (method === 'PUT' && id) {
+      const ESTADOS = ['Radicada', 'En trámite', 'Respondida', 'Cerrada'];
+      const update = { updated_at: new Date().toISOString() };
+      if (ESTADOS.includes(body.estado)) update.estado = body.estado;
+      if (typeof body.respuesta === 'string') update.respuesta = body.respuesta.slice(0, 3000);
+      const { data, error } = await supabase.from('pqrs').update(update).eq('id', id).select().single();
+      if (error) return err(res, error.message, 500);
+      return ok(res, data);
+    }
+    if (method === 'DELETE' && id) {
+      const { error } = await supabase.from('pqrs').delete().eq('id', id);
       if (error) return err(res, error.message, 500);
       return ok(res, { ok: true });
     }

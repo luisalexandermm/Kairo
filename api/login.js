@@ -1,5 +1,5 @@
 const supabase = require('../lib/supabase');
-const { ok, err, allowCors, makeToken } = require('../lib/helpers');
+const { ok, err, allowCors, makeToken, verifyPassword, hashPassword } = require('../lib/helpers');
 
 module.exports = async (req, res) => {
   allowCors(res);
@@ -17,9 +17,20 @@ module.exports = async (req, res) => {
 
   if (error || !data) return err(res, 'Error de configuración', 500);
 
-  if (String(password) !== String(data.admin_password)) {
+  if (!verifyPassword(password, data.admin_password)) {
     return err(res, 'Contraseña incorrecta', 401);
   }
 
-  ok(res, { token: makeToken() });
+  // Si la contraseña seguía guardada en texto plano (instalación antigua), la migramos a hash
+  if (!String(data.admin_password).startsWith('scrypt$')) {
+    supabase.from('settings').update({ admin_password: hashPassword(password) }).eq('id', 'app')
+      .then(({ error: migrateError }) => { if (migrateError) console.error('No se pudo migrar la contraseña a hash:', migrateError.message); });
+  }
+
+  try {
+    ok(res, { token: makeToken() });
+  } catch (e) {
+    console.error(e.message);
+    err(res, 'El panel no está configurado: falta TOKEN_SECRET en el servidor', 500);
+  }
 };

@@ -66,6 +66,7 @@ http.createServer(async (req, res) => {
       if      (path_ === '/api/catalog')       return await handler('catalog')(req, res);
       else if (path_ === '/api/login')         return await handler('login')(req, res);
       else if (path_ === '/api/orders')        return await handler('orders')(req, res);
+      else if (path_ === '/api/pqr')           return await handler('pqr')(req, res);
       else if (path_.startsWith('/api/admin')) return await handler('admin')(req, res);
       else { res.writeHead(404); return res.end(JSON.stringify({ error: 'Ruta no encontrada' })); }
     } catch (error) {

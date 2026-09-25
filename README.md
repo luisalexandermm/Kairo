@@ -3,6 +3,16 @@
 Proyecto completo: tienda pública, panel de administración y base de datos en la nube.
 Los cambios del panel se ven al instante en todos los dispositivos.
 
+
+## ⚠️ Actualización legal y de accesibilidad (septiembre 2026) — hazlo antes de publicar
+
+1. **Llena tus datos del negocio** en `public/js/negocio.js` (NIT, responsable, dirección, correo, horario, plazo de entrega, días de cambio de talla). Mientras falten, el sitio muestra `[COMPLETAR: …]` en amarillo.
+2. **Ejecuta** `lib/migracion-legal-2026-09.sql` en Supabase → SQL Editor. Crea la tabla `pqrs` y activa Row Level Security en todas las tablas.
+3. **Configura `TOKEN_SECRET`** en Vercel (mínimo 16 caracteres aleatorios). Sin él, el panel ya no deja entrar.
+4. Lee `PENDIENTES-LEGALES.md`: lista de riesgos que solo tú puedes resolver.
+
+Páginas nuevas: `/terminos.html`, `/privacidad.html`, `/cookies.html`, `/cambios-y-devoluciones.html`, `/pqr.html`. El panel tiene una sección nueva **PQR**.
+
 ---
 
 ## PASO 1 — Crea las tablas en Supabase
@@ -10,7 +20,7 @@ Los cambios del panel se ven al instante en todos los dispositivos.
 1. Entra a https://supabase.com y abre tu proyecto.
 2. Ve a **SQL Editor → New query**.
 3. Pega todo el contenido del archivo `lib/schema.sql` y haz clic en **Run**.
-4. Verás que se crean las tablas: `products`, `promos`, `orders`, `settings`.
+4. Verás que se crean las tablas: `products`, `promos`, `orders`, `settings`, `pqrs`.
 
 ---
 
@@ -79,8 +89,8 @@ La tienda y el panel son instalables desde Chrome Android mediante **Añadir a p
 ## PASO 7 — Primeras acciones en el panel
 
 1. Abre `https://TU-SITIO.vercel.app/admin.html`
-2. Contraseña inicial: **kairo2026**
-3. Ve a **Ajustes** y cambia la contraseña.
+2. Contraseña inicial: **kairo2026** (es pública en este README: cámbiala de inmediato)
+3. Ve a **Ajustes** y cambia la contraseña por una larga y única.
 4. Ve a **Ajustes** y pon tu número de WhatsApp real (formato: 573XXXXXXXXX).
 5. Ve a **Productos** y agrega fotos reales a cada par.
 
@@ -111,6 +121,7 @@ kairo/
 │   ├── catalog.js      GET /api/catalog — productos+promos+ajustes (público)
 │   ├── login.js        POST /api/login  — autenticación del panel
 │   ├── orders.js       POST /api/orders — guarda pedidos desde la tienda
+│   ├── pqr.js          POST /api/pqr    — registra PQR con número de radicado
 │   └── admin.js        /api/admin/*     — CRUD completo (requiere token)
 ├── lib/
 │   ├── supabase.js     cliente Supabase compartido

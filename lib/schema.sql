@@ -62,14 +62,39 @@ CREATE TABLE IF NOT EXISTS settings (
   hero_logo       TEXT DEFAULT '',
   hero_headline   TEXT DEFAULT 'Nike · Jordan · Adidas · Timberland',
   shipping_note   TEXT DEFAULT 'Envíos a toda Colombia · 2 a 5 días hábiles',
-  admin_password  TEXT DEFAULT 'kairo2026',
+  admin_password  TEXT DEFAULT 'kairo2026',  -- ⚠️ cámbiala en el panel el primer día
   updated_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Fila de ajustes por defecto
 INSERT INTO settings (id) VALUES ('app') ON CONFLICT (id) DO NOTHING;
 
+-- PQR (peticiones, quejas y reclamos) con número de radicado
+CREATE TABLE IF NOT EXISTS pqrs (
+  id           TEXT PRIMARY KEY,
+  tipo         TEXT NOT NULL,
+  nombre       TEXT NOT NULL,
+  celular      TEXT DEFAULT '',
+  correo       TEXT DEFAULT '',
+  pedido       TEXT DEFAULT '',
+  mensaje      TEXT NOT NULL,
+  estado       TEXT DEFAULT 'Radicada',
+  respuesta    TEXT DEFAULT '',
+  autorizacion JSONB DEFAULT '{}',
+  created_at   TIMESTAMPTZ DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security: nadie con la clave pública "anon" puede leer ni escribir.
+-- La API usa la clave service_role, que sí tiene acceso.
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE promos   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pqrs     ENABLE ROW LEVEL SECURITY;
+
 -- Índices útiles
 CREATE INDEX IF NOT EXISTS products_active  ON products (active, position);
 CREATE INDEX IF NOT EXISTS products_brand   ON products (brand);
 CREATE INDEX IF NOT EXISTS orders_status    ON orders (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS pqrs_estado      ON pqrs (estado, created_at DESC);
