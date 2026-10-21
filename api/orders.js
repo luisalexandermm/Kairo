@@ -1,9 +1,8 @@
 'use strict';
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
+const { priceCart, ANTICIPO_CONTRAENTREGA: ANTICIPO } = require('../lib/pricing');
 
-/* Anticipo de envío en contraentrega. Debe coincidir con public/js/negocio.js */
-const ANTICIPO_CONTRAENTREGA = 25000;
 const PAGOS = ['Contraentrega', 'Nequi / Daviplata'];
 
 async function sendWhatsApp(to, body) {
@@ -24,9 +23,9 @@ async function sendWhatsApp(to, body) {
   return response.ok;
 }
 
-function receiptText(id, items, total, customer) {
+function receiptText(id, items, total, customer, pricing = {}) {
   const lines = (items || []).map(i => `- ${i.brand} ${i.name} | T${i.size} | ${i.color} x${i.qty} | $${Number(i.price * i.qty || 0).toLocaleString('es-CO')}`).join('\n');
-  return `kAIRO - Recibo de pedido ${id}\n\n${lines}\n\nTotal productos: $${Number(total || 0).toLocaleString('es-CO')}\nPago: ${customer.pago || 'Por confirmar'}\nEntrega: ${customer.direccion || ''}, ${customer.ciudad || ''}\n\nGracias por tu compra. Te confirmaremos el despacho por este medio.`;
+  return `kAIRO - Recibo de pedido ${id}\n\n${lines}\n\nTotal productos: $${Number(total || 0).toLocaleString('es-CO')}${pricing.coupon ? ' (cupón ' + pricing.coupon.code + ')' : ''}${pricing.freeShipping ? '\nEnvío: gratis' : ''}\nPago: ${customer.pago || 'Por confirmar'}\nEntrega: ${customer.direccion || ''}, ${customer.ciudad || ''}\n\nGracias por tu compra. Te confirmaremos el despacho por este medio.`;
 }
 
 /* Celular colombiano: 10 dígitos que empiezan por 3 (se acepta con o sin 57 adelante). */
@@ -42,8 +41,6 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return err(res, 'Método no permitido', 405);
 
   const { items, customer: c = {}, consent } = req.body || {};
-  if (!Array.isArray(items) || !items.length) return err(res, 'El pedido no tiene productos', 400);
-  if (items.length > 20) return err(res, 'El pedido tiene demasiados productos', 400);
 
   /* Autorización de datos y aceptación de términos: obligatorias y separadas (Ley 1581 de 2012). */
   if (!consent || consent.datos !== true || consent.terminos !== true) {
@@ -68,38 +65,15 @@ module.exports = async (req, res) => {
   if (!telefono) return err(res, 'Escribe un celular colombiano de 10 dígitos (ej. 300 123 4567)', 400);
   if (!customer.pago) return err(res, 'Elige un método de pago', 400);
 
-  // Recalculamos precio, nombre y marca de cada producto contra la base de datos: nunca confiamos
-  // en lo que llega desde el navegador, porque se puede manipular.
-  const ids = [...new Set(items.map(i => String(i.id || '')))];
-  const { data: dbProducts, error: productsError } = await supabase
-    .from('products').select('id,brand,name,price,sale_price,active,sizes,colors').in('id', ids);
-  if (productsError) return err(res, 'No se pudieron validar los productos del pedido', 500);
-  const productById = Object.fromEntries((dbProducts || []).map(p => [p.id, p]));
-
-  let total = 0;
-  const verifiedItems = [];
-  for (const item of items) {
-    const product = productById[item.id];
-    if (!product || product.active === false) {
-      return err(res, `El producto "${cleanText(item.name || item.id, 80)}" ya no está disponible`, 400);
-    }
-    const size = Number(item.size);
-    if (Array.isArray(product.sizes) && product.sizes.length && !product.sizes.map(Number).includes(size)) {
-      return err(res, `La talla ${cleanText(item.size, 5)} no está disponible para ${product.name}`, 400);
-    }
-    const colorNames = (product.colors || []).map(x => x && x.n).filter(Boolean);
-    const color = cleanText(item.color, 60);
-    if (colorNames.length && color && !colorNames.includes(color)) {
-      return err(res, `El color "${color}" no está disponible para ${product.name}`, 400);
-    }
-    const qty = Math.min(9, Math.max(1, Math.floor(Number(item.qty) || 1)));
-    const realPrice = (product.sale_price && product.sale_price > 0) ? product.sale_price : product.price;
-    total += realPrice * qty;
-    verifiedItems.push({ id: product.id, brand: product.brand, name: product.name, size, color, qty, price: realPrice });
-  }
+  // Precio, nombre, marca, promociones y cupón se recalculan contra la base de datos:
+  // nunca confiamos en lo que llega desde el navegador.
+  const r = await priceCart(supabase, items, req.body.coupon);
+  if (r.error) return err(res, r.error, r.status || 400);
+  const verifiedItems = r.items;
+  const total = r.total;
 
   const now = new Date().toISOString();
-  customer.shippingAdvance = customer.pago === 'Contraentrega' ? ANTICIPO_CONTRAENTREGA : 0;
+  customer.shippingAdvance = customer.pago === 'Contraentrega' && !r.freeShipping ? ANTICIPO : 0;
   customer.balanceDue = customer.pago === 'Contraentrega' ? total : 0;
   customer.packaging = 'Sin caja por el momento';
   /* Prueba de la autorización (Decreto 1074 de 2015: el responsable debe poder demostrarla). */
@@ -107,20 +81,44 @@ module.exports = async (req, res) => {
 
   const id = 'ord-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 
-  const { error } = await supabase.from('orders').insert({
-    id, customer, items: verifiedItems, total, status: 'Nuevo'
+  const pricing = {
+    listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, subtotal: r.subtotal,
+    coupon: r.coupon ? { code: r.coupon.code, discount: r.coupon.discount, freeShipping: r.coupon.freeShipping } : null,
+    freeShipping: r.freeShipping, shippingPromo: r.shippingPromo,
+    shipping: r.freeShipping ? 0 : (customer.pago === 'Contraentrega' ? ANTICIPO : null),
+    total
+  };
+  let { error } = await supabase.from('orders').insert({
+    id, customer, items: verifiedItems, total, status: 'Nuevo', pricing
   });
+  // Si aún no existe la columna "pricing" (migración de octubre sin ejecutar), guardamos sin ella.
+  if (error && /pricing/i.test(error.message)) {
+    customer.pricing = pricing;
+    ({ error } = await supabase.from('orders').insert({ id, customer, items: verifiedItems, total, status: 'Nuevo' }));
+  }
 
   if (error) {
     console.error('Pedido no guardado:', error.message);
     return err(res, 'No se pudo guardar el pedido. Intenta de nuevo o escríbenos por WhatsApp.', 500);
   }
 
-  const receipt = receiptText(id, verifiedItems, total, customer);
+  // Cuenta un uso del cupón. Se compara con el número de usos leído para no pisar
+  // otro pedido que haya usado el mismo cupón al mismo tiempo.
+  if (r.coupon) {
+    const { data: upd } = await supabase.from('coupons')
+      .update({ uses: r.coupon.uses + 1, updated_at: now })
+      .eq('code', r.coupon.code).eq('uses', r.coupon.uses).select('code');
+    if (!upd || !upd.length) {
+      const { data: cur } = await supabase.from('coupons').select('uses').eq('code', r.coupon.code).maybeSingle();
+      if (cur) await supabase.from('coupons').update({ uses: (Number(cur.uses) || 0) + 1, updated_at: now }).eq('code', r.coupon.code);
+    }
+  }
+
+  const receipt = receiptText(id, verifiedItems, total, customer, pricing);
   const adminNumber = process.env.ADMIN_WHATSAPP_TO || 'whatsapp:+573145312045';
   const [adminNotified, customerNotified] = await Promise.all([
     sendWhatsApp(adminNumber, `Nuevo pedido kAIRO\n\n${receipt}`),
     sendWhatsApp('+57' + telefono, receipt)
   ]).catch(() => [false, false]);
-  ok(res, { ok: true, id, total, adminNotified, customerNotified }, 201);
+  ok(res, { ok: true, id, total, pricing, adminNotified, customerNotified }, 201);
 };

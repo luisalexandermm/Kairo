@@ -13,6 +13,12 @@ Esto no reemplaza la asesoría de un abogado. Antes de vender a gran escala, pid
 
 ## 🟠 Importante
 
+0. **Promociones, cupones y dinámicas (octubre 2026).**
+   - Las promociones de descuento ahora sí bajan el precio en el carrito y en el pedido, así que ya no hay riesgo de anunciar un descuento que no se cobra. Escribe siempre condiciones claras: vigencia, unidades disponibles y restricciones (Ley 1480, art. 33). El panel no deja guardar una promoción de descuento o de envío gratis sin condiciones.
+   - Las promociones que ya tenías quedaron como “informativas”, así que ninguna empieza a descontar sola.
+   - **Sorteos:** cualquier dinámica en la que el ganador salga por azar (rifa, ruleta, “etiqueta y gana”) necesita autorización de Coljuegos antes de publicarse (Ley 643 de 2001). El panel no deja publicarla sin el número de autorización. Los concursos por mérito, con jurado y criterios publicados, no la necesitan.
+   - Hoy un cupón **sí se suma** a los descuentos automáticos. Si no quieres que se sumen, dilo en las condiciones de cada cupón o pídeme que agregue la opción.
+
 7. **Promociones que el carrito no aplica.** El panel permite publicar promociones (“Segunda unidad al 30 %”, “Envío gratis desde $600.000”), pero el carrito no calcula esos descuentos. Publicar una promoción y no respetarla es publicidad engañosa (Ley 1480, arts. 29–33), y los términos dicen que se respetan. Solo publica promociones que vayas a aplicar a mano en WhatsApp, e incluye condiciones y fecha de fin en el texto.
 8. **Descripciones en la base de datos.** Limpié las afirmaciones sin respaldo del catálogo de ejemplo (“la más alta de la línea”, “30 % más liviana”, “la bota original de Nueva York”, “Edición limitada”, “talla fiel”) en `lib/seed-db.js` y en la página. **Los productos que ya están en tu Supabase conservan el texto viejo**: edítalos desde el panel.
 9. **Fotos de productos.** No puedo ver qué imágenes subiste a Supabase. Si son fotos oficiales de Nike, Adidas, etc. descargadas de internet, tienen derechos de autor. Lo más seguro es usar fotos tuyas de los pares reales. Las ilustraciones SVG del sitio y `img/logo.png` no presentan problema si el logo es tuyo.

@@ -29,7 +29,7 @@ window.NEGOCIO = {
 
   /* Versión de las políticas. Si cambias los textos legales, cambia esta fecha:
      queda guardada junto a cada pedido como prueba de lo que aceptó el cliente. */
-  versionPoliticas: '2026-09-25'
+  versionPoliticas: '2026-10-21'
 };
 
 (function () {

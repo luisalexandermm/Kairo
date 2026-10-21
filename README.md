@@ -4,6 +4,34 @@ Proyecto completo: tienda pública, panel de administración y base de datos en 
 Los cambios del panel se ven al instante en todos los dispositivos.
 
 
+## 🎬 Animación de entrada y marcas
+
+- **Intro 3D:** al entrar por primera vez en cada sesión, un tenis de diseño propio se arma pieza por pieza (Three.js + GSAP) y aparece el nombre kAIRO. Se puede saltar con el botón o con Escape. No se muestra si la persona tiene activado “reducir movimiento”, si llega con un enlace directo a un producto, o si el archivo no carga en 4 segundos.
+  - Código fuente: `src/intro.js`. La tienda usa la versión empaquetada `public/js/intro.js`.
+  - Si cambias el código fuente: `npm install` y luego `npm run build:intro`.
+- **Franja de marcas:** se arma sola con las marcas de los productos activos y se desliza en bucle. Se pausa al pasar el mouse o con el teclado, y cada marca filtra el catálogo.
+- **Timberland:** se quitó del catálogo de ejemplo. Si ya tienes productos Timberland en tu Supabase, bórralos desde el panel (Productos → filtra por marca) o en el SQL Editor: `DELETE FROM products WHERE brand = 'Timberland';`
+
+---
+
+## 🆕 Octubre 2026: diseño verde, categorías, promociones, cupones, anuncios y dinámicas
+
+**Antes de publicar esta versión:** ejecuta `lib/migracion-promos-2026-10.sql` en Supabase → SQL Editor (después de la migración de septiembre). Agrega categoría y género a los productos y crea las tablas `coupons` y `announcements`. Si no la ejecutas, la tienda sigue funcionando, pero las secciones nuevas del panel muestran el aviso de que falta.
+
+Qué puedes hacer desde el panel:
+
+| Sección | Para qué |
+|---|---|
+| **Productos** | Marca libre (escribe cualquier marca nueva), categoría (Tenis, Sandalias, Chanclas, Botas o la que escribas) y “Para” (Hombre, Mujer, Unisex). La foto que subas se usa en el catálogo, la portada, el detalle, las miniaturas de color, el carrito, los banners que lleven a ese producto y el panel. |
+| **Anuncios y banners** | Banners de la portada (título, texto, botón, color, imagen, a dónde lleva y fechas) y avisos de la barra superior. Sin banners activos, la portada muestra los productos “Destacados”. |
+| **Promociones** | *Descuento* (baja el precio solo en una marca, categoría, género o producto), *envío gratis* desde un valor, o *informativa*. Con fechas y condiciones obligatorias. |
+| **Cupones** | Porcentaje (con tope), valor fijo o envío gratis; compra mínima, usos máximos y fechas. Se validan en el servidor y cada pedido cuenta un uso. |
+| **Dinámicas** | Concursos y retos con bases y condiciones. El panel no deja publicar una dinámica con sorteo o azar sin número de autorización de Coljuegos. |
+
+Los precios se calculan en un solo lugar (`lib/pricing.js`): la tienda, el cupón y el pedido usan las mismas reglas, así lo que el cliente ve es lo que se cobra.
+
+---
+
 ## ⚠️ Actualización legal y de accesibilidad (septiembre 2026) — hazlo antes de publicar
 
 1. **Llena tus datos del negocio** en `public/js/negocio.js` (NIT, responsable, dirección, correo, horario, plazo de entrega, días de cambio de talla). Mientras falten, el sitio muestra `[COMPLETAR: …]` en amarillo.
@@ -122,6 +150,7 @@ kairo/
 │   ├── login.js        POST /api/login  — autenticación del panel
 │   ├── orders.js       POST /api/orders — guarda pedidos desde la tienda
 │   ├── pqr.js          POST /api/pqr    — registra PQR con número de radicado
+│   ├── coupon.js       POST /api/coupon — valida un cupón contra el carrito
 │   └── admin.js        /api/admin/*     — CRUD completo (requiere token)
 ├── lib/
 │   ├── supabase.js     cliente Supabase compartido

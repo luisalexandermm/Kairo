@@ -1,4 +1,4 @@
-const CACHE = 'kairo-v3';
+const CACHE = 'kairo-v7';
 const APP_SHELL = ['/', '/index.html', '/admin.html', '/css/store.css', '/css/admin.css', '/css/fonts.css', '/css/legal.css', '/js/negocio.js', '/manifest.webmanifest', '/img/logo.png',
   '/terminos.html', '/privacidad.html', '/cookies.html', '/cambios-y-devoluciones.html', '/pqr.html'];
 

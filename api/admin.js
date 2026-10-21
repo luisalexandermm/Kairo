@@ -9,7 +9,8 @@ const PRODUCT_COLS = {
   brand: 'brand', name: 'name', price: 'price', salePrice: 'sale_price',
   tag: 'tag', desc: 'description', sizes: 'sizes', colors: 'colors',
   image: 'image', shape: 'shape', shoeColor: 'shoe_color', bg: 'bg',
-  stock: 'stock', active: 'active', featured: 'featured', position: 'position'
+  stock: 'stock', active: 'active', featured: 'featured', position: 'position',
+  category: 'category', gender: 'gender'
 };
 const toDb = (obj, map) => {
   const r = {};
@@ -26,8 +27,87 @@ const prodToFront = p => ({
   image: p.image, shape: p.shape,
   shoeColor: p.shoe_color, bg: p.bg,
   stock: p.stock, active: p.active, featured: p.featured, position: p.position,
+  category: p.category || (p.shape === 's-boot' ? 'Botas' : 'Tenis'), gender: p.gender || 'Unisex',
   createdAt: p.created_at
 });
+
+/* ------------------------------------------------------------------ */
+/*  Promociones, cupones y anuncios: columnas permitidas y validaciones */
+/* ------------------------------------------------------------------ */
+const MIGRACION = 'Falta ejecutar lib/migracion-promos-2026-10.sql en Supabase (SQL Editor).';
+const txt = (v, max = 500) => String(v == null ? '' : v).trim().slice(0, max);
+const num = v => Math.max(0, Math.round(Number(v) || 0));
+const date = v => (v ? new Date(v).toString() !== 'Invalid Date' ? new Date(v).toISOString() : null : null);
+const bool = v => v !== false && v !== 'false';
+const oneOf = (v, list, def) => (list.includes(v) ? v : def);
+
+const CRUD = {
+  promos: {
+    table: 'promos', key: 'id', order: 'position', positioned: true, missing: MIGRACION,
+    makeId: r => slug(r.title || 'promo') + '-' + Date.now().toString(36).slice(-4),
+    cols: {
+      title: v => txt(v, 120), description: v => txt(v, 400), badge: v => txt(v, 30),
+      kind: v => oneOf(v, ['informativa', 'descuento', 'envio'], 'informativa'),
+      discount: v => Math.min(90, num(v)),
+      scope_type: v => oneOf(v, ['todo', 'marca', 'categoria', 'genero', 'producto'], 'todo'),
+      scope_value: v => txt(v, 80), scope: v => txt(v, 80),
+      min_subtotal: num, starts_at: date, ends_at: date, conditions: v => txt(v, 2000), active: bool
+    },
+    validate: r => {
+      if (!r.title) return 'Ponle un título a la promoción';
+      if (r.kind === 'descuento' && !r.discount) return 'Una promoción de descuento necesita un porcentaje mayor a 0';
+      if (r.kind === 'descuento' && r.discount > 90) return 'El descuento máximo es 90 %';
+      if (r.scope_type !== 'todo' && !r.scope_value) return 'Elige a qué marca, categoría, género o producto aplica';
+      if (r.starts_at && r.ends_at && r.ends_at < r.starts_at) return 'La fecha de fin es anterior a la de inicio';
+      if (r.kind !== 'informativa' && !r.conditions) return 'Escribe las condiciones de la promoción (lo exige el Estatuto del Consumidor)';
+      r.scope = r.scope_type === 'todo' ? 'Todos' : r.scope_value;
+    }
+  },
+  coupons: {
+    table: 'coupons', key: 'code', order: 'created_at', asc: false, missing: MIGRACION,
+    cols: {
+      code: v => txt(v, 30).toUpperCase().replace(/[^A-Z0-9_-]/g, ''),
+      description: v => txt(v, 200),
+      type: v => oneOf(v, ['porcentaje', 'valor', 'envio'], 'porcentaje'),
+      value: num, max_discount: num, min_subtotal: num, max_uses: num,
+      starts_at: date, ends_at: date, conditions: v => txt(v, 2000), active: bool
+    },
+    validate: (r, method) => {
+      if (method === 'POST' && (!r.code || r.code.length < 3)) return 'El código debe tener al menos 3 letras o números';
+      if (r.type === 'porcentaje' && (!r.value || r.value > 90)) return 'El porcentaje debe estar entre 1 y 90';
+      if (r.type === 'valor' && !r.value) return 'Escribe cuántos pesos descuenta el cupón';
+      if (r.starts_at && r.ends_at && r.ends_at < r.starts_at) return 'La fecha de fin es anterior a la de inicio';
+    }
+  },
+  announcements: {
+    table: 'announcements', key: 'id', order: 'position', positioned: true, missing: MIGRACION,
+    makeId: r => r.kind + '-' + slug(r.title || 'anuncio').slice(0, 40) + '-' + Date.now().toString(36).slice(-4),
+    cols: {
+      kind: v => oneOf(v, ['banner', 'barra', 'dinamica'], 'banner'),
+      title: v => txt(v, 140), subtitle: v => txt(v, 300), button_text: v => txt(v, 30),
+      link_type: v => oneOf(v, ['ninguno', 'producto', 'categoria', 'marca', 'url', 'whatsapp'], 'ninguno'),
+      link_value: v => txt(v, 300), image: v => txt(v, 600), color: v => (/^#[0-9a-f]{6}$/i.test(String(v)) ? v : ''),
+      conditions: v => txt(v, 4000), has_chance: v => v === true || v === 'true', coljuegos_ref: v => txt(v, 80),
+      starts_at: date, ends_at: date, active: bool, position: num
+    },
+    validate: r => {
+      if (!r.title) return 'Escribe un título';
+      if (r.link_type === 'url' && r.link_value && !/^https:\/\//.test(r.link_value) && !r.link_value.startsWith('/')) return 'El enlace debe empezar por https:// o por /';
+      if (r.starts_at && r.ends_at && r.ends_at < r.starts_at) return 'La fecha de fin es anterior a la de inicio';
+      if (r.kind === 'dinamica') {
+        if (!r.conditions || r.conditions.length < 40) return 'Una dinámica necesita bases y condiciones completas (quién participa, cómo, premio, fechas y cómo se elige al ganador)';
+        if (r.has_chance && !r.coljuegos_ref && r.active !== false) return 'Esta dinámica tiene sorteo o azar: necesitas la autorización de Coljuegos antes de publicarla. Guárdala inactiva o escribe el número de autorización.';
+      }
+    }
+  }
+};
+
+function cleanRow(body, cfg, isNew) {
+  const row = {};
+  // En registros nuevos, los campos que no llegan toman su valor por defecto.
+  for (const [k, fn] of Object.entries(cfg.cols)) if (k in body || isNew) row[k] = fn(body[k]);
+  return row;
+}
 
 /* ------------------------------------------------------------------ */
 module.exports = async (req, res) => {
@@ -141,34 +221,40 @@ module.exports = async (req, res) => {
     }
   }
 
-  /* -------- PROMOS -------- */
-  if (section === 'promos') {
+  /* -------- PROMOS / CUPONES / ANUNCIOS (CRUD genérico con columnas permitidas) -------- */
+  if (CRUD[section]) {
+    const cfg = CRUD[section];
     if (method === 'GET') {
-      const { data, error } = await supabase.from('promos').select('*').order('position');
-      if (error) return err(res, error.message, 500);
+      const { data, error } = await supabase.from(cfg.table).select('*').order(cfg.order, { ascending: cfg.asc !== false });
+      if (error) return err(res, cfg.missing || error.message, 500);
       return ok(res, data || []);
     }
-    if (method === 'POST') {
-      let newId = slug(body.title || 'promo') + '-' + Date.now().toString(36).slice(-4);
-      const { count } = await supabase.from('promos').select('id', { count: 'exact', head: true });
-      const row = { id: newId, title: body.title, description: body.description, badge: body.badge,
-                    discount: Number(body.discount) || 0, scope: body.scope || 'Todos',
-                    active: body.active !== false, position: (count || 0) + 1 };
-      const { data, error } = await supabase.from('promos').insert(row).select().single();
-      if (error) return err(res, error.message, 500);
-      return ok(res, data, 201);
-    }
-    if (method === 'PUT' && id) {
-      const { data, error } = await supabase.from('promos').update({
-        title: body.title, description: body.description, badge: body.badge,
-        discount: Number(body.discount) || 0, scope: body.scope,
-        active: body.active !== false, updated_at: new Date().toISOString()
-      }).eq('id', id).select().single();
-      if (error) return err(res, error.message, 500);
-      return ok(res, data);
+    if (method === 'POST' || (method === 'PUT' && id)) {
+      const row = cleanRow(body, cfg, method === 'POST');
+      const problem = cfg.validate && cfg.validate(row, method);
+      if (problem) return err(res, problem, 400);
+      row.updated_at = new Date().toISOString();
+      let q;
+      if (method === 'POST') {
+        if (cfg.makeId) row[cfg.key] = cfg.makeId(row);
+        if (cfg.positioned) {
+          const { count } = await supabase.from(cfg.table).select(cfg.key, { count: 'exact', head: true });
+          row.position = (count || 0) + 1;
+        }
+        q = supabase.from(cfg.table).insert(row).select().single();
+      } else {
+        delete row[cfg.key];
+        q = supabase.from(cfg.table).update(row).eq(cfg.key, decodeURIComponent(id)).select().single();
+      }
+      const { data, error } = await q;
+      if (error) {
+        if (/duplicate key/i.test(error.message)) return err(res, 'Ya existe un registro con ese código', 400);
+        return err(res, cfg.missing && /does not exist|relation/i.test(error.message) ? cfg.missing : error.message, 500);
+      }
+      return ok(res, data, method === 'POST' ? 201 : 200);
     }
     if (method === 'DELETE' && id) {
-      const { error } = await supabase.from('promos').delete().eq('id', id);
+      const { error } = await supabase.from(cfg.table).delete().eq(cfg.key, decodeURIComponent(id));
       if (error) return err(res, error.message, 500);
       return ok(res, { ok: true });
     }

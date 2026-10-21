@@ -15,6 +15,8 @@
 <symbol id="s-low" viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
 <symbol id="s-high" viewBox="0 0 260 140"><path d="M10 118c-3-13 3-22 14-26 9-3 14-8 17-16 3-9 4-20 4-32 0-9 5-14 14-14h44c9 0 13 5 13 14 0 14 3 25 12 33 7 6 16 9 27 10 16 2 36 2 52 8 13 5 21 14 22 24 1 8-3 13-11 13H20c-6 0-9-2-10-4Z" fill="currentColor"/><path d="M150 62c20-2 44 2 60 16" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
 <symbol id="s-boot" viewBox="0 0 260 140"><path d="M52 14h60c8 0 12 5 12 13v46c0 14 6 24 18 30 12 6 30 8 48 10 18 2 34 6 44 14 8 6 11 13 9 20H24c-8 0-12-5-11-13 1-9 7-15 16-19 8-4 12-10 12-19V27c0-8 4-13 11-13Z" fill="currentColor"/></symbol>
+<symbol id="s-sandal" viewBox="0 0 260 140"><g transform="matrix(-1 0 0 1 260 0)"><path d="M14 114c-4-9 2-16 12-17l150-7c16-1 30-9 44-15 12-5 27-3 30 7 2 7-3 12-11 14l-7 2v13c0 4-3 6-6 6h-5c-4 0-6-2-6-6v-9l-19 3-170 9c-8 0-13-3-12-4Z" fill="currentColor"/><path d="M58 98c6-26 22-40 40-40s30 14 34 36" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M94 96c10-22 26-34 44-32 16 2 26 14 28 28" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" opacity=".75"/><path d="M190 86c4-22 12-40 26-44 10-3 18 4 18 14 0 12-8 22-18 26" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M16 112l178-9" stroke="rgba(255,255,255,.4)" stroke-width="3" fill="none"/><circle cx="218" cy="56" r="6" fill="#fff" opacity=".8"/></g></symbol>
+<symbol id="s-flip" viewBox="0 0 260 140"><g transform="matrix(-1 0 0 1 260 0)"><path d="M12 104c0-9 9-14 21-14h160c26 0 50 4 52 14 2 11-16 18-38 18H34c-13 0-22-7-22-18Z" fill="currentColor"/><path d="M14 104c1 7 9 12 20 12h172c18 0 34-4 38-12" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="4"/><path d="M62 92c10-30 36-48 64-48 30 0 52 18 66 48" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><path d="M62 92c10-30 36-48 64-48" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round"/><circle cx="66" cy="90" r="7" fill="currentColor"/></g></symbol>
 </defs></svg>
 
 <!-- LOGIN -->
@@ -35,7 +37,10 @@
     <small>Administración</small>
     <button class="nav-item active" data-view="resumen">📊 Resumen</button>
     <button class="nav-item" data-view="productos">👟 Productos</button>
-    <button class="nav-item" data-view="promos">🎁 Promociones</button>
+    <button class="nav-item" data-view="anuncios">📣 Anuncios y banners</button>
+    <button class="nav-item" data-view="promos">🏷️ Promociones</button>
+    <button class="nav-item" data-view="cupones">🎟️ Cupones</button>
+    <button class="nav-item" data-view="dinamicas">🎉 Dinámicas</button>
     <button class="nav-item" data-view="pedidos">📦 Pedidos</button>
     <button class="nav-item" data-view="pqr">📨 PQR</button>
     <button class="nav-item" data-view="ajustes">⚙️ Ajustes</button>
@@ -69,10 +74,8 @@
       </div>
       <div class="toolbar">
         <input type="search" id="prodSearch" placeholder="🔍  Buscar por nombre…" oninput="renderProductTable()">
-        <select id="prodBrand" onchange="renderProductTable()">
-          <option value="">Todas las marcas</option>
-          <option>Nike</option><option>Jordan</option><option>Adidas</option><option>Timberland</option>
-        </select>
+        <select id="prodBrand" onchange="renderProductTable()"><option value="">Todas las marcas</option></select>
+        <select id="prodCat" onchange="renderProductTable()"><option value="">Todas las categorías</option></select>
       </div>
       <div class="panel"><table>
         <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr></thead>
@@ -80,16 +83,42 @@
       </table></div>
     </section>
 
+    <!-- Anuncios -->
+    <section class="view" id="view-anuncios">
+      <div class="head"><div><h1 class="display">Anuncios y banners</h1><p>Los banners rotan en la portada de la tienda. Los avisos de la barra superior se muestran arriba del nombre kAIRO.</p></div></div>
+      <div class="subhead"><h2>Banners de portada</h2><button class="btn btn-primary btn-sm" onclick="openForm('banners')">+ Nuevo banner</button></div>
+      <div class="panel"><table><thead><tr><th>Banner</th><th>Lleva a</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-banners"></tbody></table></div>
+      <p class="hint">Si no hay banners activos, la portada muestra los productos marcados como “Destacado”.</p>
+      <div class="subhead"><h2>Barra superior</h2><button class="btn btn-primary btn-sm" onclick="openForm('barra')">+ Nuevo aviso</button></div>
+      <div class="panel"><table><thead><tr><th>Aviso</th><th>Lleva a</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-barra"></tbody></table></div>
+    </section>
+
     <!-- Promociones -->
     <section class="view" id="view-promos">
       <div class="head">
-        <div><h1 class="display">Promociones</h1><p>Avisos que aparecen en la franja de la tienda.</p></div>
-        <button class="btn btn-primary" onclick="openPromoForm()">+ Nueva promoción</button>
+        <div><h1 class="display">Promociones</h1><p>Las de <b>descuento</b> bajan el precio en la tienda y en el pedido automáticamente. Las de <b>envío gratis</b> quitan el anticipo de envío desde el valor mínimo. Las <b>informativas</b> solo se muestran.</p></div>
+        <button class="btn btn-primary" onclick="openForm('promos')">+ Nueva promoción</button>
       </div>
-      <div class="panel"><table>
-        <thead><tr><th>Promoción</th><th>Descuento</th><th>Aplica a</th><th>Estado</th><th></th></tr></thead>
-        <tbody id="promoRows"></tbody>
-      </table></div>
+      <div class="panel"><table><thead><tr><th>Promoción</th><th>Tipo</th><th>Aplica a</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-promos"></tbody></table></div>
+    </section>
+
+    <!-- Cupones -->
+    <section class="view" id="view-cupones">
+      <div class="head">
+        <div><h1 class="display">Cupones</h1><p>El cliente escribe el código en el carrito. Se valida en el servidor y cada pedido cuenta un uso. Un cupón por pedido.</p></div>
+        <button class="btn btn-primary" onclick="openForm('coupons')">+ Nuevo cupón</button>
+      </div>
+      <div class="panel"><table><thead><tr><th>Código</th><th>Beneficio</th><th>Usos</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-coupons"></tbody></table></div>
+    </section>
+
+    <!-- Dinámicas -->
+    <section class="view" id="view-dinamicas">
+      <div class="head">
+        <div><h1 class="display">Dinámicas</h1><p>Concursos, retos y actividades para tus clientes. Se muestran en la sección “Promos y dinámicas” de la tienda.</p></div>
+        <button class="btn btn-primary" onclick="openForm('dinamicas')">+ Nueva dinámica</button>
+      </div>
+      <div class="notice"><b>Importante:</b> si el ganador se elige por <b>sorteo o azar</b> (rifa, tómbola, ruleta, “etiqueta y gana”), en Colombia necesitas autorización de <b>Coljuegos</b> antes de publicarla (Ley 643 de 2001). Si el ganador se elige por mérito (la mejor foto, el reto más creativo) con jurado y criterios publicados, no la necesitas. El panel no deja publicar una dinámica con azar sin número de autorización.</div>
+      <div class="panel"><table><thead><tr><th>Dinámica</th><th>Tipo</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-dinamicas"></tbody></table></div>
     </section>
 
     <!-- Pedidos -->
@@ -106,26 +135,13 @@
     </section>
 
     <section class="view" id="view-ajustes">
-      <div class="head"><div><h1 class="display">Ajustes</h1><p>Datos de la tienda, hero y contraseña.</p></div></div>
+      <div class="head"><div><h1 class="display">Ajustes</h1><p>Datos de la tienda y contraseña. Los banners de portada se manejan en “Anuncios y banners”.</p></div></div>
       <div class="panel" style="padding:26px;max-width:720px">
         <div class="g2">
           <div class="field"><label>Nombre de la tienda</label><input id="sName" placeholder="kAIRO"></div>
           <div class="field"><label>Bajada del logo</label><input id="sTag" placeholder="Sneaker Store"></div>
         </div>
         <div class="field"><label>WhatsApp de pedidos</label><input id="sWa" placeholder="573145312045"><small>Indicativo + número, sin espacios: ej. 573145312045</small></div>
-        <div class="g2">
-          <div class="field"><label>Palabra de fondo del hero</label><input id="sWord" placeholder="SNEAKERS"></div>
-          <div class="field"><label>Color inicial del hero</label>
-            <select id="sTheme"><option value="indigo">Índigo</option><option value="carmesi">Carmesí</option><option value="ember">Ember</option><option value="tinta">Tinta</option></select>
-          </div>
-        </div>
-        <div class="field"><label>Frase del hero</label><input id="sHeadline" placeholder="Nike · Jordan · Adidas · Timberland"></div>
-        <div class="field">
-          <label>Logo del hero (imagen PNG/WebP — reemplaza el texto 3D)</label>
-          <div class="img-preview" id="logoPreview"><span>Sin imagen: se usa el logo de texto</span></div>
-          <input type="file" id="logoFile" accept="image/*" onchange="uploadLogoFile(this)">
-          <small>Sube tu logo con efecto 3D en PNG con fondo transparente.</small>
-        </div>
         <div class="field"><label>Cambiar contraseña del panel</label><input id="sPass" type="password" placeholder="Déjalo vacío para no cambiarla"></div>
         <button class="btn btn-primary" onclick="saveSettings()">Guardar ajustes</button>
       </div>
@@ -142,13 +158,24 @@
       <label>Imagen del producto</label>
       <div class="img-preview" id="prodPreview"><span>Sin imagen (se usará silueta)</span></div>
       <input type="file" id="prodFile" accept="image/*" onchange="uploadProductFile(this)">
-      <small>PNG con fondo transparente recomendado.</small>
+      <small>Esta foto se usa en todos lados: catálogo, portada, detalle, carrito, banners que lleven a este producto y el panel. Mejor PNG o WebP con fondo transparente.</small>
     </div>
     <div class="g2">
       <div class="field"><label>Nombre *</label><input id="pName" placeholder="Air Max 270"></div>
       <div class="field"><label>Marca *</label>
-        <input id="pBrand" list="brandList" placeholder="Nike">
-        <datalist id="brandList"><option>Nike</option><option>Jordan</option><option>Adidas</option><option>Timberland</option></datalist>
+        <input id="pBrand" list="brandList" placeholder="Nike, Adidas, Puma, Crocs…">
+        <datalist id="brandList"></datalist>
+        <small>Escribe una marca nueva y aparecerá sola en la tienda.</small>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Categoría *</label>
+        <input id="pCategory" list="categoryList" placeholder="Tenis">
+        <datalist id="categoryList"></datalist>
+      </div>
+      <div class="field"><label>Para *</label>
+        <select id="pGender"><option>Hombre</option><option>Mujer</option><option selected>Unisex</option></select>
+        <small>“Unisex” aparece tanto en Hombre como en Mujer.</small>
       </div>
     </div>
     <div class="g3">
@@ -166,7 +193,7 @@
       <label>Colores</label>
       <div id="colorRows"></div>
       <button class="btn btn-line btn-sm" type="button" onclick="addColorRow()">+ Agregar color</button>
-      <small>Cada color puede tener su propia imagen. Los productos se entregan sin caja por el momento.</small>
+      <small>Si un color no tiene foto propia, se usa la foto principal del producto.</small>
     </div>
     <div class="g3">
       <div class="field"><label>Silueta</label>
@@ -174,6 +201,8 @@
           <option value="s-low">Baja / Runner</option>
           <option value="s-high">Caña alta</option>
           <option value="s-boot">Bota</option>
+          <option value="s-sandal">Sandalia</option>
+          <option value="s-flip">Chancla</option>
         </select>
       </div>
       <div class="field"><label>Color silueta</label><input id="pShoeColor" type="color" value="#1d2733" onchange="updateProdPreview()"></div>
@@ -188,37 +217,27 @@
   </div>
 </div>
 
-<!-- DRAWER PROMO -->
-<div class="drawer" id="promoDrawer">
-  <div class="drawer__head"><h2 class="display" id="promoDrawerTitle">Nueva promoción</h2><button class="close-btn" onclick="closeDrawers()">✕</button></div>
-  <div class="drawer__body">
-    <div class="field"><label>Título *</label><input id="mTitle" placeholder="Segunda unidad al 30%"></div>
-    <div class="field"><label>Descripción</label><textarea id="mDesc" placeholder="Cómo funciona…"></textarea></div>
-    <div class="g2">
-      <div class="field"><label>Etiqueta corta</label><input id="mBadge" placeholder="Envío gratis"></div>
-      <div class="field"><label>Descuento %</label><input id="mDiscount" type="number" min="0" max="100" value="0"></div>
-    </div>
-    <div class="field"><label>Aplica a</label>
-      <select id="mScope"><option>Todos</option><option>Nike</option><option>Jordan</option><option>Adidas</option><option>Timberland</option></select>
-    </div>
-    <label class="check"><input type="checkbox" id="mActive" checked> Promoción activa</label>
-  </div>
+<!-- DRAWER GENÉRICO (promos, cupones, anuncios, dinámicas) -->
+<div class="drawer" id="formDrawer" role="dialog" aria-modal="true" aria-labelledby="formTitle">
+  <div class="drawer__head"><h2 class="display" id="formTitle">Nuevo</h2><button class="close-btn" onclick="closeDrawers()" aria-label="Cerrar">✕</button></div>
+  <div class="drawer__body" id="formBody"></div>
   <div class="drawer__foot">
     <button class="btn btn-line" onclick="closeDrawers()">Cancelar</button>
-    <button class="btn btn-primary" onclick="savePromo()">Guardar promoción</button>
+    <button class="btn btn-primary" id="formSave" onclick="saveForm()">Guardar</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=3').catch(() => {});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=7').catch(() => {});
 /* ===== STATE ===== */
 let TOKEN = sessionStorage.getItem('kairo_token') || null;
-let products = [], promos = [], orders = [], settings = {}, pqrs = [];
+let products = [], promos = [], orders = [], settings = {}, pqrs = [], coupons = [], announcements = [];
+let extrasError = '';
 let knownOrderIds = new Set();
 let ordersLoaded = false;
-let editingProduct = null, editingPromo = null;
+let editingProduct = null;
 let prodImageUrl = '', logoImageUrl = '';
 const ALL_SIZES = [33,34,35,36,37,38,39,40,41,42,43,44,45,46];
 let pickedSizes = new Set();
@@ -333,9 +352,12 @@ async function loadAll() {
       api('/admin/products'), api('/admin/promos'),
       api('/admin/orders'), api('/admin/settings')
     ]);
+    // Cupones y anuncios: si falta la migración de octubre, el resto del panel sigue funcionando.
+    try { [coupons, announcements] = await Promise.all([api('/admin/coupons'), api('/admin/announcements')]); extrasError = ''; }
+    catch (e) { coupons = []; announcements = []; extrasError = esc(e.message); }
     orders.sort((a, b) => (b.created_at || b.createdAt || '').localeCompare(a.created_at || a.createdAt || ''));
     notifyNewOrders(orders);
-    renderStats(); renderProductTable(); renderPromoTable(); renderOrders(); fillSettings();
+    renderStats(); fillFilters(); renderProductTable(); renderTables(); renderOrders(); fillSettings();
   } catch (err) { toast('Error: ' + err.message); }
   loadPqr();
 }
@@ -398,9 +420,9 @@ async function renderStats() {
     $('statsGrid').innerHTML = [
       { v: s.activeProducts, l: 'Productos visibles' },
       { v: s.promos, l: 'Promos activas' },
+      { v: coupons.filter(c => c.active !== false).length, l: 'Cupones activos' },
       { v: s.newOrders, l: 'Pedidos nuevos' },
       { v: money(s.revenue), l: 'Total vendido' },
-      { v: 'Supabase', l: 'Base de datos' }
     ].map(x => `<div class="stat"><b>${esc(String(x.v))}</b><span>${x.l}</span></div>`).join('');
   } catch (_) {}
   const recent = orders.slice(0, 5);
@@ -416,17 +438,26 @@ async function renderStats() {
 function thumbHTML(p) {
   const bg = p.bg || p.shoeColor && '#f0ece6' || '#f0ece6';
   const inner = p.image
-    ? `<img src="${esc(p.image)}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    ? `<img src="${esc(p.image)}" alt="" style="width:100%;height:100%;object-fit:contain">`
     : `<svg viewBox="0 0 260 140" style="color:${esc(p.shoeColor||'#1d2733')};width:84%"><use href="#${esc(p.shape||'s-low')}"/></svg>`;
   return `<div class="thumb" style="background:${esc(bg)}">${inner}</div>`;
+}
+
+function fillFilters() {
+  const keep = (el, items, first) => { const cur = el.value; el.innerHTML = `<option value="">${first}</option>` + items.map(x => `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>`).join(''); };
+  keep($('prodBrand'), brandsList(), 'Todas las marcas');
+  keep($('prodCat'), catsList(), 'Todas las categorías');
+  $('brandList').innerHTML = [...new Set(['Nike', 'Jordan', 'Adidas', 'Puma', 'New Balance', 'Converse', 'Vans', 'Reebok', 'Crocs', ...brandsList()])].map(b => `<option value="${esc(b)}">`).join('');
+  $('categoryList').innerHTML = [...new Set([...catsList(), 'Zapatos', 'Pantuflas', 'Deportivos'])].map(c => `<option value="${esc(c)}">`).join('');
 }
 
 function renderProductTable() {
   const q = ($('prodSearch')?.value || '').toLowerCase();
   const brand = $('prodBrand')?.value || '';
-  const list = products.filter(p => (!brand || p.brand === brand) && (!q || (p.name + ' ' + p.brand).toLowerCase().includes(q)));
+  const cat = $('prodCat')?.value || '';
+  const list = products.filter(p => (!brand || p.brand === brand) && (!cat || p.category === cat) && (!q || (p.name + ' ' + p.brand + ' ' + (p.category || '')).toLowerCase().includes(q)));
   $('productRows').innerHTML = list.map(p => `<tr>
-    <td><div class="cell-name">${thumbHTML(p)}<div><b>${esc(p.name)}</b><small>${esc(p.brand)} · ${esc(p.tag||'')}</small></div></div></td>
+    <td><div class="cell-name">${thumbHTML(p)}<div><b>${esc(p.name)}</b><small>${esc(p.brand)} · ${esc(p.category || 'Tenis')} · ${esc(p.gender || 'Unisex')}</small></div></div></td>
     <td>${p.salePrice ? `<span class="was">${money(p.price)}</span>${money(p.salePrice)}` : money(p.price)}</td>
     <td>${p.stock ?? 0}</td>
     <td>
@@ -446,6 +477,8 @@ function openProductForm(id) {
   $('prodDrawerTitle').textContent = editingProduct ? 'Editar producto' : 'Nuevo producto';
   $('pName').value = p.name || '';
   $('pBrand').value = p.brand || '';
+  $('pCategory').value = p.category || 'Tenis';
+  $('pGender').value = p.gender || 'Unisex';
   $('pPrice').value = p.price || '';
   $('pSale').value = p.salePrice || '';
   $('pStock').value = p.stock ?? 10;
@@ -532,6 +565,8 @@ async function saveProduct() {
   const body = {
     name: $('pName').value.trim(),
     brand: $('pBrand').value.trim() || 'Otra',
+    category: $('pCategory').value.trim() || 'Tenis',
+    gender: $('pGender').value,
     price: Number($('pPrice').value) || 0,
     salePrice: Number($('pSale').value) || null,
     stock: Number($('pStock').value) || 0,
@@ -554,49 +589,224 @@ async function saveProduct() {
   } catch (err) { toast('Error: ' + err.message); }
 }
 
-/* ===== PROMOS ===== */
-function renderPromoTable() {
-  $('promoRows').innerHTML = promos.map(p => `<tr>
-    <td><b>${esc(p.title)}</b><br><small>${esc(p.description || '')}</small></td>
-    <td>${p.discount ? p.discount + '%' : '—'}</td>
-    <td>${esc(p.scope || 'Todos')}</td>
-    <td><span class="pill ${p.active === false ? 'off' : 'on'}">${p.active === false ? 'Inactiva' : 'Activa'}</span></td>
-    <td><div class="row-actions">
-      <button class="btn btn-line btn-sm" onclick="openPromoForm('${esc(p.id)}')">Editar</button>
-      <button class="btn-danger" onclick="removeRecord('promos','${esc(p.id)}')">Eliminar</button>
-    </div></td>
-  </tr>`).join('') || '<tr><td colspan="5" class="empty">Aún no hay promociones.</td></tr>';
+/* ===== FORMULARIOS GENÉRICOS: promociones, cupones, banners, barra y dinámicas ===== */
+const fmtDate = v => v ? new Date(v).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+const toLocalInput = v => { if (!v) return ''; const d = new Date(v); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+const vigencia = r => {
+  const now = new Date();
+  if (r.ends_at && new Date(r.ends_at) < now) return `<span class="pill off">Venció ${fmtDate(r.ends_at)}</span>`;
+  if (r.starts_at && new Date(r.starts_at) > now) return `<span class="pill warn">Empieza ${fmtDate(r.starts_at)}</span>`;
+  return r.ends_at ? `Hasta ${fmtDate(r.ends_at)}` : 'Sin fecha de fin';
+};
+const estado = r => `<span class="pill ${r.active === false ? 'off' : 'on'}">${r.active === false ? 'Inactivo' : 'Activo'}</span>`;
+const brandsList = () => [...new Set(products.map(p => p.brand).filter(Boolean))].sort();
+const catsList = () => [...new Set(['Tenis', 'Sandalias', 'Chanclas', 'Botas', ...products.map(p => p.category).filter(Boolean)])];
+const linkLabel = r => ({ ninguno: '—', producto: 'Producto: ' + (products.find(p => p.id === r.link_value)?.name || r.link_value), categoria: 'Categoría: ' + r.link_value, marca: 'Marca: ' + r.link_value, url: 'Enlace', whatsapp: 'WhatsApp' }[r.link_type || 'ninguno'] || '—');
+const scopeLabel = r => r.scope_type && r.scope_type !== 'todo'
+  ? ({ marca: 'Marca', categoria: 'Categoría', genero: 'Para', producto: 'Producto' }[r.scope_type] + ': ' + (r.scope_type === 'producto' ? (products.find(p => p.id === r.scope_value)?.name || r.scope_value) : r.scope_value))
+  : (r.scope && r.scope !== 'Todos' ? r.scope : 'Toda la tienda');
+
+/* Campos reutilizables */
+const F = {
+  dates: [
+    { key: 'starts_at', label: 'Empieza', type: 'datetime', half: true, help: 'Vacío = desde ya' },
+    { key: 'ends_at', label: 'Termina', type: 'datetime', half: true, help: 'Vacío = sin fecha de fin' }
+  ],
+  link: [
+    { key: 'link_type', label: 'Al tocarlo lleva a', type: 'select', options: [['ninguno', 'No lleva a ningún lado'], ['producto', 'Un producto'], ['categoria', 'Una categoría'], ['marca', 'Una marca'], ['whatsapp', 'WhatsApp con un mensaje'], ['url', 'Un enlace']], rerender: true },
+    { key: 'link_value', label: 'Destino', type: 'linkValue' }
+  ],
+  active: { key: 'active', label: 'Activo (visible en la tienda)', type: 'checkbox', def: true }
+};
+
+const FORMS = {
+  banners: {
+    name: 'banner', saved: 'Banner guardado ✓', endpoint: '/admin/announcements', key: 'id', fixed: { kind: 'banner' },
+    data: () => announcements.filter(a => a.kind === 'banner'),
+    fields: [
+      { key: 'title', label: 'Título grande *', type: 'text', max: 60, placeholder: 'Corre mejor. Llega más lejos.' },
+      { key: 'subtitle', label: 'Texto corto', type: 'text', max: 120, placeholder: 'Tenis de running para todos los días' },
+      { key: 'button_text', label: 'Texto del botón', type: 'text', max: 24, placeholder: 'Comprar ahora', half: true },
+      { key: 'color', label: 'Color del banner', type: 'color', def: '#146b4d', half: true },
+      ...F.link,
+      { key: 'image', label: 'Imagen del banner', type: 'image', help: 'Si el banner lleva a un producto y no subes imagen, se usa la foto de ese producto.' },
+      ...F.dates, F.active
+    ],
+    row: r => `<td><b>${esc(r.title)}</b><br><small>${esc(r.subtitle || '')}</small></td><td>${esc(linkLabel(r))}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
+  },
+  barra: {
+    name: 'aviso', saved: 'Aviso guardado ✓', endpoint: '/admin/announcements', key: 'id', fixed: { kind: 'barra' },
+    data: () => announcements.filter(a => a.kind === 'barra'),
+    fields: [
+      { key: 'title', label: 'Texto del aviso *', type: 'text', max: 90, placeholder: 'Envío gratis desde $300.000 hasta el domingo' },
+      ...F.link, ...F.dates, F.active
+    ],
+    row: r => `<td><b>${esc(r.title)}</b></td><td>${esc(linkLabel(r))}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
+  },
+  promos: {
+    name: 'promoción', saved: 'Promoción guardada ✓', endpoint: '/admin/promos', key: 'id',
+    data: () => promos,
+    fields: [
+      { key: 'title', label: 'Título *', type: 'text', max: 80, placeholder: '20 % en sandalias de mujer' },
+      { key: 'kind', label: 'Tipo', type: 'select', options: [['descuento', 'Descuento en el precio'], ['envio', 'Envío gratis desde un valor'], ['informativa', 'Solo aviso (no cambia precios)']], def: 'descuento', rerender: true },
+      { key: 'discount', label: 'Descuento %', type: 'number', min: 1, max: 90, showIf: r => r.kind === 'descuento', half: true },
+      { key: 'badge', label: 'Etiqueta corta', type: 'text', max: 20, placeholder: '-20 %', half: true },
+      { key: 'min_subtotal', label: 'Compra mínima (COP)', type: 'number', min: 0, showIf: r => r.kind === 'envio', help: 'Desde este valor en productos, el envío es gratis.' },
+      { key: 'scope_type', label: 'Aplica a', type: 'select', options: [['todo', 'Toda la tienda'], ['marca', 'Una marca'], ['categoria', 'Una categoría'], ['genero', 'Hombre o mujer'], ['producto', 'Un producto']], showIf: r => r.kind !== 'envio', rerender: true },
+      { key: 'scope_value', label: 'Cuál', type: 'scopeValue', showIf: r => r.kind !== 'envio' && r.scope_type && r.scope_type !== 'todo' },
+      { key: 'description', label: 'Descripción', type: 'textarea', max: 400 },
+      { key: 'conditions', label: 'Condiciones *', type: 'textarea', max: 2000, placeholder: 'Válido del 1 al 31 de octubre de 2026 o hasta agotar existencias (20 unidades). No acumulable con otras promociones. Aplica solo en compras por kairo…', help: 'Obligatorio para descuentos y envío gratis: vigencia, unidades disponibles y restricciones (Ley 1480, art. 33).', showIf: r => r.kind !== 'informativa' },
+      ...F.dates, F.active
+    ],
+    row: r => `<td><b>${esc(r.title)}</b><br><small>${esc(r.description || '')}</small></td><td>${{ descuento: `Descuento ${r.discount || 0} %`, envio: `Envío gratis desde ${money(r.min_subtotal)}`, informativa: 'Solo aviso' }[r.kind || 'informativa'] || 'Solo aviso'}</td><td>${esc(r.kind === 'envio' ? 'Todo el pedido' : scopeLabel(r))}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
+  },
+  coupons: {
+    name: 'cupón', saved: 'Cupón guardado ✓', endpoint: '/admin/coupons', key: 'code',
+    data: () => coupons,
+    fields: [
+      { key: 'code', label: 'Código *', type: 'text', max: 30, placeholder: 'KAIRO10', upper: true, lockOnEdit: true, help: 'Letras y números, sin espacios. No se puede cambiar después.' },
+      { key: 'type', label: 'Beneficio', type: 'select', options: [['porcentaje', 'Porcentaje de descuento'], ['valor', 'Valor fijo en pesos'], ['envio', 'Envío gratis']], def: 'porcentaje', rerender: true },
+      { key: 'value', label: 'Porcentaje %', type: 'number', min: 1, max: 90, showIf: r => r.type === 'porcentaje', half: true },
+      { key: 'max_discount', label: 'Tope del descuento (COP)', type: 'number', min: 0, showIf: r => r.type === 'porcentaje', half: true, help: '0 = sin tope' },
+      { key: 'value', label: 'Descuento en pesos', type: 'number', min: 1000, showIf: r => r.type === 'valor', id: 'valueCop' },
+      { key: 'min_subtotal', label: 'Compra mínima (COP)', type: 'number', min: 0, half: true, help: '0 = sin mínimo' },
+      { key: 'max_uses', label: 'Usos máximos', type: 'number', min: 0, half: true, help: '0 = ilimitado' },
+      { key: 'description', label: 'Descripción interna', type: 'text', max: 200, placeholder: 'Cupón para seguidores de Instagram' },
+      { key: 'conditions', label: 'Condiciones para el cliente', type: 'textarea', max: 2000, placeholder: 'Un uso por pedido. No acumulable con otros cupones. Válido hasta el 31 de octubre de 2026.' },
+      ...F.dates, F.active
+    ],
+    row: r => `<td><b class="code">${esc(r.code)}</b><br><small>${esc(r.description || '')}</small></td><td>${r.type === 'porcentaje' ? `${r.value} %${r.max_discount ? ' (tope ' + money(r.max_discount) + ')' : ''}` : r.type === 'valor' ? money(r.value) : 'Envío gratis'}${r.min_subtotal ? `<br><small>Desde ${money(r.min_subtotal)}</small>` : ''}</td><td>${r.uses || 0}${r.max_uses ? ' / ' + r.max_uses : ''}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
+  },
+  dinamicas: {
+    name: 'dinámica', saved: 'Dinámica guardada ✓', endpoint: '/admin/announcements', key: 'id', fixed: { kind: 'dinamica' },
+    data: () => announcements.filter(a => a.kind === 'dinamica'),
+    fields: [
+      { key: 'title', label: 'Nombre *', type: 'text', max: 80, placeholder: 'Reto: tu mejor foto con kAIRO' },
+      { key: 'subtitle', label: 'En una frase', type: 'text', max: 160, placeholder: 'Sube tu foto con tus tenis y etiquétanos. El jurado elige la más creativa.' },
+      { key: 'button_text', label: 'Texto del botón', type: 'text', max: 24, placeholder: 'Participar', half: true },
+      { key: 'color', label: 'Color', type: 'color', def: '#146b4d', half: true },
+      ...F.link,
+      { key: 'image', label: 'Imagen', type: 'image' },
+      { key: 'has_chance', label: 'El ganador se elige por sorteo o azar', type: 'checkbox', def: false, rerender: true },
+      { key: 'coljuegos_ref', label: 'Número de autorización de Coljuegos *', type: 'text', max: 80, showIf: r => r.has_chance, help: 'Sin este número la dinámica no se puede publicar.' },
+      { key: 'conditions', label: 'Bases y condiciones *', type: 'textarea', max: 4000, rows: 8, placeholder: 'Quién puede participar (mayores de edad residentes en Colombia), cómo participar, fechas, premio exacto, cómo y cuándo se elige al ganador, cómo se le avisa y plazo para reclamar.', help: 'Se muestran completas en la tienda. Mínimo 40 caracteres.' },
+      ...F.dates, F.active
+    ],
+    row: r => `<td><b>${esc(r.title)}</b><br><small>${esc(r.subtitle || '')}</small></td><td>${r.has_chance ? `Sorteo · ${r.coljuegos_ref ? 'Autorización ' + esc(r.coljuegos_ref) : '<span class="pill warn">Sin autorización</span>'}` : 'Concurso / reto'}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
+  }
+};
+
+let formCfg = null, formRec = null, formEditing = false;
+
+function renderTables() {
+  for (const [k, cfg] of Object.entries(FORMS)) {
+    const el = $('rows-' + k); if (!el) continue;
+    const cols = (el.closest('table').querySelectorAll('th').length);
+    const list = cfg.data();
+    el.innerHTML = list.map(r => `<tr>${cfg.row(r)}<td><div class="row-actions">
+      <button class="btn btn-line btn-sm" onclick="openForm('${k}','${esc(r[cfg.key])}')">Editar</button>
+      <button class="btn-danger" onclick="removeRecord('${cfg.endpoint.split('/').pop()}','${esc(encodeURIComponent(r[cfg.key]))}')">Eliminar</button>
+    </div></td></tr>`).join('') || `<tr><td colspan="${cols}" class="empty">${extrasError || `Todavía no hay ${cfg.name === 'cupón' ? 'cupones' : cfg.name === 'promoción' ? 'promociones' : cfg.name + 's'}.`}</td></tr>`;
+  }
 }
 
-function openPromoForm(id) {
-  editingPromo = id ? promos.find(p => p.id === id) : null;
-  const p = editingPromo || {};
-  $('promoDrawerTitle').textContent = editingPromo ? 'Editar promoción' : 'Nueva promoción';
-  $('mTitle').value = p.title || '';
-  $('mDesc').value = p.description || '';
-  $('mBadge').value = p.badge || '';
-  $('mDiscount').value = p.discount || 0;
-  $('mScope').value = p.scope || 'Todos';
-  $('mActive').checked = p.active !== false;
-  openDrawer('promoDrawer');
+function openForm(kind, key) {
+  formCfg = FORMS[kind];
+  formEditing = !!key;
+  const found = key ? formCfg.data().find(r => String(r[formCfg.key]) === String(key)) : null;
+  formRec = found ? { ...found } : {};
+  if (!found) formCfg.fields.forEach(f => { if (f.def !== undefined && formRec[f.key] === undefined) formRec[f.key] = f.def; });
+  $('formTitle').textContent = (found ? 'Editar ' : 'Nuevo ') + formCfg.name;
+  renderForm();
+  openDrawer('formDrawer');
+  setTimeout(() => $('formBody').querySelector('input,select,textarea')?.focus(), 80);
 }
 
-async function savePromo() {
-  const body = {
-    title: $('mTitle').value.trim(),
-    description: $('mDesc').value.trim(),
-    badge: $('mBadge').value.trim(),
-    discount: Number($('mDiscount').value) || 0,
-    scope: $('mScope').value,
-    active: $('mActive').checked
-  };
-  if (!body.title) { toast('Ponle un título a la promoción'); return; }
+function readForm() {
+  $('formBody').querySelectorAll('[data-k]').forEach(el => {
+    if (el.closest('.field')?.hidden) return;
+    const k = el.dataset.k;
+    if (el.type === 'checkbox') formRec[k] = el.checked;
+    else if (el.type === 'number') formRec[k] = el.value === '' ? 0 : Number(el.value);
+    else if (el.type === 'datetime-local') formRec[k] = el.value ? new Date(el.value).toISOString() : null;
+    else formRec[k] = el.dataset.upper ? el.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '') : el.value;
+  });
+}
+
+function optionsFor(type) {
+  if (type === 'producto') return products.map(p => [p.id, `${p.name} · ${p.brand}`]);
+  if (type === 'categoria') return catsList().map(c => [c, c]);
+  if (type === 'marca') return brandsList().map(b => [b, b]);
+  if (type === 'genero') return [['Hombre', 'Hombre'], ['Mujer', 'Mujer'], ['Unisex', 'Unisex']];
+  return [];
+}
+
+function fieldHTML(f, i) {
+  const id = 'ff' + i, v = formRec[f.key];
+  const help = f.help ? `<small>${f.help}</small>` : '';
+  const sel = (opts, cur) => opts.map(([val, lab]) => `<option value="${esc(val)}" ${String(cur) === String(val) ? 'selected' : ''}>${esc(lab)}</option>`).join('');
+  let input = '';
+  const re = f.rerender ? ' onchange="readForm();renderForm()"' : '';
+  switch (f.type) {
+    case 'textarea': input = `<textarea id="${id}" data-k="${f.key}" maxlength="${f.max || 2000}" rows="${f.rows || 4}" placeholder="${esc(f.placeholder || '')}">${esc(v || '')}</textarea>`; break;
+    case 'number': input = `<input id="${id}" data-k="${f.key}" type="number" min="${f.min ?? 0}" ${f.max ? `max="${f.max}"` : ''} value="${v ?? ''}">`; break;
+    case 'select': input = `<select id="${id}" data-k="${f.key}"${re}>${sel(f.options, v ?? f.options[0][0])}</select>`; break;
+    case 'datetime': input = `<input id="${id}" data-k="${f.key}" type="datetime-local" value="${toLocalInput(v)}">`; break;
+    case 'color': input = `<input id="${id}" data-k="${f.key}" type="color" value="${esc(v || f.def || '#146b4d')}">`; break;
+    case 'checkbox': return `<label class="check field" ${f.showIf && !f.showIf(formRec) ? 'hidden' : ''}><input type="checkbox" data-k="${f.key}" ${v ? 'checked' : ''}${re}> ${f.label}</label>`;
+    case 'image': input = `<div class="img-preview img-preview--sm" id="${id}-prev">${v ? `<img src="${esc(v)}" alt="">` : '<span>Sin imagen</span>'}</div>
+        <input type="hidden" data-k="${f.key}" value="${esc(v || '')}" id="${id}">
+        <div class="row-actions" style="justify-content:flex-start"><input type="file" accept="image/*" onchange="uploadFormImage(this,'${id}')">${v ? `<button type="button" class="btn-danger" onclick="$('${id}').value='';readForm();renderForm()">Quitar imagen</button>` : ''}</div>`; break;
+    case 'linkValue': {
+      const t = formRec.link_type || 'ninguno';
+      if (t === 'ninguno') return '';
+      if (['producto', 'categoria', 'marca'].includes(t)) input = `<select id="${id}" data-k="link_value"><option value="">Elige…</option>${sel(optionsFor(t), v)}</select>`;
+      else input = `<input id="${id}" data-k="link_value" type="text" maxlength="300" value="${esc(v || '')}" placeholder="${t === 'url' ? 'https://… o /terminos.html' : 'Hola kAIRO, quiero participar en…'}">`;
+      return `<div class="field"><label for="${id}">${t === 'whatsapp' ? 'Mensaje de WhatsApp' : t === 'url' ? 'Enlace' : 'Cuál'}</label>${input}</div>`;
+    }
+    case 'scopeValue': input = `<select id="${id}" data-k="scope_value"><option value="">Elige…</option>${sel(optionsFor(formRec.scope_type), v)}</select>`; break;
+    default: {
+      const lock = f.lockOnEdit && formEditing ? 'readonly' : '';
+      input = `<input id="${id}" data-k="${f.key}" type="text" maxlength="${f.max || 200}" value="${esc(v || '')}" placeholder="${esc(f.placeholder || '')}" ${f.upper ? 'data-upper="1" style="text-transform:uppercase"' : ''} ${lock}>`;
+    }
+  }
+  return `<div class="field ${f.half ? 'half' : ''}" ${f.showIf && !f.showIf(formRec) ? 'hidden' : ''}><label for="${id}">${f.label}</label>${input}${help}</div>`;
+}
+
+function renderForm() {
+  $('formBody').innerHTML = '<div class="form-grid">' + formCfg.fields.map(fieldHTML).join('') + '</div>';
+}
+
+async function uploadFormImage(input, id) {
+  const file = input.files[0]; if (!file) return;
   try {
-    if (editingPromo) await api('/admin/promos/' + editingPromo.id, { method: 'PUT', body });
-    else await api('/admin/promos', { method: 'POST', body });
-    closeDrawers(); await loadAll(); toast('Promoción guardada ✓');
-  } catch (err) { toast('Error: ' + err.message); }
+    const dataUrl = await fileToDataURL(file);
+    const r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: dataUrl } });
+    $(id).value = r.url; readForm(); renderForm(); toast('Imagen subida ✓');
+  } catch (err) { toast('Error al subir: ' + err.message); }
 }
+
+async function saveForm() {
+  readForm();
+  const body = { ...formRec, ...(formCfg.fixed || {}) };
+  // Solo se mandan los campos que el formulario muestra en este momento
+  const visible = new Set(formCfg.fields.filter(f => !f.showIf || f.showIf(formRec)).map(f => f.key === 'link_value' || f.type === 'linkValue' ? 'link_value' : f.key));
+  for (const k of Object.keys(body)) if (!visible.has(k) && !(k in (formCfg.fixed || {})) && !['link_type', 'scope_type', 'kind', 'type'].includes(k)) delete body[k];
+  if (body.kind === 'envio' || body.scope_type === 'todo') body.scope_value = '';
+  if (body.link_type === 'ninguno') body.link_value = '';
+  if (formCfg.endpoint.endsWith('coupons') && formEditing) delete body.code;
+  $('formSave').disabled = true;
+  try {
+    const key = formEditing ? encodeURIComponent(formRec[formCfg.key]) : '';
+    if (formEditing) await api(formCfg.endpoint + '/' + key, { method: 'PUT', body });
+    else await api(formCfg.endpoint, { method: 'POST', body });
+    closeDrawers(); await loadAll(); toast(formCfg.saved);
+  } catch (err) { toast(err.message, 5200); }
+  finally { $('formSave').disabled = false; }
+}
+
+/* Promociones: se dejan las funciones antiguas como alias por compatibilidad */
+function renderPromoTable() { renderTables(); }
 
 /* ===== ORDERS ===== */
 function renderOrders() {
@@ -619,6 +829,8 @@ function renderOrders() {
         ${c.shippingAdvance ? `<span class="pill warn">Envío pagado: ${money(c.shippingAdvance)}</span>` : ''}
         ${c.balanceDue ? `<span class="pill off">Saldo: ${money(c.balanceDue)}</span>` : ''}
         ${c.packaging ? `<small>${esc(c.packaging)}</small>` : '<small>Sin caja por el momento</small>'}
+        ${(o.pricing || c.pricing || {}).coupon ? `<span class="pill warn">Cupón ${esc((o.pricing || c.pricing).coupon.code)}: -${money((o.pricing || c.pricing).coupon.discount)}</span>` : ''}
+        ${(o.pricing || c.pricing || {}).freeShipping ? '<span class="pill on">Envío gratis</span>' : ''}
         ${c.consent ? `<span class="pill on" title="Autorización registrada el ${esc(new Date(c.consent.fecha).toLocaleString('es-CO'))}">Autorizó datos · v${esc(c.consent.version)}</span>` : '<span class="pill off">Sin registro de autorización</span>'}
         ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}">Escribir al cliente</a>` : ''}
         <button class="btn btn-line btn-sm" onclick="printOrderReceipt('${esc(o.id)}')">Ver recibo</button>
@@ -648,33 +860,14 @@ function fillSettings() {
   $('sName').value = settings.storeName || '';
   $('sTag').value = settings.tagline || '';
   $('sWa').value = settings.whatsapp || '';
-  $('sWord').value = settings.heroWord || '';
-  $('sTheme').value = settings.heroTheme || 'indigo';
-  $('sHeadline').value = settings.heroHeadline || '';
-  logoImageUrl = settings.heroLogo || '';
-  $('logoPreview').innerHTML = logoImageUrl ? `<img src="${esc(logoImageUrl)}" alt="">` : '<span>Sin imagen: se usa el logo de texto</span>';
-}
 
-async function uploadLogoFile(input) {
-  const file = input.files[0]; if (!file) return;
-  try {
-    const dataUrl = await fileToDataURL(file);
-    const r = await api('/admin/upload', { method: 'POST', body: { name: 'logo', data: dataUrl } });
-    logoImageUrl = r.url;
-    $('logoPreview').innerHTML = `<img src="${esc(logoImageUrl)}" alt="">`;
-    toast('Logo subido. Guarda los ajustes para aplicarlo.');
-  } catch (err) { toast('Error: ' + err.message); }
 }
 
 async function saveSettings() {
   const body = {
     storeName: $('sName').value.trim(),
     tagline: $('sTag').value.trim(),
-    whatsapp: $('sWa').value.replace(/\D/g, ''),
-    heroWord: $('sWord').value.trim(),
-    heroTheme: $('sTheme').value,
-    heroHeadline: $('sHeadline').value.trim(),
-    heroLogo: logoImageUrl
+    whatsapp: $('sWa').value.replace(/\D/g, '')
   };
   const pass = $('sPass').value.trim();
   if (pass) body.adminPassword = pass;

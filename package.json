@@ -4,9 +4,15 @@
   "description": "Tienda kAIRO — Vercel + Supabase",
   "scripts": {
     "dev": "node dev-server.js",
-    "seed": "node lib/seed-db.js"
+    "seed": "node lib/seed-db.js",
+    "build:intro": "esbuild src/intro.js --bundle --minify --format=esm --target=es2020 --legal-comments=linked --outfile=public/js/intro.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "gsap": "^3.15.0",
+    "three": "^0.186.1"
   }
 }

@@ -1,11 +1,33 @@
 {
   "builds": [
-    { "src": "api/catalog.js", "use": "@vercel/node" },
-    { "src": "api/login.js", "use": "@vercel/node" },
-    { "src": "api/orders.js", "use": "@vercel/node" },
-    { "src": "api/pqr.js", "use": "@vercel/node" },
-    { "src": "api/admin.js", "use": "@vercel/node" },
-    { "src": "public/**/*", "use": "@vercel/static" }
+    {
+      "src": "api/catalog.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/login.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/orders.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/pqr.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/coupon.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/admin.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
   ],
   "routes": [
     {
@@ -20,12 +42,37 @@
       },
       "continue": true
     },
-    { "src": "/api/catalog", "dest": "/api/catalog.js" },
-    { "src": "/api/login", "dest": "/api/login.js" },
-    { "src": "/api/orders", "dest": "/api/orders.js" },
-    { "src": "/api/pqr", "dest": "/api/pqr.js" },
-    { "src": "/api/admin", "dest": "/api/admin.js" },
-    { "src": "/api/admin/(.*)", "dest": "/api/admin.js" },
-    { "src": "/(.*)", "dest": "/public/$1" }
+    {
+      "src": "/api/catalog",
+      "dest": "/api/catalog.js"
+    },
+    {
+      "src": "/api/login",
+      "dest": "/api/login.js"
+    },
+    {
+      "src": "/api/orders",
+      "dest": "/api/orders.js"
+    },
+    {
+      "src": "/api/pqr",
+      "dest": "/api/pqr.js"
+    },
+    {
+      "src": "/api/coupon",
+      "dest": "/api/coupon.js"
+    },
+    {
+      "src": "/api/admin",
+      "dest": "/api/admin.js"
+    },
+    {
+      "src": "/api/admin/(.*)",
+      "dest": "/api/admin.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
   ]
 }

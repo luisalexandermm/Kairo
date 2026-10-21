@@ -1,4 +1,4 @@
-:root{--ink:#0b0d14;--ink-soft:#161a2b;--paper:#f2f3f1;--line:#e0e2e0;--ember:#ff4433;--ember-dark:#d1301f;--indigo:#241a46;--lime:#d8ff4f;--muted:#6a707c;--ok:#1e8e5a;--r:10px}
+:root{--ink:#0e2a20;--ink-soft:#123326;--paper:#f1f6f3;--line:#dbe5df;--ember:#146b4d;--ember-dark:#0f5a40;--indigo:#0e3b2e;--lime:#7ee2b4;--muted:#56665e;--ok:#146b4d;--danger:#b3261e;--r:12px}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Manrope',sans-serif;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font-family:inherit;font-size:inherit}
@@ -10,10 +10,10 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}
 .btn:hover{transform:translateY(-1px)}
 .btn-primary{background:var(--ember);color:#fff}.btn-primary:hover{background:var(--ember-dark)}
 .btn-dark{background:var(--ink);color:#fff}.btn-line{border:1.6px solid var(--line);background:#fff}.btn-line:hover{border-color:var(--ink)}
-.btn-danger{color:var(--ember-dark);font-weight:700;font-size:.82rem}.btn-sm{padding:7px 14px;font-size:.8rem}
+.btn-danger{color:var(--danger);font-weight:700;font-size:.82rem}.btn-sm{padding:7px 14px;font-size:.8rem}
 
 /* login */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 90% at 50% 20%,#31205c,#120c24 74%)}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(120% 90% at 50% 20%,#1d8a63,#0e3b2e 74%)}
 .login-card{background:#fff;border-radius:16px;padding:40px 36px;width:min(400px,100%);text-align:center}
 .login-card .logo{font-family:'Anton',sans-serif;font-size:2.4rem;color:var(--ink);letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:9px}.login-card .logo__image{width:58px;height:58px}
 .login-card .logo span{color:var(--ember)}
@@ -21,7 +21,7 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}
 .login-card input{width:100%;padding:13px 15px;border:1.6px solid var(--line);border-radius:var(--r);margin-bottom:14px;text-align:center;font-size:1rem}
 .login-card input:focus{outline:none;border-color:var(--ink)}
 .login-card .btn{width:100%;padding:14px}
-.login-err{color:var(--ember-dark);font-size:.85rem;margin-top:12px;min-height:20px;font-weight:700}
+.login-err{color:var(--danger);font-size:.85rem;margin-top:12px;min-height:20px;font-weight:700}
 
 /* app layout */
 .app{display:none;min-height:100vh;grid-template-columns:238px 1fr}
@@ -67,7 +67,7 @@ tr:last-child td{border-bottom:none}
 .cell-name{display:flex;align-items:center;gap:12px}
 .cell-name b{display:block;font-size:.95rem}.cell-name small{color:var(--muted);font-size:.78rem}
 .pill{display:inline-flex;padding:4px 11px;border-radius:999px;font-size:.74rem;font-weight:800}
-.pill.on{background:#e3f5ec;color:var(--ok)}.pill.off{background:#f0f0f0;color:var(--muted)}.pill.warn{background:#fff0ec;color:var(--ember-dark)}
+.pill.on{background:#e3f5ec;color:var(--ok)}.pill.off{background:#f0f0f0;color:var(--muted)}.pill.warn{background:#fff3e0;color:#8a4b00}
 .was{text-decoration:line-through;color:var(--muted);font-size:.8rem;margin-right:5px}
 .row-actions{display:flex;gap:10px;justify-content:flex-end}.empty{padding:44px;text-align:center;color:var(--muted)}
 
@@ -131,3 +131,17 @@ tr:last-child td{border-bottom:none}
   table{min-width:640px}
   .color-row{grid-template-columns:1fr 54px;}.color-row input[type=file],.color-image-preview{grid-column:1}.color-row button{grid-column:2;grid-row:2}
 }
+/* ---- anuncios, promociones, cupones y dinámicas ---- */
+[hidden]{display:none!important}
+.subhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:26px 0 12px}
+.subhead h2{font-size:1.05rem}
+.hint{color:var(--muted);font-size:.84rem;margin-top:10px}
+.notice{background:#fff8e6;border:1px solid #f0d58e;color:#5c4100;border-radius:var(--r);padding:14px 16px;font-size:.88rem;line-height:1.55;margin-bottom:18px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.form-grid>*{grid-column:1/-1}
+.form-grid>.half{grid-column:auto}
+.img-preview--sm{height:130px}
+.code{font-family:ui-monospace,Menlo,monospace;letter-spacing:.04em}
+.drawer__body input[type=file]{font-size:.8rem}
+@media(max-width:900px){.form-grid{grid-template-columns:1fr}.form-grid>.half{grid-column:1/-1}}
+.field input[type=color]{height:48px;padding:4px;cursor:pointer}
