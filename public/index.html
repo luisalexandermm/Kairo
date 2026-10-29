@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="kAIRO">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=5">
+<link rel="stylesheet" href="css/store.css?v=8">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -112,8 +112,14 @@
       <a href="#catalogo">Catálogo</a>
       <a href="/seguimiento.html">Seguir mi pedido</a>
     </nav>
+    <form class="search" role="search" id="searchForm" onsubmit="return false">
+      <label for="q"><svg aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Buscar por marca, modelo o tipo</span>
+        <input id="q" type="search" placeholder="Busca Nike, sandalias, Samba…" autocomplete="off" enterkeyhint="search">
+        <button type="button" class="clear" id="qClear" hidden>Borrar</button>
+      </label>
+    </form>
     <div class="hdr__actions">
-      <button class="icon-btn" type="button" id="searchBtn" aria-label="Buscar en el catálogo"><svg aria-hidden="true"><use href="#i-search"/></svg></button>
+      <button class="icon-btn" type="button" id="searchBtn" aria-label="Buscar en el catálogo" aria-expanded="false" aria-controls="searchForm"><svg aria-hidden="true"><use href="#i-search"/></svg></button>
       <button class="icon-btn" type="button" id="cartBtn" aria-haspopup="dialog" aria-label="Abrir carrito, 0 productos"><svg aria-hidden="true"><use href="#i-cart"/></svg><span class="badge" id="cartBadge" hidden>0</span></button>
     </div>
   </div>
@@ -124,19 +130,21 @@
 <main id="inicio">
   <h1 class="sr-only">kAIRO Sneakers: tenis, sandalias, chanclas y botas para hombre y mujer</h1>
   <div class="wrap">
-    <form class="search" role="search" id="searchForm" onsubmit="return false">
-      <label for="q"><svg aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Buscar por marca, modelo o tipo</span>
-        <input id="q" type="search" placeholder="Busca Nike, sandalias, Samba…" autocomplete="off" enterkeyhint="search">
-        <button type="button" class="clear" id="qClear" hidden>Borrar</button>
-      </label>
-    </form>
-
     <section class="hero" aria-roledescription="carrusel" aria-label="Novedades y promociones">
       <div class="carousel">
         <div class="slides" id="slides" tabindex="-1"></div>
         <div class="car-ctrl" id="carCtrl"></div>
+        <button type="button" class="car-arrow car-arrow--prev" id="carPrev" aria-label="Diapositiva anterior" hidden><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        <button type="button" class="car-arrow" id="carNext" aria-label="Diapositiva siguiente" hidden><svg aria-hidden="true"><use href="#i-arrow"/></svg></button>
       </div>
     </section>
+
+    <ul class="perks" aria-label="Por qué comprar en kAIRO">
+      <li><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Envíos a toda Colombia</b>Directo a tu puerta</span></li>
+      <li><svg aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Nequi o contraentrega</b>Paga como prefieras</span></li>
+      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Sigue tu pedido</b>Con tu número de pedido</span></li>
+      <li><svg aria-hidden="true"><use href="#i-spark"/></svg><span><b>Retracto en 5 días</b>Compra con tranquilidad</span></li>
+    </ul>
 
     <section class="cats" aria-labelledby="h-cats">
       <h2 id="h-cats" class="sr-only">Categorías</h2>
@@ -190,7 +198,7 @@
         <img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers" width="178" height="38">
         <p style="margin:12px 0 10px">Tenis, sandalias, chanclas y botas para hombre y mujer. Envíos a toda Colombia. Todos los productos se entregan sin caja.</p>
         <div class="foot-data">
-          <span>Responsable: <span data-negocio="responsable"></span></span>
+    
           <span>Dirección: <span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span></span>
           <span>Correo: <a data-negocio="correo"></a></span>
           <span>WhatsApp: <a data-negocio="telefonoVisible" target="_blank" rel="noopener"></a></span>
@@ -346,6 +354,7 @@
       <p class="warn"><b>Tranquilo si cambias a la app de Nequi:</b> tu pedido no se pierde. Si la página se cierra o se recarga, al volver la verás aquí mismo.</p>
       <form id="refForm" novalidate style="text-align:left">
         <div class="field"><label for="fRef">Referencia o número del comprobante *</label><input id="fRef" maxlength="60" autocomplete="off" aria-describedby="fRef-e fRef-h"><p class="hint" id="fRef-h">Aparece en el comprobante de Nequi después de pagar.</p><p class="err" id="fRef-e" hidden></p></div>
+        <div class="field"><label for="fReceipt">Foto del comprobante (opcional)</label><input id="fReceipt" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="fReceipt-h fReceipt-status"><p class="hint" id="fReceipt-h">JPG, PNG o WEBP. La foto se reduce antes de enviarse y queda privada para que solo la revise la tienda.</p><p class="hint" id="fReceipt-status" role="status" aria-live="polite"></p></div>
         <button type="submit" class="btn btn-primary btn-block" id="refBtn"><svg aria-hidden="true"><use href="#i-check"/></svg>Ya pagué, enviar referencia</button>
       </form>
       <a class="btn btn-wa btn-block" id="payWa" href="#" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Enviar comprobante por WhatsApp</a>
@@ -372,6 +381,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="/js/tienda.js?v=5"></script>
+<script src="js/tienda.js?v=8"></script>
 </body>
 </html>

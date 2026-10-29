@@ -174,7 +174,7 @@
       return '<article class="order-card' + (o.status === 'Recibido' ? ' is-new' : '') + '" aria-labelledby="o-' + esc(o.id) + '">' +
         '<div class="order-card__top"><div><h2 class="order-no" id="o-' + esc(o.id) + '">' + esc(o.id) + '</h2><small>' + fdate(o.created_at) + '</small></div><span class="big-price">' + money(o.total) + '</span></div>' +
         '<div class="order-meta">' + statusPill(o) + '<span class="pill off">' + esc(c.pago || 'Sin método') + '</span>' + (pr.coupon ? '<span class="pill off">Cupón ' + esc(pr.coupon.code) + '</span>' : '') + '<span class="pill warn">Sin caja</span></div>' +
-        (c.pagoReportado ? '<p class="ref-box"><b>Referencia de pago reportada por el cliente:</b> ' + esc(c.pagoReportado.ref) + ' <small>(' + fdate(c.pagoReportado.at) + ')</small><br>Búscala en tu Nequi antes de confirmar.</p>' : '') +
+        (c.pagoReportado ? '<p class="ref-box"><b>Referencia de pago reportada por el cliente:</b> ' + esc(c.pagoReportado.ref) + ' <small>(' + fdate(c.pagoReportado.at) + ')</small><br>Búscala en tu Nequi antes de confirmar.' + (c.pagoReportado.hasComprobante ? ' <button class="btn btn-line btn-sm" type="button" data-proof="' + esc(o.id) + '">Ver foto del comprobante</button>' : '') + '</p>' : '') +
         '<p><b>' + esc(c.nombre || 'Sin nombre') + '</b> · ' + esc(tel) + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + (c.correo ? ' · ' + esc(c.correo) : '') + '<br><small>' + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</small>' + (c.notas ? '<br><small>Notas: ' + esc(c.notas) + '</small>' : '') + '</p>' +
         '<ul class="order-items">' + items + '</ul>' + lines +
         '<ol class="timeline" aria-label="Seguimiento del pedido">' + steps.map(function (s) { return '<li class="' + s.state + '">' + esc(s.label) + (s.at ? '<small>' + fdate(s.at) + '</small>' : '') + '</li>'; }).join('') + '</ol>' +
@@ -208,9 +208,17 @@
     } catch (err) { toast(err.message, 4500); btn.disabled = false; }
   });
   $('orderList').addEventListener('click', async function (e) {
-    var r = e.target.closest('[data-receipt]'), cl = e.target.closest('[data-copylink]');
+    var r = e.target.closest('[data-receipt]'), cl = e.target.closest('[data-copylink]'), proof = e.target.closest('[data-proof]');
     if (r) printReceipt(D.orders.find(function (o) { return o.id === r.dataset.receipt; }));
     if (cl) { var o = D.orders.find(function (x) { return x.id === cl.dataset.copylink; }); try { await navigator.clipboard.writeText(trackLink(o)); toast('Enlace copiado'); } catch (x) { prompt('Copia el enlace:', trackLink(o)); } }
+    if (proof) {
+      var tab = window.open('about:blank', '_blank');
+      if (!tab) { toast('Permite las ventanas emergentes para ver el comprobante'); return; }
+      try {
+        var result = await api('/admin/orders/' + encodeURIComponent(proof.dataset.proof) + '/comprobante');
+        tab.location.replace(result.url);
+      } catch (err) { tab.close(); toast(err.message, 4500); }
+    }
   });
 
   /* Recibo completo del pedido (para imprimir o guardar en PDF) */

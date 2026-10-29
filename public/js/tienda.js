@@ -36,6 +36,23 @@
     del: function (k) { try { localStorage.removeItem(k); } catch (e) { } }
   };
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* Tablet y PC: animaciones de entrada al hacer scroll (el móvil queda liviano) */
+  var FX = !reduceMotion && window.matchMedia && matchMedia('(min-width: 700px)').matches && 'IntersectionObserver' in window;
+  if (FX) document.documentElement.classList.add('fx');
+  var io = FX ? new IntersectionObserver(function (es) {
+    es.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin: '0px 0px -8% 0px' }) : null;
+  function reveal(nodes, cols) {
+    if (!io) return;
+    Array.prototype.forEach.call(nodes, function (n, k) {
+      n.classList.add('rv'); n.style.setProperty('--d', (k % (cols || 4)) * 80 + 'ms'); io.observe(n);
+    });
+  }
+  // Al terminar se quitan las clases para que el hover de las tarjetas vuelva a funcionar
+  document.addEventListener('animationend', function (e) {
+    if (e.animationName === 'rvIn') { e.target.classList.remove('rv', 'in'); e.target.style.removeProperty('--d'); }
+  });
   function toast(m) {
     var t = $('toast'); t.textContent = m; t.classList.add('show');
     clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove('show'); }, 2800);
@@ -220,6 +237,7 @@
         '<button type="button" class="card__open" data-open="' + esc(p.id) + '" tabindex="-1" aria-hidden="true"></button>' +
         '</article>';
     }).join('');
+    reveal(g.children, matchMedia('(min-width: 980px)').matches ? 4 : 3);
   }
   document.addEventListener('click', function (e) {
     var o = e.target.closest('[data-open]'); if (o) { openProduct(o.dataset.open); return; }
@@ -235,7 +253,16 @@
   });
   $('q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); setFilter({ q: this.value.trim() }, true); } });
   $('qClear').addEventListener('click', function () { $('q').value = ''; this.hidden = true; setFilter({ q: '' }); $('q').focus(); });
-  function focusSearch() { $('q').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' }); setTimeout(function () { $('q').focus(); }, 250); }
+  function focusSearch() {
+    var header = $('hdr'), isCompact = window.matchMedia('(max-width: 699px)').matches;
+    if (isCompact) {
+      var open = !header.classList.contains('search-open');
+      header.classList.toggle('search-open', open);
+      $('searchBtn').setAttribute('aria-expanded', String(open));
+      if (!open) return;
+    }
+    $('q').focus({ preventScroll: true });
+  }
   $('searchBtn').addEventListener('click', focusSearch);
   $('bnSearch').addEventListener('click', focusSearch);
 
@@ -261,8 +288,9 @@
   function slideHTML(s, i, n) {
     var bg = s.color || '#0e4d38', dark = luminance(bg) > 0.2;
     var grad = dark ? 'linear-gradient(135deg,' + bg + ' 0%,' + shade(bg, 0.35) + ' 100%)' : 'linear-gradient(135deg,' + shade(bg, -0.25) + ' 0%,' + bg + ' 60%,' + shade(bg, 0.12) + ' 130%)';
-    return '<div class="slide' + (dark ? ' ink-dark' : '') + '" role="group" aria-roledescription="diapositiva" aria-label="' + (i + 1) + ' de ' + n + '" style="--slide-bg:' + grad + '">' +
-      '<div>' + (s.eyebrow ? '<span class="slide__eyebrow">' + esc(s.eyebrow) + '</span>' : '') + '<h2>' + esc(s.title) + '</h2>' + (s.subtitle ? '<p>' + esc(s.subtitle) + '</p>' : '') +
+    return '<div class="slide' + (dark ? ' ink-dark' : '') + (i === 0 ? ' is-active' : '') + '" role="group" aria-roledescription="diapositiva" aria-label="' + (i + 1) + ' de ' + n + '" style="--slide-bg:' + grad + '">' +
+      '<span class="slide__ghost" aria-hidden="true">kAIRO</span>' +
+      '<div class="slide__txt">' + (s.eyebrow ? '<span class="slide__eyebrow">' + esc(s.eyebrow) + '</span>' : '') + '<h2>' + esc(s.title) + '</h2>' + (s.subtitle ? '<p>' + esc(s.subtitle) + '</p>' : '') +
       (s.button ? '<button type="button" class="btn ' + (dark ? 'btn-primary' : 'btn-light') + '" data-slide="' + i + '">' + esc(s.button) + '</button>' : '') + '</div>' +
       '<div class="slide__art" aria-hidden="true">' + (s.photo ? '<img class="photo-banner" src="' + esc(s.photo) + '" alt="">' : s.product ? art(s.product, '') : '') + '</div></div>';
   }
@@ -282,14 +310,22 @@
     $('slides').innerHTML = SLIDES.map(function (s, i) { return slideHTML(s, i, SLIDES.length); }).join('');
     $('carCtrl').innerHTML = SLIDES.length > 1 ? SLIDES.map(function (_, i) { return '<button type="button" class="dot" data-dot="' + i + '" aria-label="Ver diapositiva ' + (i + 1) + '"' + (i === 0 ? ' aria-current="true"' : '') + '></button>'; }).join('') +
       '<button type="button" class="car-pause" id="carPause" aria-label="' + (car.playing ? 'Pausar' : 'Reproducir') + ' el carrusel"><svg aria-hidden="true"><use href="#' + (car.playing ? 'i-pause' : 'i-play') + '"/></svg></button>' : '';
+    $('carPrev').hidden = $('carNext').hidden = SLIDES.length < 2;
     restartCarousel();
+  }
+  // La diapositiva activa recibe .is-active: en tablet y PC eso dispara su animación de entrada
+  function markSlide(i) {
+    Array.prototype.forEach.call($('slides').children, function (s, k) { s.classList.toggle('is-active', k === i); });
+    document.querySelectorAll('[data-dot]').forEach(function (d, k) { if (k === i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
   }
   function goSlide(i, focus) {
     car.i = (i + car.n) % car.n;
     var el = $('slides'); el.scrollTo({ left: el.clientWidth * car.i, behavior: reduceMotion ? 'auto' : 'smooth' });
-    document.querySelectorAll('[data-dot]').forEach(function (d, k) { if (k === car.i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); });
+    markSlide(car.i);
     if (focus) { var b = el.children[car.i] && el.children[car.i].querySelector('button'); if (b) b.focus({ preventScroll: true }); }
   }
+  $('carPrev').addEventListener('click', function () { goSlide(car.i - 1); restartCarousel(); });
+  $('carNext').addEventListener('click', function () { goSlide(car.i + 1); restartCarousel(); });
   function restartCarousel() {
     clearInterval(car.timer);
     if (car.playing && car.n > 1) car.timer = setInterval(function () { if (!document.hidden && !stack.length) goSlide(car.i + 1); }, 6000);
@@ -303,7 +339,7 @@
   var scT;
   $('slides').addEventListener('scroll', function () {
     clearTimeout(scT); var el = this;
-    scT = setTimeout(function () { var i = Math.round(el.scrollLeft / el.clientWidth); if (i !== car.i) { car.i = i; document.querySelectorAll('[data-dot]').forEach(function (d, k) { if (k === i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current'); }); } }, 120);
+    scT = setTimeout(function () { var i = Math.round(el.scrollLeft / el.clientWidth); if (i !== car.i) { car.i = i; markSlide(i); } }, 120);
   });
   $('slides').addEventListener('focusin', function () { car.playing = false; updPause(); restartCarousel(); });
   $('slides').addEventListener('click', function (e) {
@@ -558,8 +594,49 @@
     $('payCodNote').textContent = o.pricing.freeShipping ? 'Tu pedido tiene envío gratis: el anticipo se descuenta de lo que pagas al recibir.' : 'El anticipo cubre el envío y confirma tu pedido contraentrega.';
     $('payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, pagué mi pedido ' + o.numero + ' por ' + money(val) + '. Te envío el comprobante.');
     $('fRef').value = ''; fieldErr('fRef', '');
+    $('fReceipt').value = ''; $('fReceipt-status').textContent = '';
     if (N.pintar) N.pintar();
   }
+  function receiptData(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return Promise.reject(new Error('Elige una imagen JPG, PNG o WEBP.'));
+    if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error('La foto original debe pesar menos de 12 MB.'));
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), image = new Image();
+      image.onload = async function () {
+        URL.revokeObjectURL(url);
+        var scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+        var width = Math.max(1, Math.round(image.naturalWidth * scale));
+        var height = Math.max(1, Math.round(image.naturalHeight * scale));
+        var canvas = document.createElement('canvas'), context = canvas.getContext('2d');
+        if (!context) { reject(new Error('No se pudo preparar la foto en este navegador.')); return; }
+        try {
+          for (var attempt = 0; attempt < 7; attempt++) {
+            canvas.width = width; canvas.height = height;
+            context.fillStyle = '#fff'; context.fillRect(0, 0, width, height);
+            context.drawImage(image, 0, 0, width, height);
+            for (var quality of [0.82, 0.72, 0.62, 0.52]) {
+              var blob = await new Promise(function (done) { canvas.toBlob(done, 'image/jpeg', quality); });
+              if (blob && blob.size <= 1800 * 1024) {
+                var reader = new FileReader();
+                reader.onload = function () { resolve(reader.result); };
+                reader.onerror = function () { reject(new Error('No se pudo leer la foto.')); };
+                reader.readAsDataURL(blob);
+                return;
+              }
+            }
+            width = Math.round(width * 0.8); height = Math.round(height * 0.8);
+          }
+          reject(new Error('No se pudo reducir la foto a un tamaño permitido.'));
+        } catch (error) { reject(error); }
+      };
+      image.onerror = function () { URL.revokeObjectURL(url); reject(new Error('No se pudo abrir la foto. Prueba con JPG, PNG o WEBP.')); };
+      image.src = url;
+    });
+  }
+  $('fReceipt').addEventListener('change', function () {
+    var file = this.files && this.files[0];
+    $('fReceipt-status').textContent = file ? 'Foto seleccionada: ' + file.name : '';
+  });
   var COPY = { key: function () { return N.nequiLlave || ''; }, val: function () { return String(Math.round(payValue())); }, msg: function () { return S.order ? S.order.numero : ''; } };
   $('coStep2').addEventListener('click', async function (e) {
     var b = e.target.closest('[data-copy]'); if (!b) return;
@@ -574,13 +651,21 @@
     e.preventDefault();
     var ref = $('fRef').value.trim();
     if (!fieldErr('fRef', ref.length >= 3 ? '' : 'Escribe la referencia que aparece en tu comprobante de Nequi.')) { $('fRef').focus(); return; }
+    var file = $('fReceipt').files && $('fReceipt').files[0];
     $('refBtn').disabled = true;
     try {
-      await api('/api/track', { numero: S.order.numero, ultimos4: S.order.ultimos4, reportarPago: ref });
+      $('fReceipt-status').textContent = file ? 'Preparando y enviando la foto…' : '';
+      var comprobante = file ? await receiptData(file) : '';
+      var result = await api('/api/track', {
+        numero: S.order.numero, ultimos4: S.order.ultimos4, reportarPago: ref,
+        ...(comprobante ? { comprobante: comprobante } : {})
+      });
+      S.order.comprobante = result.comprobanteRecibido;
       S.order.step = 'reportado'; store.set(K_ORDER, S.order);
       renderDone(); showStep(3); $('doneTitle').focus();
     } catch (err) {
-      fieldErr('fRef', err instanceof TypeError ? 'No hay conexión. Tu pedido está guardado; intenta de nuevo en un momento.' : err.message);
+      if (file) $('fReceipt-status').textContent = err instanceof TypeError ? 'No hay conexión. Intenta enviar la referencia y la foto de nuevo.' : err.message;
+      else fieldErr('fRef', err instanceof TypeError ? 'No hay conexión. Tu pedido está guardado; intenta de nuevo en un momento.' : err.message);
       if (err.status === 409) { S.order.step = 'reportado'; store.set(K_ORDER, S.order); renderDone(); showStep(3); }
     } finally { $('refBtn').disabled = false; }
   });
@@ -588,7 +673,7 @@
   function renderDone() {
     var o = S.order, l = orderLinks(o);
     $('doneNo').textContent = o.numero;
-    $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos la referencia de tu pago. Cuando la verifiquemos, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
+    $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos la referencia de tu pago' + (o.comprobante ? ' y la foto del comprobante' : '') + '. Cuando la verifiquemos, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
     $('doneReceipt').href = l.recibo; $('doneTrack').href = l.seg;
     $('doneWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, tengo una pregunta sobre mi pedido ' + o.numero);
   }
@@ -674,7 +759,20 @@
 
   restore();
   renderChips(); renderGenders(); renderBrands(); renderCart(); renderGrid();
+  reveal(document.querySelectorAll('.perks li'));
+  reveal(document.querySelectorAll('.cats, .sec-head, #genders, .promo-row, .help'), 1);
   loadCatalog();
+
+  // Tablet y PC con mouse: el tenis del hero sigue suavemente al puntero
+  if (FX && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    var heroEl = document.querySelector('.hero');
+    heroEl.addEventListener('pointermove', function (e) {
+      var r = heroEl.getBoundingClientRect();
+      heroEl.style.setProperty('--mx', ((e.clientX - r.left) / r.width - .5).toFixed(3));
+      heroEl.style.setProperty('--my', ((e.clientY - r.top) / r.height - .5).toFixed(3));
+    });
+    heroEl.addEventListener('pointerleave', function () { heroEl.style.setProperty('--mx', 0); heroEl.style.setProperty('--my', 0); });
+  }
   window.addEventListener('kairo:ready', function () {
     renderResume();
     // Volvió después de una recarga o de cambiar a Nequi: lo llevamos directo al pago

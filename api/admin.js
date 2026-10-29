@@ -117,7 +117,7 @@ module.exports = async (req, res) => {
   if (!checkToken(req.headers['x-admin-token'])) return err(res, 'Sesión vencida. Vuelve a entrar.', 401);
 
   const parts = (req.url || '').split('?')[0].replace(/^\/api\/admin\/?/, '').split('/').filter(Boolean).map(decodeURIComponent);
-  const [section, id] = parts;
+  const [section, id, action] = parts;
   const method = req.method;
   const body = req.body || {};
   const nowIso = () => new Date().toISOString();
@@ -275,11 +275,37 @@ module.exports = async (req, res) => {
 
   /* -------- PEDIDOS (estado + seguimiento) -------- */
   if (section === 'orders') {
+    if (method === 'GET' && id && action === 'comprobante') {
+      const { data: order, error } = await supabase.from('orders').select('customer').eq('id', id).maybeSingle();
+      if (error || !order) return err(res, 'Pedido no encontrado', 404);
+      const receiptPath = order.customer && order.customer.pagoReportado && order.customer.pagoReportado.comprobantePath;
+      if (!receiptPath || !receiptPath.startsWith(`${id}/`)) return err(res, 'Este pedido no tiene una foto del comprobante.', 404);
+      try {
+        const { data, error: signedError } = await supabase.storage.from('kairo-comprobantes').createSignedUrl(receiptPath, 60);
+        if (signedError) {
+          console.error('No se pudo generar enlace del comprobante:', signedError.message);
+          return err(res, 'No se pudo abrir la foto del comprobante.', 500);
+        }
+        return ok(res, { url: data.signedUrl });
+      } catch (signedError) {
+        console.error('No se pudo generar enlace del comprobante:', signedError.message);
+        return err(res, 'No se pudo abrir la foto del comprobante.', 500);
+      }
+    }
     if (method === 'GET') {
       const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
       if (error) return err(res, error.message, 500);
       return ok(res, (data || []).map(o => ({
-        ...o, status: normalizeStatus(o.status), tracking: trackingOf(o),
+        ...o,
+        customer: o.customer && o.customer.pagoReportado ? {
+          ...o.customer,
+          pagoReportado: {
+            ref: o.customer.pagoReportado.ref,
+            at: o.customer.pagoReportado.at,
+            hasComprobante: !!o.customer.pagoReportado.comprobantePath
+          }
+        } : o.customer,
+        status: normalizeStatus(o.status), tracking: trackingOf(o),
         pricing: o.pricing || (o.customer && o.customer.pricing) || null
       })));
     }

@@ -57,6 +57,9 @@ main{overflow-x:clip}
 .search input{border:0;outline:0;background:transparent;flex:1;height:100%;font-size:1rem;min-width:0}
 .search input::placeholder{color:#62736a}
 .search .clear{font-size:.85rem;font-weight:800;color:var(--green);padding:6px 4px}
+.hdr .search{display:none;position:absolute;top:calc(100% + 6px);left:18px;right:18px;padding:0;filter:drop-shadow(0 8px 14px rgba(10,42,32,.16))}
+.hdr.search-open .search{display:block}
+.hdr .search label{height:48px}
 
 /* ---------- Hero / carrusel ---------- */
 .hero{padding:6px 0 8px}
@@ -365,6 +368,10 @@ html.k-loading body{overflow:hidden}
 
 /* ---------- Escritorio ---------- */
 @media (min-width:700px){
+  .hdr .search{display:block;position:static;flex:1 1 220px;min-width:160px;max-width:320px;margin:0 auto 0 14px;filter:none}
+  .hdr .search label{height:44px;border-radius:14px}
+  .hdr__actions{margin-left:0}
+  #searchBtn{display:none}
   .chips{justify-content:center}
   .grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:64px 20px}
   .card__media{height:150px}
@@ -394,6 +401,93 @@ html.k-loading body{overflow:hidden}
   .row2{grid-template-columns:1fr}
 }
 
+/* =====================================================================
+   Tablet y PC: hero grande, franja de beneficios y animaciones.
+   En móvil nada de esto se muestra (ni el texto fantasma, ni flechas).
+   ===================================================================== */
+.slide__ghost,.car-arrow,.perks{display:none}
+@media (min-width:700px){
+  /* Hero a sangre: todo el ancho de la ventana y el alto visible bajo el header (64px) */
+  .hero{padding:0;width:100vw;margin-left:calc(50% - 50vw)}
+  .slides,.slide{border-radius:0}
+  .slide{min-height:calc(100vh - 64px);min-height:calc(100svh - 64px);padding:44px 48px 58px}
+  .slide__ghost{display:block;position:absolute;left:-1%;bottom:-4%;z-index:-1;font-family:'Anton',sans-serif;font-size:clamp(9rem,19vw,17rem);line-height:.8;letter-spacing:.01em;white-space:nowrap;color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.2);pointer-events:none;user-select:none}
+  .slide.ink-dark .slide__ghost{-webkit-text-stroke-color:rgba(15,36,28,.14)}
+  .slide::after{width:420px;height:420px;right:-80px;top:-120px}
+  .slide__eyebrow{font-size:.85rem;letter-spacing:.14em}
+  .slide h2{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(2.5rem,5.4vw,4.8rem);line-height:.94;letter-spacing:.01em;margin:10px 0 14px}
+  .slide p{font-size:1.05rem;max-width:38ch}
+  .slide .btn{margin-top:22px;padding:15px 28px;font-size:1rem}
+  .slide__art img,.slide__art svg{max-height:280px}
+  .slide__art img.photo-banner{max-height:300px}
+  .car-ctrl{bottom:16px}
+
+  .perks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;list-style:none;margin:14px 0 2px}
+  .perks li{display:flex;align-items:center;gap:12px;background:#fff;border-radius:20px;padding:14px 16px;box-shadow:0 2px 12px -8px rgba(10,42,32,.4)}
+  .perks svg{width:42px;height:42px;padding:10px;border-radius:14px;background:var(--forest);color:var(--lime);flex:0 0 auto}
+  .perks b{display:block;font-size:.93rem;font-weight:800;line-height:1.2;color:var(--ink)}
+  .perks span{font-size:.82rem;color:var(--muted);font-weight:600}
+
+  .sec{padding:34px 0 8px}
+  .sec-head h2{font-size:1.7rem}
+  .sec-head p{font-size:.95rem}
+  .genders{gap:20px}
+  .gcard{min-height:300px;padding:28px 28px 24px}
+  .gcard h3{font-size:clamp(2.8rem,5.6vw,4.4rem)}
+  .gcard__art{width:60%;right:-6%;bottom:40px;transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+  .gcard__art img{max-height:220px}
+  .brands li button{font-size:1.7rem;padding:20px 32px}
+}
+@media (min-width:980px){
+  .slide{padding:60px 72px 68px;grid-template-columns:1fr 1fr}
+  .slide__art img,.slide__art svg{max-height:380px;width:112%}
+  .slide__art img.photo-banner{max-height:400px}
+  .car-arrow{display:grid;place-items:center;position:absolute;top:50%;right:18px;z-index:2;width:52px;height:52px;border-radius:999px;background:rgba(0,0,0,.28);color:#fff;border:1px solid rgba(255,255,255,.28);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transform:translateY(-50%);transition:background .2s,color .2s,transform .2s}
+  .car-arrow svg{width:22px;height:22px}
+  .car-arrow--prev{right:auto;left:18px}
+  .car-arrow--prev svg{transform:rotate(180deg)}
+  .car-arrow:hover{background:var(--lime);color:#0e0e0e;transform:translateY(-50%) scale(1.06)}
+  .perks{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:18px}
+  .gcard{min-height:340px;padding:34px 34px 28px}
+  .gcard__art img{max-height:260px}
+  .grid{gap:70px 24px}
+  .card__media{height:170px}
+  .card__shoe{height:250px}
+  .help{padding:40px 48px}
+  .help h2{font-size:1.6rem}
+}
+@media (min-width:1280px){
+  .wrap{max-width:1320px;padding:0 28px}
+  .hdr .search{max-width:400px}
+}
+@media (min-width:700px) and (hover:hover){
+  .gcard:hover .gcard__art{transform:rotate(-26deg) translate(-4%,-8%) scale(1.08)}
+  .card:hover{transform:translateY(-6px);box-shadow:0 26px 40px -20px rgba(10,42,32,.55)}
+  .perks li{transition:transform .25s}
+  .perks li:hover{transform:translateY(-3px)}
+}
+
+/* Animaciones (solo con html.fx: tablet/PC y sin "reducir movimiento").
+   Arrancan cuando se va la pantalla de carga. */
+@keyframes rvIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes txtIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes artIn{from{opacity:0;transform:translateX(70px) rotate(10deg) scale(.9)}to{opacity:1;transform:none}}
+@keyframes ghostIn{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -14px}}
+.fx .rv{opacity:0}
+.fx:not(.k-loading) .rv.in{animation:rvIn .75s cubic-bezier(.2,.8,.2,1) var(--d,0ms) both}
+.fx .slide:not(.is-active) .slide__txt,.fx .slide:not(.is-active) .slide__art{opacity:0}
+.fx:not(.k-loading) .slide.is-active .slide__txt>*{animation:txtIn .7s cubic-bezier(.2,.8,.2,1) both}
+.fx:not(.k-loading) .slide.is-active .slide__txt>:nth-child(2){animation-delay:.08s}
+.fx:not(.k-loading) .slide.is-active .slide__txt>:nth-child(3){animation-delay:.16s}
+.fx:not(.k-loading) .slide.is-active .slide__txt>:nth-child(4){animation-delay:.24s}
+.fx:not(.k-loading) .slide.is-active .slide__art{animation:artIn 1s cubic-bezier(.2,.8,.2,1) .1s both}
+.fx:not(.k-loading) .slide.is-active .slide__ghost{animation:ghostIn 1.3s cubic-bezier(.2,.8,.2,1) both}
+.fx .slide__art>img:not(.photo-banner),.fx .slide__art>svg{animation:floaty 5s ease-in-out infinite}
+/* --mx/--my (de -0.5 a 0.5) los pone tienda.js según el puntero */
+.fx .slide__art{translate:calc(var(--mx,0) * -32px) calc(var(--my,0) * -20px);transition:translate .5s ease-out}
+.fx .slide__ghost{translate:calc(var(--mx,0) * 26px) 0;transition:translate .7s ease-out}
+
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -403,7 +497,7 @@ html.k-loading body{overflow:hidden}
   .brands__pause{display:none}
   .slides{scroll-behavior:auto}
 }
-@media print{.bnav,.hdr,.topbar,.toast,.overlay{display:none!important}}
+@media print{.bnav,.hdr,.topbar,.toast,.overlay{display:none!important}.rv{opacity:1!important}}
 
 /* ---------- Complementos ---------- */
 .resume{position:sticky;top:64px;z-index:55;background:var(--forest);color:#fff;font-size:.9rem}

@@ -108,7 +108,7 @@
       (d.status === 'Cancelado' ? '<p class="callout">Este pedido fue cancelado. Si tienes dudas, escríbenos.</p>' : '<ol class="timeline" aria-label="Estados del pedido">' + pasos + '</ol>') +
       (d.guia ? '<div class="note-box"><b>Guía de envío:</b> ' + esc(d.guia) + (d.transportadora ? ' (' + esc(d.transportadora) + ')' : '') + '</div>' : '') +
       (d.nota ? '<div class="note-box"><b>Mensaje de la tienda:</b> ' + esc(d.nota) + '</div>' : '') +
-      (d.pagoReportado && d.status === 'Recibido' ? '<div class="note-box"><b>Recibimos la referencia de tu pago.</b> La estamos verificando; cuando la confirmemos, el pedido pasa a “Pago confirmado”.</div>' : '') +
+      (d.pagoReportado && d.status === 'Recibido' ? '<div class="note-box"><b>Recibimos la referencia de tu pago' + (d.pagoReportado.hasComprobante ? ' y la foto del comprobante' : '') + '.</b> La estamos verificando; cuando la confirmemos, el pedido pasa a “Pago confirmado”.</div>' : '') +
       '<div class="items">' + items + (d.discount ? '<div><span>Cupón ' + esc(d.couponCode) + '</span><span>-' + money(d.discount) + '</span></div>' : '') +
       (d.envio != null ? '<div><span>Envío</span><span>' + (d.envio ? money(d.envio) : 'Gratis') + '</span></div>' : '') +
       '<div class="tot"><span>Total</span><span>' + money(d.totalConEnvio || d.total) + '</span></div>' +

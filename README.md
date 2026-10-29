@@ -6,7 +6,7 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 - **Logos nuevos** en el encabezado, el ícono de la app (PWA), el favicon, el recibo y el panel.
 - **Pantalla de carga con GSAP** (“Cargando tu experiencia · KAIRO Sneakers · Arma tu estilo”): el tenis del logo se arma pieza por pieza mientras carga el catálogo. Reemplaza la intro 3D en la web y en la PWA. Respeta “reducir movimiento” y nunca bloquea más de 5 s.
   - Fuente: `src/loader.js` → `npm install && npm run build:loader` genera `public/js/loader.js`.
-- **Pago por Nequi con QR** (`public/img/nequi-qr.png`, titular Luis Moreno, llave @3145312045): al confirmar el pedido se muestra el QR, el valor exacto y botones para copiar llave, valor y número de pedido. El cliente escribe la referencia del pago y el pedido queda “Pago reportado”.
+- **Pago por Nequi con QR** (`public/img/nequi-qr.png`, titular Luis Moreno, llave @3145312045): al confirmar el pedido se muestra el QR, el valor exacto y botones para copiar llave, valor y número de pedido. El cliente puede escribir la referencia y adjuntar una foto JPG, PNG o WEBP del comprobante; se guarda en un bucket privado de Supabase y solo se abre desde el panel autenticado.
 - **La compra no se pierde**: el carrito y el pedido en curso se guardan en el navegador; si la página se recarga o el cliente cambia a la app de Nequi, al volver aparece otra vez la pantalla de pago. Mientras paga, se bloquea “jalar para recargar” y el navegador avisa antes de cerrar.
 - **Números de pedido** `KS-AAAAMMDD-####`, **recibo** (`/recibo.html`) y **seguimiento** (`/seguimiento.html`) con número + últimos 4 dígitos del celular.
 - **Panel → Pedidos**: estado por etapas (Recibido → Pago confirmado → En preparación → Enviado → Entregado), guía, transportadora, mensaje al cliente, recibo imprimible, enlace de seguimiento y WhatsApp.
@@ -14,7 +14,7 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 - **Hombre / Mujer**: tarjetas grandes con conteo, encabezado del género con sub-filtros por tipo (tenis, sandalias, chanclas, botas). Los filtros de género y categoría se combinan.
 
 ## Instalación
-1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql`.
+1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql` (también crea el bucket privado para las fotos de comprobantes).
 2. Copia `.env.example` a `.env` y llénalo. En Vercel pon las mismas variables.
 3. `npm install` y `npm run dev` → http://localhost:3000 (panel en `/admin.html`).
 4. Opcional: `npm run seed` carga el catálogo de ejemplo.

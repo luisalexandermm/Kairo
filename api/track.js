@@ -6,6 +6,25 @@
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
 const { normalizeStatus, trackingOf, buildSteps } = require('../lib/pedidos');
+const { randomBytes } = require('crypto');
+
+const RECEIPT_BUCKET = 'kairo-comprobantes';
+const MAX_RECEIPT_BYTES = 2 * 1024 * 1024;
+const RECEIPT_TYPES = {
+  jpeg: { mime: 'image/jpeg', ext: 'jpg' },
+  png: { mime: 'image/png', ext: 'png' },
+  webp: { mime: 'image/webp', ext: 'webp' }
+};
+
+async function removeReceipt(path, context) {
+  if (!path) return;
+  try {
+    const { error } = await supabase.storage.from(RECEIPT_BUCKET).remove([path]);
+    if (error) console.error(context, error.message);
+  } catch (error) {
+    console.error(context, error.message);
+  }
+}
 
 /* Freno simple contra adivinar números (por instancia del servidor) */
 const hits = new Map();
@@ -47,15 +66,67 @@ module.exports = async (req, res) => {
     const ref = cleanText(b.reportarPago, 60);
     if (ref.length < 3) return err(res, 'Escribe la referencia o el número del comprobante de Nequi', 400);
     if (status !== 'Recibido') return err(res, 'Este pedido ya no está esperando el pago.', 409);
+
+    let uploadedPath = '';
+    let mime = '';
+    if (b.comprobante != null && b.comprobante !== '') {
+      const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(String(b.comprobante));
+      if (!match) return err(res, 'La foto debe estar en formato JPG, PNG o WEBP.', 400);
+      if (match[2].length > Math.ceil(MAX_RECEIPT_BYTES / 3) * 4) return err(res, 'La foto debe pesar máximo 2 MB.', 400);
+      mime = RECEIPT_TYPES[match[1].toLowerCase()].mime;
+      const image = Buffer.from(match[2], 'base64');
+      if (!image.length || image.length > MAX_RECEIPT_BYTES) return err(res, 'La foto debe pesar máximo 2 MB.', 400);
+      const validSignature = mime === 'image/jpeg'
+        ? image[0] === 0xff && image[1] === 0xd8 && image[2] === 0xff
+        : mime === 'image/png'
+          ? image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+          : image.toString('ascii', 0, 4) === 'RIFF' && image.toString('ascii', 8, 12) === 'WEBP';
+      if (!validSignature) return err(res, 'El archivo no parece ser una imagen válida.', 400);
+
+      const ext = RECEIPT_TYPES[match[1].toLowerCase()].ext;
+      uploadedPath = `${numero}/${Date.now()}-${randomBytes(8).toString('hex')}.${ext}`;
+      try {
+        const { error: uploadError } = await supabase.storage.from(RECEIPT_BUCKET).upload(uploadedPath, image, {
+          contentType: mime, upsert: false
+        });
+        if (uploadError) {
+          console.error('Comprobante no subido:', uploadError.message);
+          return err(res, 'No se pudo subir la foto. Intenta de nuevo o envíanos el comprobante por WhatsApp.', 500);
+        }
+      } catch (uploadError) {
+        console.error('Comprobante no subido:', uploadError.message);
+        return err(res, 'No se pudo subir la foto. Intenta de nuevo o envíanos el comprobante por WhatsApp.', 500);
+      }
+    }
+
     const at = new Date().toISOString();
     const tracking = { ...t, history: [...t.history, { status: 'Pago reportado', at, ref }] };
-    const customer = { ...o.customer, pagoReportado: { ref, at } };
-    let up = await supabase.from('orders').update({ customer, tracking, updated_at: at }).eq('id', numero);
-    if (up.error && /tracking/i.test(up.error.message)) {
-      up = await supabase.from('orders').update({ customer: { ...customer, tracking }, updated_at: at }).eq('id', numero);
+    const previousPath = o.customer.pagoReportado && o.customer.pagoReportado.comprobantePath;
+    const customer = {
+      ...o.customer,
+      pagoReportado: {
+        ...o.customer.pagoReportado,
+        ref, at,
+        ...(uploadedPath ? { comprobantePath: uploadedPath, comprobanteMime: mime } : {})
+      }
+    };
+    let up;
+    try {
+      up = await supabase.from('orders').update({ customer, tracking, updated_at: at }).eq('id', numero);
+      if (up.error && /tracking/i.test(up.error.message)) {
+        up = await supabase.from('orders').update({ customer: { ...customer, tracking }, updated_at: at }).eq('id', numero);
+      }
+    } catch (updateError) {
+      console.error('Reporte de pago no guardado:', updateError.message);
+      await removeReceipt(uploadedPath, 'Comprobante huérfano no eliminado:');
+      return err(res, 'No se pudo registrar el reporte. Escríbenos por WhatsApp.', 500);
     }
-    if (up.error) return err(res, 'No se pudo registrar el reporte. Escríbenos por WhatsApp.', 500);
-    return ok(res, { ok: true, reportadoEn: at });
+    if (up.error) {
+      await removeReceipt(uploadedPath, 'Comprobante huérfano no eliminado:');
+      return err(res, 'No se pudo registrar el reporte. Escríbenos por WhatsApp.', 500);
+    }
+    if (uploadedPath && previousPath && previousPath !== uploadedPath) await removeReceipt(previousPath, 'Comprobante anterior no eliminado:');
+    return ok(res, { ok: true, reportadoEn: at, comprobanteRecibido: !!(uploadedPath || previousPath) });
   }
 
   const steps = buildSteps(o);
@@ -67,7 +138,10 @@ module.exports = async (req, res) => {
     direccion: maskAddress(o.customer.direccion),
     status, statusLabel: status === 'Cancelado' ? 'Cancelado' : cur.label,
     steps, guia: t.guia, transportadora: t.transportadora, nota: t.nota,
-    pagoReportado: o.customer.pagoReportado ? { at: o.customer.pagoReportado.at } : null,
+    pagoReportado: o.customer.pagoReportado ? {
+      at: o.customer.pagoReportado.at,
+      hasComprobante: !!o.customer.pagoReportado.comprobantePath
+    } : null,
     items: (o.items || []).map(i => ({ brand: i.brand, name: i.name, size: i.size, color: i.color, qty: i.qty, price: i.price, listPrice: i.listPrice, image: i.image || '' })),
     discount: pricing.coupon ? pricing.coupon.discount : 0,
     couponCode: pricing.coupon ? pricing.coupon.code : '',
