@@ -1,212 +1,25 @@
-# kAIRO — Tienda de tenis · Vercel + Supabase
+# kAIRO Sneakers — tienda + panel
 
-Proyecto completo: tienda pública, panel de administración y base de datos en la nube.
-Los cambios del panel se ven al instante en todos los dispositivos.
+Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos en Supabase.
 
+## Qué hay nuevo (29 de octubre de 2026)
+- **Logos nuevos** en el encabezado, el ícono de la app (PWA), el favicon, el recibo y el panel.
+- **Pantalla de carga con GSAP** (“Cargando tu experiencia · KAIRO Sneakers · Arma tu estilo”): el tenis del logo se arma pieza por pieza mientras carga el catálogo. Reemplaza la intro 3D en la web y en la PWA. Respeta “reducir movimiento” y nunca bloquea más de 5 s.
+  - Fuente: `src/loader.js` → `npm install && npm run build:loader` genera `public/js/loader.js`.
+- **Pago por Nequi con QR** (`public/img/nequi-qr.png`, titular Luis Moreno, llave @3145312045): al confirmar el pedido se muestra el QR, el valor exacto y botones para copiar llave, valor y número de pedido. El cliente escribe la referencia del pago y el pedido queda “Pago reportado”.
+- **La compra no se pierde**: el carrito y el pedido en curso se guardan en el navegador; si la página se recarga o el cliente cambia a la app de Nequi, al volver aparece otra vez la pantalla de pago. Mientras paga, se bloquea “jalar para recargar” y el navegador avisa antes de cerrar.
+- **Números de pedido** `KS-AAAAMMDD-####`, **recibo** (`/recibo.html`) y **seguimiento** (`/seguimiento.html`) con número + últimos 4 dígitos del celular.
+- **Panel → Pedidos**: estado por etapas (Recibido → Pago confirmado → En preparación → Enviado → Entregado), guía, transportadora, mensaje al cliente, recibo imprimible, enlace de seguimiento y WhatsApp.
+- **“Sin caja”** en todas las tarjetas, el detalle, el carrito, el resumen de compra, el recibo y el mensaje de WhatsApp.
+- **Hombre / Mujer**: tarjetas grandes con conteo, encabezado del género con sub-filtros por tipo (tenis, sandalias, chanclas, botas). Los filtros de género y categoría se combinan.
 
-## 🎬 Animación de entrada y marcas
+## Instalación
+1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql`.
+2. Copia `.env.example` a `.env` y llénalo. En Vercel pon las mismas variables.
+3. `npm install` y `npm run dev` → http://localhost:3000 (panel en `/admin.html`).
+4. Opcional: `npm run seed` carga el catálogo de ejemplo.
 
-- **Intro 3D:** al entrar por primera vez en cada sesión, un tenis de diseño propio se arma pieza por pieza (Three.js + GSAP) y aparece el nombre kAIRO. Se puede saltar con el botón o con Escape. No se muestra si la persona tiene activado “reducir movimiento”, si llega con un enlace directo a un producto, o si el archivo no carga en 4 segundos.
-  - Código fuente: `src/intro.js`. La tienda usa la versión empaquetada `public/js/intro.js`.
-  - Si cambias el código fuente: `npm install` y luego `npm run build:intro`.
-- **Franja de marcas:** se arma sola con las marcas de los productos activos y se desliza en bucle. Se pausa al pasar el mouse o con el teclado, y cada marca filtra el catálogo.
-- **Timberland:** se quitó del catálogo de ejemplo. Si ya tienes productos Timberland en tu Supabase, bórralos desde el panel (Productos → filtra por marca) o en el SQL Editor: `DELETE FROM products WHERE brand = 'Timberland';`
-
----
-
-## 🆕 Octubre 2026: diseño verde, categorías, promociones, cupones, anuncios y dinámicas
-
-**Antes de publicar esta versión:** ejecuta `lib/migracion-promos-2026-10.sql` en Supabase → SQL Editor (después de la migración de septiembre). Agrega categoría y género a los productos y crea las tablas `coupons` y `announcements`. Si no la ejecutas, la tienda sigue funcionando, pero las secciones nuevas del panel muestran el aviso de que falta.
-
-Qué puedes hacer desde el panel:
-
-| Sección | Para qué |
-|---|---|
-| **Productos** | Marca libre (escribe cualquier marca nueva), categoría (Tenis, Sandalias, Chanclas, Botas o la que escribas) y “Para” (Hombre, Mujer, Unisex). La foto que subas se usa en el catálogo, la portada, el detalle, las miniaturas de color, el carrito, los banners que lleven a ese producto y el panel. |
-| **Anuncios y banners** | Banners de la portada (título, texto, botón, color, imagen, a dónde lleva y fechas) y avisos de la barra superior. Sin banners activos, la portada muestra los productos “Destacados”. |
-| **Promociones** | *Descuento* (baja el precio solo en una marca, categoría, género o producto), *envío gratis* desde un valor, o *informativa*. Con fechas y condiciones obligatorias. |
-| **Cupones** | Porcentaje (con tope), valor fijo o envío gratis; compra mínima, usos máximos y fechas. Se validan en el servidor y cada pedido cuenta un uso. |
-| **Dinámicas** | Concursos y retos con bases y condiciones. El panel no deja publicar una dinámica con sorteo o azar sin número de autorización de Coljuegos. |
-
-Los precios se calculan en un solo lugar (`lib/pricing.js`): la tienda, el cupón y el pedido usan las mismas reglas, así lo que el cliente ve es lo que se cobra.
-
----
-
-## ⚠️ Actualización legal y de accesibilidad (septiembre 2026) — hazlo antes de publicar
-
-1. **Llena tus datos del negocio** en `public/js/negocio.js` (NIT, responsable, dirección, correo, horario, plazo de entrega, días de cambio de talla). Mientras falten, el sitio muestra `[COMPLETAR: …]` en amarillo.
-2. **Ejecuta** `lib/migracion-legal-2026-09.sql` en Supabase → SQL Editor. Crea la tabla `pqrs` y activa Row Level Security en todas las tablas.
-3. **Configura `TOKEN_SECRET`** en Vercel (mínimo 16 caracteres aleatorios). Sin él, el panel ya no deja entrar.
-4. Lee `PENDIENTES-LEGALES.md`: lista de riesgos que solo tú puedes resolver.
-
-Páginas nuevas: `/terminos.html`, `/privacidad.html`, `/cookies.html`, `/cambios-y-devoluciones.html`, `/pqr.html`. El panel tiene una sección nueva **PQR**.
-
----
-
-## PASO 1 — Crea las tablas en Supabase
-
-1. Entra a https://supabase.com y abre tu proyecto.
-2. Ve a **SQL Editor → New query**.
-3. Pega todo el contenido del archivo `lib/schema.sql` y haz clic en **Run**.
-4. Verás que se crean las tablas: `products`, `promos`, `orders`, `settings`, `pqrs`.
-
----
-
-## PASO 2 — Crea un bucket de imágenes en Supabase
-
-1. Ve a **Storage → New bucket**.
-2. Nombre: `kairo-images`
-3. Activa **Public bucket** (para que las URLs sean públicas).
-4. Guarda.
-
----
-## PASO 3 — Obtén tus credenciales de Supabase
-
-1. Ve a **Settings → API** en tu proyecto Supabase.
-2. Copia:
-   - **Project URL** → la necesitas como `SUPABASE_URL`
-   - **service_role** key → la necesitas como `SUPABASE_SERVICE_KEY`
-     ⚠️ Esta clave tiene acceso total. Nunca la pongas en el navegador.
-
----
-
-## PASO 4 — Sube los productos de ejemplo (opcional)
-
-Si quieres los 12 productos iniciales en la base de datos:
-
-   ```
-   SUPABASE_URL=https://TU_PROYECTO.supabase.co
-   SUPABASE_SERVICE_KEY=eyJ...
-   TOKEN_SECRET=cualquier-texto-largo-secreto
-   ```
-2. En la terminal, dentro de la carpeta `kairo/`:
-   ```bash
-   node lib/seed-db.js
-   ```
-
----
-## PASO 5 — Sube el proyecto a GitHub
-
-```bash
-git init
-git add .
-git commit -m "kAIRO v1"
-git remote add origin https://github.com/TU_USUARIO/kairo.git
-git push -u origin main
-```
-
----
-
-
-1. Entra a https://vercel.com y haz clic en **Add New Project**.
-2. Importa tu repositorio de GitHub.
-3. En **Environment Variables** agrega las tres variables:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_KEY`
-   - `TOKEN_SECRET` (cualquier texto largo y aleatorio)
-4. Haz clic en **Deploy**.
-5. Vercel te da una URL pública. ¡Listo!
-
-### Notificaciones y recibos por WhatsApp
-
-La tienda guarda cada pedido, muestra un recibo al cliente y permite imprimirlo/guardarlo como PDF. Para que además Twilio envíe automáticamente el aviso al negocio (`3145312045`) y el recibo al cliente, agrega en Vercel las variables `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` y `ADMIN_WHATSAPP_TO`. En pruebas, configura primero el WhatsApp Sandbox de Twilio; en producción necesitas un remitente de WhatsApp aprobado por Meta/Twilio.
-
-La tienda y el panel son instalables desde Chrome Android mediante **Añadir a pantalla de inicio**. El panel muestra avisos del navegador mientras permanece abierto y sincroniza pedidos nuevos cada 30 segundos.
----
-
-## PASO 7 — Primeras acciones en el panel
-
-1. Abre `https://TU-SITIO.vercel.app/admin.html`
-2. Contraseña inicial: **kairo2026** (es pública en este README: cámbiala de inmediato)
-3. Ve a **Ajustes** y cambia la contraseña por una larga y única.
-4. Ve a **Ajustes** y pon tu número de WhatsApp real (formato: 573XXXXXXXXX).
-5. Ve a **Productos** y agrega fotos reales a cada par.
-
----
-
-npm run dev
-
-```bash
-# 1. Instala dependencias
-npm install
-# 2. Crea el archivo .env con tus credenciales
-cp .env.example .env
-# Edita .env con tu editor
-
-# 3. Arranca el servidor local
-node dev-server.js
-# Tienda  → http://localhost:3000
-# Panel   → http://localhost:3000/admin.html
-```
-
----
-
-## Estructura del proyecto
-
-```
-kairo/
-├── api/
-│   ├── catalog.js      GET /api/catalog — productos+promos+ajustes (público)
-│   ├── login.js        POST /api/login  — autenticación del panel
-│   ├── orders.js       POST /api/orders — guarda pedidos desde la tienda
-│   ├── pqr.js          POST /api/pqr    — registra PQR con número de radicado
-│   ├── coupon.js       POST /api/coupon — valida un cupón contra el carrito
-│   └── admin.js        /api/admin/*     — CRUD completo (requiere token)
-├── lib/
-│   ├── supabase.js     cliente Supabase compartido
-│   ├── helpers.js      utilidades HTTP y tokens HMAC
-│   ├── env.js          carga .env en desarrollo local
-│   ├── schema.sql      SQL para crear las tablas (ejecutar 1 sola vez)
-│   └── seed-db.js      carga los 12 productos de ejemplo
-├── public/
-│   ├── admin.html      el panel de administración
-│   └── uploads/        (vacía — las imágenes van a Supabase Storage)
-├── dev-server.js       servidor local de desarrollo
-├── vercel.json         rutas para Vercel
-├── .env.example        plantilla de variables de entorno
-└── .gitignore
-```
-
----
-
-
-| Sección | Qué puedes hacer |
-|---------|-----------------|
-| **Productos** | Crear, editar, eliminar. Marca, nombre, precio, precio de oferta, stock, tallas, colores, imagen, visible/oculto, destacado en hero |
-| **Promociones** | Crear banners de promoción que aparecen en la tienda |
-| **Pedidos** | Ver todos los pedidos, cambiar estado, escribir al cliente por WhatsApp |
-| **Ajustes** | Nombre de la tienda, WhatsApp, logo del hero, colores, contraseña |
-
----
-
-## Cómo funciona el login del panel (bug corregido)
-
-El problema anterior era que el body se enviaba sin `Content-Type: application/json`,
-por lo que el servidor no podía parsear la contraseña.
-
-Ahora el login usa:
-```js
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ password: pass })
-})
-```
-Y el servidor responde con un token HMAC firmado que no necesita sesión compartida
-(funciona perfecto en Vercel serverless donde cada función es stateless).
-
----
-
-## Preguntas frecuentes
-
-**¿Cuánto cuesta?**
-Vercel gratuito + Supabase gratuito = $0/mes para una tienda pequeña.
-
-**¿Los cambios del admin se ven de inmediato?**
-Sí. La tienda llama a `/api/catalog` cada vez que se carga, así que
-cualquier cambio del panel se ve en la próxima visita (o al recargar).
-
-**¿Dónde quedan las imágenes de los productos?**
-En Supabase Storage, bucket `kairo-images`. Las URLs son públicas y permanentes.
-
-**¿Puedo cambiar la contraseña del panel?**
-Sí, en el panel → Ajustes → Cambiar contraseña.
+## Antes de publicar
+- Llena los datos legales en `public/js/negocio.js` (aparecen como [COMPLETAR] hasta que lo hagas). Ver `PENDIENTES-LEGALES.md`.
+- Cambia la contraseña del panel (Ajustes) y **rota la clave service de Supabase** si alguna vez estuvo en un zip o repositorio.
+- El recibo no es factura electrónica de la DIAN.

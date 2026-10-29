@@ -1,14 +1,10 @@
 -- ============================================================
---  kAIRO — actualización legal y de seguridad (septiembre 2026)
---  Ejecútalo UNA vez en: Supabase → SQL Editor → New query → Run
---  Es seguro ejecutarlo aunque ya tengas datos: no borra nada.
+--  kAIRO — migración legal (septiembre 2026)
+--  Tabla de PQR (peticiones, quejas, reclamos, retracto, reversión, garantía)
+--  Ejecútala una vez en Supabase → SQL Editor. Se puede repetir sin daño.
 -- ============================================================
-
--- 1) Tabla de PQR (peticiones, quejas y reclamos) con número de radicado.
---    La Ley 2439 de 2024 exige que las quejas de comercio electrónico tengan
---    un número de radicado y se puedan rastrear.
 CREATE TABLE IF NOT EXISTS pqrs (
-  id           TEXT PRIMARY KEY,              -- número de radicado, ej. PQR-20260925-AB12C
+  id           TEXT PRIMARY KEY,          -- número de radicado PQR-AAAAMMDD-XXXXX
   tipo         TEXT NOT NULL,
   nombre       TEXT NOT NULL,
   celular      TEXT DEFAULT '',
@@ -17,16 +13,16 @@ CREATE TABLE IF NOT EXISTS pqrs (
   mensaje      TEXT NOT NULL,
   estado       TEXT DEFAULT 'Radicada',
   respuesta    TEXT DEFAULT '',
-  autorizacion JSONB DEFAULT '{}',
+  autorizacion JSONB DEFAULT '{}',        -- prueba de la autorización de datos (Ley 1581)
   created_at   TIMESTAMPTZ DEFAULT NOW(),
   updated_at   TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE pqrs ADD COLUMN IF NOT EXISTS respuesta TEXT DEFAULT '';
+ALTER TABLE pqrs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 CREATE INDEX IF NOT EXISTS pqrs_estado ON pqrs (estado, created_at DESC);
 
--- 2) Activar Row Level Security en TODAS las tablas.
---    La API del sitio usa la clave service_role, que no se ve afectada.
---    Sin esto, cualquiera que tenga la clave "anon" pública de tu proyecto
---    podría leer los pedidos (nombres, celulares, direcciones, cédulas).
+-- Seguridad: la tienda solo habla con la base de datos desde el servidor (clave service_role).
+-- Con RLS activo y sin políticas, nadie con la clave pública (anon) puede leer ni escribir.
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE promos   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders   ENABLE ROW LEVEL SECURITY;

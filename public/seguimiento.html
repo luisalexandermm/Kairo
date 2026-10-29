@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es-CO">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seguimiento de tu pedido — kAIRO Sneakers</title>
+<meta name="description" content="Consulta el estado de tu pedido en kAIRO Sneakers con tu número de pedido.">
+<link rel="icon" href="/img/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/img/favicon-96.png">
+<link rel="apple-touch-icon" href="/img/icon-180.png">
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/legal.css?v=2">
+<script src="/js/negocio.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+<header class="l-head"><div class="in"><a class="l-brand" href="/"><img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers, ir a la tienda" width="187" height="40"></a><nav aria-label="Volver"><a href="/">← Volver a la tienda</a></nav></div></header>
+
+<main id="contenido">
+  <span class="eyebrow">Tu pedido</span>
+  <h1>Seguimiento de pedido</h1>
+  <p class="meta">Escribe el número de pedido que aparece en tu recibo (empieza por <b>KS-</b>) y los últimos 4 dígitos del celular con el que compraste.</p>
+
+  <section aria-labelledby="h-buscar">
+    <h2 id="h-buscar" class="sr-only">Buscar pedido</h2>
+    <form id="trackForm" novalidate>
+      <div class="grid2">
+        <div class="field">
+          <label for="tNum">Número de pedido *</label>
+          <input id="tNum" type="text" autocomplete="off" autocapitalize="characters" maxlength="20" placeholder="KS-20261029-4821" aria-describedby="tNum-err">
+          <p class="error" id="tNum-err" hidden></p>
+        </div>
+        <div class="field">
+          <label for="tCel">Últimos 4 dígitos de tu celular *</label>
+          <input id="tCel" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="2045" aria-describedby="tCel-err">
+          <p class="error" id="tCel-err" hidden></p>
+        </div>
+      </div>
+      <button class="btn" type="submit" id="tBtn">Ver estado del pedido</button>
+    </form>
+  </section>
+  <div id="trackOut" role="status" aria-live="polite" tabindex="-1"></div>
+</main>
+<footer class="l-foot"><nav class="in" aria-label="Información legal">
+  <a href="/terminos.html">Términos y condiciones</a><a href="/privacidad.html">Privacidad</a><a href="/cookies.html">Cookies</a><a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a><a href="/pqr.html">PQR</a><a href="/seguimiento.html" aria-current="page">Seguimiento de pedido</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio</a>
+</nav></footer>
+<style>
+.track-card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:24px;margin-bottom:16px}
+.track-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:6px}
+.track-top h2{font-size:1.25rem}
+.badge-st{display:inline-block;font-weight:800;font-size:.85rem;padding:5px 12px;border-radius:999px;background:#e2f0e8;color:#0e4d38}
+.badge-st.cancel{background:#fde8e6;color:#a8220f}
+.timeline{list-style:none;padding:0;margin:18px 0 6px;position:relative}
+.timeline li{position:relative;padding:0 0 18px 34px;margin:0}
+.timeline li::before{content:'';position:absolute;left:9px;top:22px;bottom:-2px;width:2px;background:#d5e5db}
+.timeline li:last-child::before{display:none}
+.timeline .dot{position:absolute;left:0;top:2px;width:20px;height:20px;border-radius:50%;border:2px solid #9fb3a9;background:#fff}
+.timeline li.done .dot{background:#0e4d38;border-color:#0e4d38}
+.timeline li.done .dot::after{content:'';position:absolute;left:5px;top:1px;width:5px;height:10px;border:solid #c6ff3d;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.timeline li.current .dot{background:#c6ff3d;border-color:#0e4d38;box-shadow:0 0 0 4px rgba(198,255,61,.35)}
+.timeline b{display:block}
+.timeline small{color:var(--muted)}
+.timeline li.todo b{color:var(--muted);font-weight:600}
+.items{border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+.items div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:.95rem}
+.items .tot{font-weight:800;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
+.note-box{background:#f4f8f5;border-radius:10px;padding:12px 14px;font-size:.93rem;margin-top:10px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.btn--line{background:#fff;color:#0e4d38;border:1.5px solid #0e4d38}
+.btn--line:hover{background:#e2f0e8;color:#0e4d38}
+</style>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var money = function (n) { return '$' + Number(n || 0).toLocaleString('es-CO'); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var p = new URLSearchParams(location.search);
+  if (p.get('pedido')) $('tNum').value = p.get('pedido').toUpperCase().slice(0, 20);
+  if (p.get('c')) $('tCel').value = p.get('c').replace(/\D/g, '').slice(-4);
+  function err(id, msg) { $(id).setAttribute('aria-invalid', msg ? 'true' : 'false'); $(id + '-err').textContent = msg || ''; $(id + '-err').hidden = !msg; return !msg; }
+  async function buscar(e) {
+    if (e) e.preventDefault();
+    var num = $('tNum').value.trim().toUpperCase(), cel = $('tCel').value.replace(/\D/g, '');
+    var ok = [err('tNum', /^KS-\d{8}-\d{4}$/.test(num) ? '' : 'Escribe el número tal como aparece en tu recibo, por ejemplo KS-20261029-4821.'),
+              err('tCel', /^\d{4}$/.test(cel) ? '' : 'Escribe los últimos 4 dígitos de tu celular.')];
+    if (ok.indexOf(false) > -1) { (ok[0] ? $('tCel') : $('tNum')).focus(); return; }
+    $('tBtn').disabled = true; $('tBtn').textContent = 'Buscando…';
+    try {
+      var r = await fetch('/api/track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ numero: num, ultimos4: cel }) });
+      var ct = r.headers.get('content-type') || '';
+      var d = ct.indexOf('application/json') > -1 ? await r.json() : {};
+      if (!r.ok) throw new Error(d.error || 'No encontramos ese pedido.');
+      pintar(d);
+    } catch (x) {
+      $('trackOut').innerHTML = '<p class="callout">' + esc(x instanceof TypeError ? 'No pudimos consultar en este momento. Revisa tu conexión e intenta de nuevo.' : x.message) + ' Si necesitas ayuda, <a href="https://wa.me/' + window.NEGOCIO.whatsapp + '" target="_blank" rel="noopener">escríbenos por WhatsApp</a>.</p>';
+    } finally { $('tBtn').disabled = false; $('tBtn').textContent = 'Ver estado del pedido'; $('trackOut').focus(); }
+  }
+  function pintar(d) {
+    var pasos = d.steps.map(function (s) {
+      var cls = s.state;
+      return '<li class="' + cls + '"><span class="dot" aria-hidden="true"></span><b>' + esc(s.label) + '</b>' +
+        (s.at ? '<small>' + esc(new Date(s.at).toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })) + '</small>' : '') +
+        (s.state === 'current' ? '<span class="sr-only"> (estado actual)</span>' : s.state === 'done' ? '<span class="sr-only"> (completado)</span>' : '') + '</li>';
+    }).join('');
+    var items = d.items.map(function (i) { return '<div><span>' + esc(i.brand + ' ' + i.name) + ' · Talla ' + esc(i.size) + (i.color ? ' · ' + esc(i.color) : '') + ' ×' + i.qty + '</span><span>' + money(i.price * i.qty) + '</span></div>'; }).join('');
+    $('trackOut').innerHTML = '<div class="track-card">' +
+      '<div class="track-top"><div><h2>Pedido ' + esc(d.numero) + '</h2><small>Hecho el ' + esc(new Date(d.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' })) + ' · ' + esc(d.pago) + ' · Entrega en ' + esc(d.ciudad) + '</small></div>' +
+      '<span class="badge-st' + (d.status === 'Cancelado' ? ' cancel' : '') + '">' + esc(d.statusLabel) + '</span></div>' +
+      (d.status === 'Cancelado' ? '<p class="callout">Este pedido fue cancelado. Si tienes dudas, escríbenos.</p>' : '<ol class="timeline" aria-label="Estados del pedido">' + pasos + '</ol>') +
+      (d.guia ? '<div class="note-box"><b>Guía de envío:</b> ' + esc(d.guia) + (d.transportadora ? ' (' + esc(d.transportadora) + ')' : '') + '</div>' : '') +
+      (d.nota ? '<div class="note-box"><b>Mensaje de la tienda:</b> ' + esc(d.nota) + '</div>' : '') +
+      (d.pagoReportado && d.status === 'Recibido' ? '<div class="note-box"><b>Recibimos la referencia de tu pago.</b> La estamos verificando; cuando la confirmemos, el pedido pasa a “Pago confirmado”.</div>' : '') +
+      '<div class="items">' + items + (d.discount ? '<div><span>Cupón ' + esc(d.couponCode) + '</span><span>-' + money(d.discount) + '</span></div>' : '') +
+      (d.envio != null ? '<div><span>Envío</span><span>' + (d.envio ? money(d.envio) : 'Gratis') + '</span></div>' : '') +
+      '<div class="tot"><span>Total</span><span>' + money(d.totalConEnvio || d.total) + '</span></div>' +
+      (d.pago === 'Contraentrega' && d.saldoContraentrega ? '<div><span>Pagas al recibir</span><span>' + money(d.saldoContraentrega) + '</span></div>' : '') + '</div>' +
+      '<p class="hint" style="margin-top:8px">Todos los productos se entregan sin caja.</p>' +
+      '<div class="actions"><a class="btn" href="/recibo.html?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent($('tCel').value) + '">Ver recibo</a>' +
+      '<a class="btn btn--line" href="https://wa.me/' + window.NEGOCIO.whatsapp + '?text=' + encodeURIComponent('Hola kAIRO, pregunto por mi pedido ' + d.numero) + '" target="_blank" rel="noopener">Preguntar por WhatsApp</a></div>' +
+      '</div>';
+  }
+  $('trackForm').addEventListener('submit', buscar);
+  if ($('tNum').value && $('tCel').value) buscar();
+})();
+</script>
+</body>
+</html>

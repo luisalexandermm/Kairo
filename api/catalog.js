@@ -3,7 +3,7 @@
    anuncios (banners, barra superior, dinámicas) y ajustes públicos de la tienda. */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors } = require('../lib/helpers');
-const { productPrice, isLive, ANTICIPO_CONTRAENTREGA } = require('../lib/pricing');
+const { productPrice, isLive, ENVIO } = require('../lib/pricing');
 
 module.exports = async (req, res) => {
   allowCors(res);
@@ -68,7 +68,7 @@ module.exports = async (req, res) => {
     settings: {
       storeName: settings.store_name, tagline: settings.tagline, whatsapp: settings.whatsapp,
       heroHeadline: settings.hero_headline, shippingNote: settings.shipping_note,
-      anticipo: ANTICIPO_CONTRAENTREGA
+      anticipo: ENVIO
     },
     products: (products || []).map(mapProduct),
     promos: livePromos.map(pubPromo),

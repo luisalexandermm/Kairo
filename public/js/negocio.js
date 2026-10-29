@@ -11,16 +11,21 @@
 window.NEGOCIO = {
   /* Identificación (Ley 1480 de 2011, art. 50, y Ley 1581 de 2012) */
   nombreComercial: 'kAIRO',
-  responsable: '',          // Nombre completo de la persona natural o razón social, tal como aparece en el RUT
+  responsable: 'Luis Alexander',
   nit: '',                  // NIT con dígito de verificación, ej. 1234567890-1
   matriculaMercantil: '',   // Opcional: número de matrícula en Cámara de Comercio (déjalo vacío si no aplica)
-  direccion: '',            // Dirección física de notificaciones (no puede ser solo un WhatsApp)
-  ciudad: '',               // Ciudad y departamento, ej. Quibdó, Chocó
-  correo: '',               // Correo para PQR y solicitudes de datos personales
+  direccion: 'Quibdó',
+  ciudad: 'Chocó',
+  correo: 'contacto.maturanainnovate@gmail.com',
   whatsapp: '573145312045', // Solo números, con indicativo 57
   telefonoVisible: '314 531 2045',
-  horario: '',              // Horario de atención, ej. Lunes a sábado, 8:00 a. m. – 6:00 p. m.
+  horario: '8:00 a. m. – 5:00 p. m.',
   instagram: '',            // URL completa de Instagram (vacío = no se muestra el ícono)
+
+  /* Pago con Nequi / Bre-B. El QR está en /img/nequi-qr.png.
+     El cliente ve este nombre y esta llave para confirmar a quién le paga. */
+  nequiTitular: 'Luis Moreno',
+  nequiLlave: '@3145312045',
 
   /* Condiciones comerciales que SOLO tú puedes definir */
   plazoEntrega: '',         // ej. 2 a 5 días hábiles en ciudades principales. Máximo legal si no se informa: 30 días calendario
@@ -29,7 +34,7 @@ window.NEGOCIO = {
 
   /* Versión de las políticas. Si cambias los textos legales, cambia esta fecha:
      queda guardada junto a cada pedido como prueba de lo que aceptó el cliente. */
-  versionPoliticas: '2026-10-21'
+  versionPoliticas: '2026-10-29'
 };
 
 (function () {

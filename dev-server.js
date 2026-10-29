@@ -16,7 +16,7 @@ const PUBLIC = path.join(__dirname, 'public');
 const MIME = {
   '.html':'text/html; charset=utf-8', '.css':'text/css', '.js':'application/javascript',
   '.json':'application/json', '.webmanifest':'application/manifest+json', '.png':'image/png', '.jpg':'image/jpeg',
-  '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon'
+  '.webp':'image/webp', '.svg':'image/svg+xml', '.ico':'image/x-icon', '.woff2':'font/woff2'
 };
 
 // Lazily require API handlers (they import supabase at load time)
@@ -66,8 +66,9 @@ http.createServer(async (req, res) => {
       if      (path_ === '/api/catalog')       return await handler('catalog')(req, res);
       else if (path_ === '/api/login')         return await handler('login')(req, res);
       else if (path_ === '/api/orders')        return await handler('orders')(req, res);
-      else if (path_ === '/api/pqr')           return await handler('pqr')(req, res);
+      else if (path_ === '/api/track')         return await handler('track')(req, res);
       else if (path_ === '/api/coupon')        return await handler('coupon')(req, res);
+      else if (path_ === '/api/pqr')           return await handler('pqr')(req, res);
       else if (path_.startsWith('/api/admin')) return await handler('admin')(req, res);
       else { res.writeHead(404); return res.end(JSON.stringify({ error: 'Ruta no encontrada' })); }
     } catch (error) {
@@ -84,7 +85,7 @@ http.createServer(async (req, res) => {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     return res.end('Not found');
   }
-  res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' });
+  res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
   fs.createReadStream(file).pipe(res);
 
 }).listen(PORT, () => {

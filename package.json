@@ -1,18 +1,18 @@
 {
   "name": "kairo-store",
-  "version": "2.0.0",
-  "description": "Tienda kAIRO — Vercel + Supabase",
+  "version": "3.0.0",
+  "description": "Tienda kAIRO Sneakers — Vercel + Supabase",
+  "private": true,
   "scripts": {
     "dev": "node dev-server.js",
     "seed": "node lib/seed-db.js",
-    "build:intro": "esbuild src/intro.js --bundle --minify --format=esm --target=es2020 --legal-comments=linked --outfile=public/js/intro.js"
+    "build:loader": "esbuild src/loader.js --bundle --minify --format=iife --target=es2018 --legal-comments=eof --outfile=public/js/loader.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
-    "gsap": "^3.15.0",
-    "three": "^0.186.1"
+    "gsap": "^3.15.0"
   }
 }

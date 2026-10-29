@@ -1,895 +1,206 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>kAIRO · Panel de administración</title>
-<link rel="icon" type="image/png" href="/img/logo.png">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#0b0d14">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/img/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="/img/favicon-96.png">
+<link rel="apple-touch-icon" href="/img/icon-180.png">
+<meta name="theme-color" content="#0e0e0e">
 <link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/admin.css?v=3">
+<link rel="stylesheet" href="/css/admin.css?v=5">
+<script src="/js/negocio.js"></script>
 </head>
 <body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <symbol id="s-low" viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
 <symbol id="s-high" viewBox="0 0 260 140"><path d="M10 118c-3-13 3-22 14-26 9-3 14-8 17-16 3-9 4-20 4-32 0-9 5-14 14-14h44c9 0 13 5 13 14 0 14 3 25 12 33 7 6 16 9 27 10 16 2 36 2 52 8 13 5 21 14 22 24 1 8-3 13-11 13H20c-6 0-9-2-10-4Z" fill="currentColor"/><path d="M150 62c20-2 44 2 60 16" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/></symbol>
 <symbol id="s-boot" viewBox="0 0 260 140"><path d="M52 14h60c8 0 12 5 12 13v46c0 14 6 24 18 30 12 6 30 8 48 10 18 2 34 6 44 14 8 6 11 13 9 20H24c-8 0-12-5-11-13 1-9 7-15 16-19 8-4 12-10 12-19V27c0-8 4-13 11-13Z" fill="currentColor"/></symbol>
-<symbol id="s-sandal" viewBox="0 0 260 140"><g transform="matrix(-1 0 0 1 260 0)"><path d="M14 114c-4-9 2-16 12-17l150-7c16-1 30-9 44-15 12-5 27-3 30 7 2 7-3 12-11 14l-7 2v13c0 4-3 6-6 6h-5c-4 0-6-2-6-6v-9l-19 3-170 9c-8 0-13-3-12-4Z" fill="currentColor"/><path d="M58 98c6-26 22-40 40-40s30 14 34 36" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/><path d="M94 96c10-22 26-34 44-32 16 2 26 14 28 28" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" opacity=".75"/><path d="M190 86c4-22 12-40 26-44 10-3 18 4 18 14 0 12-8 22-18 26" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M16 112l178-9" stroke="rgba(255,255,255,.4)" stroke-width="3" fill="none"/><circle cx="218" cy="56" r="6" fill="#fff" opacity=".8"/></g></symbol>
-<symbol id="s-flip" viewBox="0 0 260 140"><g transform="matrix(-1 0 0 1 260 0)"><path d="M12 104c0-9 9-14 21-14h160c26 0 50 4 52 14 2 11-16 18-38 18H34c-13 0-22-7-22-18Z" fill="currentColor"/><path d="M14 104c1 7 9 12 20 12h172c18 0 34-4 38-12" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="4"/><path d="M62 92c10-30 36-48 64-48 30 0 52 18 66 48" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><path d="M62 92c10-30 36-48 64-48" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round"/><circle cx="66" cy="90" r="7" fill="currentColor"/></g></symbol>
+<symbol id="s-sandal" viewBox="0 0 260 140"><path d="M14 112c0-8 6-14 14-14h196c12 0 22 6 22 14s-10 14-22 14H28c-8 0-14-6-14-14Z" fill="currentColor"/><path d="M70 100c6-30 22-52 46-60M170 100c-4-30-18-50-40-58M86 72h70" stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/></symbol>
+<symbol id="s-slide" viewBox="0 0 260 140"><path d="M14 114c0-7 6-12 13-12h198c12 0 21 5 21 12s-9 12-21 12H27c-7 0-13-5-13-12Z" fill="currentColor"/><path d="M60 102c4-26 30-44 70-46 40 2 64 20 70 46Z" fill="currentColor"/></symbol>
 </defs></svg>
 
-<!-- LOGIN -->
+<!-- INGRESO -->
 <div class="login-screen" id="loginScreen">
-  <div class="login-card">
-    <div class="logo"><img class="logo__image" src="/img/logo.png" alt=""><span>k<span>AI</span>RO</span></div>
+  <form class="login-card" id="loginForm" novalidate>
+    <div class="logo"><img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers" width="243" height="52"></div>
     <p>Panel de administración</p>
-    <input type="password" id="passInput" placeholder="Contraseña" autocomplete="current-password">
-    <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Entrar</button>
-    <div class="login-err" id="loginErr"></div>
-  </div>
+    <label for="passInput">Contraseña</label>
+    <input type="password" id="passInput" autocomplete="current-password" required>
+    <button class="btn btn-primary" id="loginBtn" type="submit">Entrar</button>
+    <div class="login-err" id="loginErr" role="alert"></div>
+  </form>
 </div>
 
-<!-- APP -->
+<!-- PANEL -->
 <div class="app" id="app">
-  <aside>
-    <div class="logo"><img class="logo__image" src="/img/logo.png" alt=""><span>k<span>AI</span>RO</span></div>
+  <aside id="sidebar" aria-label="Secciones del panel">
+    <div class="logo"><img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers" width="178" height="38"></div>
     <small>Administración</small>
-    <button class="nav-item active" data-view="resumen">📊 Resumen</button>
-    <button class="nav-item" data-view="productos">👟 Productos</button>
-    <button class="nav-item" data-view="anuncios">📣 Anuncios y banners</button>
-    <button class="nav-item" data-view="promos">🏷️ Promociones</button>
-    <button class="nav-item" data-view="cupones">🎟️ Cupones</button>
-    <button class="nav-item" data-view="dinamicas">🎉 Dinámicas</button>
-    <button class="nav-item" data-view="pedidos">📦 Pedidos</button>
-    <button class="nav-item" data-view="pqr">📨 PQR</button>
-    <button class="nav-item" data-view="ajustes">⚙️ Ajustes</button>
+    <nav>
+      <button class="nav-item" data-view="resumen" aria-current="page">Resumen</button>
+      <button class="nav-item" data-view="pedidos">Pedidos <span class="count" id="navNew" hidden></span></button>
+      <button class="nav-item" data-view="productos">Productos</button>
+      <button class="nav-item" data-view="promos">Promociones</button>
+      <button class="nav-item" data-view="coupons">Cupones</button>
+      <button class="nav-item" data-view="banners">Banners del inicio</button>
+      <button class="nav-item" data-view="barra">Barra de aviso</button>
+      <button class="nav-item" data-view="dinamicas">Dinámicas</button>
+      <button class="nav-item" data-view="pqr">PQR <span class="count" id="navPqr" hidden></span></button>
+      <button class="nav-item" data-view="ajustes">Ajustes</button>
+    </nav>
     <div class="foot">
-      <a href="/" target="_blank">← Volver a la tienda</a>
-      <button onclick="logout()">Cerrar sesión</button>
+      <a href="/" target="_blank" rel="noopener">Ver la tienda</a>
+      <button type="button" id="logoutBtn">Cerrar sesión</button>
     </div>
   </aside>
   <div class="admin-nav-backdrop" id="adminNavBackdrop"></div>
 
-  <main>
+  <main id="main" tabindex="-1">
     <div class="mobile-bar">
-      <button class="icon-btn" id="adminMenuBtn" aria-label="Abrir menú" aria-expanded="false">☰</button>
-      <span class="display">kAIRO</span>
+      <img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers" width="140" height="30">
+      <button class="icon-btn" id="adminMenuBtn" aria-label="Abrir menú del panel" aria-expanded="false" aria-controls="sidebar">☰</button>
     </div>
+
     <!-- Resumen -->
-    <section class="view on" id="view-resumen">
-      <div class="head"><div><h1 class="display">Resumen</h1><p>Estado de la tienda en tiempo real.</p></div><button class="btn btn-line btn-sm" onclick="loadAll()">Actualizar</button></div>
+    <section class="view on" id="view-resumen" aria-labelledby="h-res">
+      <div class="head"><div><h1 class="display" id="h-res">Resumen</h1><p>Estado de la tienda.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
       <div class="stats" id="statsGrid"></div>
       <div class="panel">
-        <table><thead><tr><th>Últimos pedidos</th><th>Cliente</th><th>Total</th><th>Estado</th></tr></thead>
+        <table><caption class="sr-only">Últimos pedidos</caption><thead><tr><th scope="col">Últimos pedidos</th><th scope="col">Cliente</th><th scope="col">Total</th><th scope="col">Estado</th></tr></thead>
         <tbody id="recentOrders"></tbody></table>
       </div>
     </section>
 
+    <!-- Pedidos -->
+    <section class="view" id="view-pedidos" aria-labelledby="h-ped">
+      <div class="head"><div><h1 class="display" id="h-ped">Pedidos</h1><p>Cada pedido tiene su número, su recibo y su seguimiento. Confirma el pago revisando tu Nequi antes de marcar “Pago confirmado”.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
+      <div class="toolbar">
+        <label class="sr-only" for="ordSearch">Buscar pedido</label>
+        <input type="search" id="ordSearch" placeholder="Buscar por número, nombre o celular">
+      </div>
+      <div class="tabs" id="ordTabs" role="group" aria-label="Filtrar pedidos por estado"></div>
+      <div id="orderList"></div>
+    </section>
+
     <!-- Productos -->
-    <section class="view" id="view-productos">
+    <section class="view" id="view-productos" aria-labelledby="h-prod">
       <div class="head">
-        <div><h1 class="display">Productos</h1><p>Crea, edita y elimina modelos del catálogo.</p></div>
-        <button class="btn btn-primary" onclick="openProductForm()">+ Nuevo producto</button>
+        <div><h1 class="display" id="h-prod">Productos</h1><p>La foto que subas aparece en la tarjeta, el detalle, el carrito, los banners y la sección Hombre/Mujer.</p></div>
+        <button class="btn btn-primary" type="button" id="newProduct">+ Nuevo producto</button>
       </div>
       <div class="toolbar">
-        <input type="search" id="prodSearch" placeholder="🔍  Buscar por nombre…" oninput="renderProductTable()">
-        <select id="prodBrand" onchange="renderProductTable()"><option value="">Todas las marcas</option></select>
-        <select id="prodCat" onchange="renderProductTable()"><option value="">Todas las categorías</option></select>
+        <label class="sr-only" for="prodSearch">Buscar producto</label><input type="search" id="prodSearch" placeholder="Buscar por nombre o marca">
+        <label class="sr-only" for="prodCat">Categoría</label><select id="prodCat"><option value="">Todas las categorías</option><option>Tenis</option><option>Sandalias</option><option>Chanclas</option><option>Botas</option></select>
+        <label class="sr-only" for="prodGen">Género</label><select id="prodGen"><option value="">Todos los géneros</option><option>Hombre</option><option>Mujer</option><option>Unisex</option></select>
       </div>
       <div class="panel"><table>
-        <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr></thead>
+        <caption class="sr-only">Productos</caption>
+        <thead><tr><th scope="col">Producto</th><th scope="col">Tipo</th><th scope="col">Precio</th><th scope="col">Stock</th><th scope="col">Estado</th><th scope="col"><span class="sr-only">Acciones</span></th></tr></thead>
         <tbody id="productRows"></tbody>
       </table></div>
     </section>
 
-    <!-- Anuncios -->
-    <section class="view" id="view-anuncios">
-      <div class="head"><div><h1 class="display">Anuncios y banners</h1><p>Los banners rotan en la portada de la tienda. Los avisos de la barra superior se muestran arriba del nombre kAIRO.</p></div></div>
-      <div class="subhead"><h2>Banners de portada</h2><button class="btn btn-primary btn-sm" onclick="openForm('banners')">+ Nuevo banner</button></div>
-      <div class="panel"><table><thead><tr><th>Banner</th><th>Lleva a</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-banners"></tbody></table></div>
-      <p class="hint">Si no hay banners activos, la portada muestra los productos marcados como “Destacado”.</p>
-      <div class="subhead"><h2>Barra superior</h2><button class="btn btn-primary btn-sm" onclick="openForm('barra')">+ Nuevo aviso</button></div>
-      <div class="panel"><table><thead><tr><th>Aviso</th><th>Lleva a</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-barra"></tbody></table></div>
-    </section>
+    <!-- Vistas genéricas: promos, cupones, banners, barra, dinámicas -->
+    <section class="view" id="view-promos" data-form="promos"></section>
+    <section class="view" id="view-coupons" data-form="coupons"></section>
+    <section class="view" id="view-banners" data-form="banners"></section>
+    <section class="view" id="view-barra" data-form="barra"></section>
+    <section class="view" id="view-dinamicas" data-form="dinamicas"></section>
 
-    <!-- Promociones -->
-    <section class="view" id="view-promos">
-      <div class="head">
-        <div><h1 class="display">Promociones</h1><p>Las de <b>descuento</b> bajan el precio en la tienda y en el pedido automáticamente. Las de <b>envío gratis</b> quitan el anticipo de envío desde el valor mínimo. Las <b>informativas</b> solo se muestran.</p></div>
-        <button class="btn btn-primary" onclick="openForm('promos')">+ Nueva promoción</button>
-      </div>
-      <div class="panel"><table><thead><tr><th>Promoción</th><th>Tipo</th><th>Aplica a</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-promos"></tbody></table></div>
-    </section>
-
-    <!-- Cupones -->
-    <section class="view" id="view-cupones">
-      <div class="head">
-        <div><h1 class="display">Cupones</h1><p>El cliente escribe el código en el carrito. Se valida en el servidor y cada pedido cuenta un uso. Un cupón por pedido.</p></div>
-        <button class="btn btn-primary" onclick="openForm('coupons')">+ Nuevo cupón</button>
-      </div>
-      <div class="panel"><table><thead><tr><th>Código</th><th>Beneficio</th><th>Usos</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-coupons"></tbody></table></div>
-    </section>
-
-    <!-- Dinámicas -->
-    <section class="view" id="view-dinamicas">
-      <div class="head">
-        <div><h1 class="display">Dinámicas</h1><p>Concursos, retos y actividades para tus clientes. Se muestran en la sección “Promos y dinámicas” de la tienda.</p></div>
-        <button class="btn btn-primary" onclick="openForm('dinamicas')">+ Nueva dinámica</button>
-      </div>
-      <div class="notice"><b>Importante:</b> si el ganador se elige por <b>sorteo o azar</b> (rifa, tómbola, ruleta, “etiqueta y gana”), en Colombia necesitas autorización de <b>Coljuegos</b> antes de publicarla (Ley 643 de 2001). Si el ganador se elige por mérito (la mejor foto, el reto más creativo) con jurado y criterios publicados, no la necesitas. El panel no deja publicar una dinámica con azar sin número de autorización.</div>
-      <div class="panel"><table><thead><tr><th>Dinámica</th><th>Tipo</th><th>Vigencia</th><th>Estado</th><th></th></tr></thead><tbody id="rows-dinamicas"></tbody></table></div>
-    </section>
-
-    <!-- Pedidos -->
-    <section class="view" id="view-pedidos">
-      <div class="head"><div><h1 class="display">Pedidos</h1><p>Llegan aquí y también por WhatsApp.</p></div><button class="btn btn-line btn-sm" onclick="loadAll()">Actualizar</button></div>
-      <div id="orderList"></div>
-    </section>
-
-    <!-- Ajustes -->
     <!-- PQR -->
-    <section class="view" id="view-pqr">
-      <div class="head"><div><h1 class="display">PQR</h1><p>Peticiones, quejas, reclamos y solicitudes de datos personales. Respóndelas dentro del plazo legal (15 días hábiles; consultas de datos: 10 días hábiles).</p></div><button class="btn btn-line btn-sm" onclick="loadPqr()">Actualizar</button></div>
+    <section class="view" id="view-pqr" aria-labelledby="h-pqr">
+      <div class="head"><div><h1 class="display" id="h-pqr">PQR</h1><p>Peticiones, quejas y reclamos. Plazo legal de respuesta: 15 días hábiles.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
       <div id="pqrList"></div>
     </section>
 
-    <section class="view" id="view-ajustes">
-      <div class="head"><div><h1 class="display">Ajustes</h1><p>Datos de la tienda y contraseña. Los banners de portada se manejan en “Anuncios y banners”.</p></div></div>
-      <div class="panel" style="padding:26px;max-width:720px">
-        <div class="g2">
-          <div class="field"><label>Nombre de la tienda</label><input id="sName" placeholder="kAIRO"></div>
-          <div class="field"><label>Bajada del logo</label><input id="sTag" placeholder="Sneaker Store"></div>
-        </div>
-        <div class="field"><label>WhatsApp de pedidos</label><input id="sWa" placeholder="573145312045"><small>Indicativo + número, sin espacios: ej. 573145312045</small></div>
-        <div class="field"><label>Cambiar contraseña del panel</label><input id="sPass" type="password" placeholder="Déjalo vacío para no cambiarla"></div>
-        <button class="btn btn-primary" onclick="saveSettings()">Guardar ajustes</button>
+    <!-- Ajustes -->
+    <section class="view" id="view-ajustes" aria-labelledby="h-aj">
+      <div class="head"><div><h1 class="display" id="h-aj">Ajustes</h1><p>WhatsApp de pedidos, contraseña y datos de pago.</p></div></div>
+      <form class="panel" style="padding:26px;max-width:720px" id="settingsForm" novalidate>
+        <div class="field"><label for="sWa">WhatsApp de pedidos</label><input id="sWa" inputmode="numeric" placeholder="573145312045" aria-describedby="sWa-h"><small id="sWa-h">Indicativo + número, sin espacios.</small></div>
+        <div class="field"><label for="sShip">Nota de envíos</label><input id="sShip" placeholder="Envíos a toda Colombia"></div>
+        <div class="field"><label for="sPass">Nueva contraseña del panel</label><input id="sPass" type="password" autocomplete="new-password" aria-describedby="sPass-h"><small id="sPass-h">Mínimo 10 caracteres. Déjala vacía para no cambiarla.</small></div>
+        <button class="btn btn-primary" type="submit">Guardar ajustes</button>
+      </form>
+      <div class="qr-mini">
+        <img src="/img/nequi-qr.png" alt="QR de Nequi que ven los clientes" width="96" height="96">
+        <div><b>Pago por Nequi (Bre-B)</b><br>Titular: <span data-negocio="nequiTitular"></span> · Llave: <span data-negocio="nequiLlave"></span><br>
+        <small>Para cambiar el QR reemplaza <code>public/img/nequi-qr.png</code>. El titular, la llave, el valor del envío y los datos legales se cambian en <code>public/js/negocio.js</code>.</small></div>
       </div>
     </section>
   </main>
 </div>
 
-<!-- DRAWER PRODUCTO -->
-<div class="scrim" id="scrim" onclick="closeDrawers()"></div>
-<div class="drawer" id="productDrawer">
-  <div class="drawer__head"><h2 class="display" id="prodDrawerTitle">Nuevo producto</h2><button class="close-btn" onclick="closeDrawers()">✕</button></div>
+<!-- CAJÓN PRODUCTO -->
+<div class="scrim" id="scrim"></div>
+<div class="drawer" id="productDrawer" role="dialog" aria-modal="true" aria-labelledby="prodDrawerTitle">
+  <div class="drawer__head"><h2 class="display" id="prodDrawerTitle">Nuevo producto</h2><button class="close-btn" type="button" data-close-drawer aria-label="Cerrar">✕</button></div>
   <div class="drawer__body">
     <div class="field">
-      <label>Imagen del producto</label>
-      <div class="img-preview" id="prodPreview"><span>Sin imagen (se usará silueta)</span></div>
-      <input type="file" id="prodFile" accept="image/*" onchange="uploadProductFile(this)">
-      <small>Esta foto se usa en todos lados: catálogo, portada, detalle, carrito, banners que lleven a este producto y el panel. Mejor PNG o WebP con fondo transparente.</small>
+      <label for="prodFile">Foto del producto</label>
+      <div class="img-preview" id="prodPreview"><span>Sin foto (se usa una silueta)</span></div>
+      <input type="file" id="prodFile" accept="image/png,image/jpeg,image/webp" aria-describedby="prodFile-h">
+      <small id="prodFile-h">PNG con fondo transparente o foto con fondo blanco. Máximo 5 MB. Usa fotos propias o con permiso.</small>
+      <button type="button" class="btn-danger" id="prodImgRemove" hidden>Quitar foto</button>
     </div>
     <div class="g2">
-      <div class="field"><label>Nombre *</label><input id="pName" placeholder="Air Max 270"></div>
-      <div class="field"><label>Marca *</label>
-        <input id="pBrand" list="brandList" placeholder="Nike, Adidas, Puma, Crocs…">
-        <datalist id="brandList"></datalist>
-        <small>Escribe una marca nueva y aparecerá sola en la tienda.</small>
+      <div class="field"><label for="pName">Nombre *</label><input id="pName" placeholder="Air Max 270"></div>
+      <div class="field"><label for="pBrand">Marca *</label>
+        <input id="pBrand" list="brandList" placeholder="Nike" aria-describedby="pBrand-h"><small id="pBrand-h">Escoge una o escribe una nueva.</small>
+        <datalist id="brandList"><option>Nike</option><option>Jordan</option><option>Adidas</option><option>Puma</option><option>New Balance</option><option>Converse</option><option>Vans</option></datalist>
       </div>
     </div>
     <div class="g2">
-      <div class="field"><label>Categoría *</label>
-        <input id="pCategory" list="categoryList" placeholder="Tenis">
-        <datalist id="categoryList"></datalist>
-      </div>
-      <div class="field"><label>Para *</label>
-        <select id="pGender"><option>Hombre</option><option>Mujer</option><option selected>Unisex</option></select>
-        <small>“Unisex” aparece tanto en Hombre como en Mujer.</small>
-      </div>
+      <div class="field"><label for="pCat">Categoría *</label><select id="pCat"><option>Tenis</option><option>Sandalias</option><option>Chanclas</option><option>Botas</option></select></div>
+      <div class="field"><label for="pGen">Género *</label><select id="pGen"><option>Unisex</option><option>Hombre</option><option>Mujer</option></select></div>
     </div>
     <div class="g3">
-      <div class="field"><label>Precio *</label><input id="pPrice" type="number" min="0" placeholder="749900"></div>
-      <div class="field"><label>Precio oferta</label><input id="pSale" type="number" min="0" placeholder="Opcional"></div>
-      <div class="field"><label>Stock</label><input id="pStock" type="number" min="0" value="10"></div>
+      <div class="field"><label for="pPrice">Precio *</label><input id="pPrice" type="number" min="0" step="100" placeholder="749900"></div>
+      <div class="field"><label for="pSale">Precio de oferta</label><input id="pSale" type="number" min="0" step="100" placeholder="Opcional"></div>
+      <div class="field"><label for="pStock">Stock</label><input id="pStock" type="number" min="0" value="10"></div>
     </div>
-    <div class="field"><label>Etiqueta</label><input id="pTag" placeholder="Running, Clásico, Edición limitada…"></div>
-    <div class="field"><label>Descripción</label><textarea id="pDesc" placeholder="Materiales, amortiguación, ajuste…"></textarea></div>
-    <div class="field">
-      <label>Tallas disponibles</label>
-      <div class="size-chips" id="sizeChips"></div>
-    </div>
-    <div class="field">
-      <label>Colores</label>
+    <div class="field"><label for="pTag">Etiqueta</label><input id="pTag" placeholder="Running, Clásico, Verano…"></div>
+    <div class="field"><label for="pDesc">Descripción</label><textarea id="pDesc" placeholder="Materiales, amortiguación, ajuste… (solo datos que puedas respaldar)"></textarea></div>
+    <fieldset class="field"><legend>Tallas disponibles</legend><div class="size-chips" id="sizeChips"></div></fieldset>
+    <fieldset class="field">
+      <legend>Colores</legend>
       <div id="colorRows"></div>
-      <button class="btn btn-line btn-sm" type="button" onclick="addColorRow()">+ Agregar color</button>
-      <small>Si un color no tiene foto propia, se usa la foto principal del producto.</small>
-    </div>
+      <button class="btn btn-line btn-sm" type="button" id="addColor">+ Agregar color</button>
+      <small>Cada color puede tener su propia foto.</small>
+    </fieldset>
     <div class="g3">
-      <div class="field"><label>Silueta</label>
-        <select id="pShape" onchange="updateProdPreview()">
-          <option value="s-low">Baja / Runner</option>
-          <option value="s-high">Caña alta</option>
-          <option value="s-boot">Bota</option>
-          <option value="s-sandal">Sandalia</option>
-          <option value="s-flip">Chancla</option>
-        </select>
+      <div class="field"><label for="pShape">Silueta (si no hay foto)</label>
+        <select id="pShape"><option value="s-low">Baja / Runner</option><option value="s-high">Caña alta</option><option value="s-boot">Bota</option></select>
       </div>
-      <div class="field"><label>Color silueta</label><input id="pShoeColor" type="color" value="#1d2733" onchange="updateProdPreview()"></div>
-      <div class="field"><label>Fondo tarjeta</label><input id="pBg" type="color" value="#f3ece3" onchange="updateProdPreview()"></div>
+      <div class="field"><label for="pShoeColor">Color silueta</label><input id="pShoeColor" type="color" value="#1d2733"></div>
+      <div class="field"><label for="pBg">Color de la tarjeta</label><input id="pBg" type="color" value="#e2f0e8"></div>
     </div>
     <label class="check"><input type="checkbox" id="pActive" checked> Visible en la tienda</label>
-    <label class="check"><input type="checkbox" id="pFeatured"> Destacado en portada y hero</label>
+    <label class="check"><input type="checkbox" id="pFeatured"> Destacado (aparece en el carrusel del inicio)</label>
+    <p class="help-box">Todos los productos se muestran como <b>“Sin caja”</b> en la tienda, el carrito, el recibo y el mensaje de WhatsApp.</p>
+    <p class="form-msg bad" id="prodErr" role="alert" hidden></p>
   </div>
   <div class="drawer__foot">
-    <button class="btn btn-line" onclick="closeDrawers()">Cancelar</button>
-    <button class="btn btn-primary" onclick="saveProduct()">Guardar producto</button>
+    <button class="btn btn-line" type="button" data-close-drawer>Cancelar</button>
+    <button class="btn btn-primary" type="button" id="saveProduct">Guardar producto</button>
   </div>
 </div>
 
-<!-- DRAWER GENÉRICO (promos, cupones, anuncios, dinámicas) -->
-<div class="drawer" id="formDrawer" role="dialog" aria-modal="true" aria-labelledby="formTitle">
-  <div class="drawer__head"><h2 class="display" id="formTitle">Nuevo</h2><button class="close-btn" onclick="closeDrawers()" aria-label="Cerrar">✕</button></div>
+<!-- CAJÓN GENÉRICO -->
+<div class="drawer" id="formDrawer" role="dialog" aria-modal="true" aria-labelledby="formDrawerTitle">
+  <div class="drawer__head"><h2 class="display" id="formDrawerTitle">Nuevo</h2><button class="close-btn" type="button" data-close-drawer aria-label="Cerrar">✕</button></div>
   <div class="drawer__body" id="formBody"></div>
   <div class="drawer__foot">
-    <button class="btn btn-line" onclick="closeDrawers()">Cancelar</button>
-    <button class="btn btn-primary" id="formSave" onclick="saveForm()">Guardar</button>
+    <button class="btn btn-line" type="button" data-close-drawer>Cancelar</button>
+    <button class="btn btn-primary" type="button" id="saveForm">Guardar</button>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
-<script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js?v=7').catch(() => {});
-/* ===== STATE ===== */
-let TOKEN = sessionStorage.getItem('kairo_token') || null;
-let products = [], promos = [], orders = [], settings = {}, pqrs = [], coupons = [], announcements = [];
-let extrasError = '';
-let knownOrderIds = new Set();
-let ordersLoaded = false;
-let editingProduct = null;
-let prodImageUrl = '', logoImageUrl = '';
-const ALL_SIZES = [33,34,35,36,37,38,39,40,41,42,43,44,45,46];
-let pickedSizes = new Set();
-
-/* ===== UTILS ===== */
-const $ = id => document.getElementById(id);
-const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
-const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-document.getElementById('adminMenuBtn').addEventListener('click', () => {
-  const app = document.getElementById('app');
-  const open = app.classList.toggle('menu-open');
-  document.getElementById('adminMenuBtn').setAttribute('aria-expanded', String(open));
-});
-document.getElementById('adminNavBackdrop').addEventListener('click', () => {
-  document.getElementById('app').classList.remove('menu-open');
-  document.getElementById('adminMenuBtn').setAttribute('aria-expanded', 'false');
-});
-document.querySelector('main').addEventListener('click', event => {
-  if (event.target.closest('.mobile-bar')) return;
-  document.getElementById('app').classList.remove('menu-open');
-  document.getElementById('adminMenuBtn').setAttribute('aria-expanded', 'false');
-});
-
-function toast(msg, dur = 2600) {
-  const t = $('toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(window._t); window._t = setTimeout(() => t.classList.remove('on'), dur);
-}
-
-/* ===== API ===== */
-async function api(path, opts = {}) {
-  const headers = { 'Content-Type': 'application/json' };
-  if (TOKEN) headers['x-admin-token'] = TOKEN;
-  const res = await fetch('/api' + path, {
-    headers,
-    ...opts,
-    body: opts.body ? (typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body)) : undefined
-  });
-  const contentType = res.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) throw new Error('La API no está disponible en este deploy');
-  let data;
-  try { data = await res.json(); } catch (_) { data = {}; }
-  if (res.status === 401 && TOKEN) { logout(); throw new Error('Sesión vencida'); }
-  if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
-  return data;
-}
-
-/* ===== LOGIN — Bug fix: body must be JSON string, not FormData ===== */
-async function doLogin() {
-  const pass = $('passInput').value;
-  $('loginErr').textContent = '';
-  $('loginBtn').disabled = true;
-  $('loginBtn').textContent = 'Verificando…';
-  try {
-    const r = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: pass })
-    });
-    const contentType = r.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) throw new Error('La API no está disponible en este deploy');
-    const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Contraseña incorrecta');
-    TOKEN = data.token;
-    sessionStorage.setItem('kairo_token', TOKEN);
-    $('loginScreen').style.display = 'none';
-    $('app').classList.add('on');
-    loadAll();
-  } catch (err) {
-    $('loginErr').textContent = err instanceof TypeError
-      ? 'No se pudo conectar con el servidor. Ejecuta npm run dev y vuelve a cargar el panel.'
-      : err.message;
-  } finally {
-    $('loginBtn').disabled = false;
-    $('loginBtn').textContent = 'Entrar';
-  }
-}
-/* Allow pressing Enter in the password field */
-$('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-
-function logout() {
-  TOKEN = null;
-  sessionStorage.removeItem('kairo_token');
-  $('app').classList.remove('on');
-  $('loginScreen').style.display = 'flex';
-  $('passInput').value = '';
-  $('loginErr').textContent = '';
-}
-
-/* Auto-login if token already in sessionStorage */
-if (TOKEN) {
-  $('loginScreen').style.display = 'none';
-  $('app').classList.add('on');
-  loadAll();
-}
-
-/* ===== NAVIGATION ===== */
-document.querySelectorAll('.nav-item[data-view]').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
-  b.classList.add('active');
-  $('view-' + b.dataset.view).classList.add('on');
-  $('app').classList.remove('menu-open');
-  $('adminMenuBtn').setAttribute('aria-expanded', 'false');
-}));
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawers(); });
-
-/* ===== LOAD ALL ===== */
-async function loadAll() {
-  try {
-    [products, promos, orders, settings] = await Promise.all([
-      api('/admin/products'), api('/admin/promos'),
-      api('/admin/orders'), api('/admin/settings')
-    ]);
-    // Cupones y anuncios: si falta la migración de octubre, el resto del panel sigue funcionando.
-    try { [coupons, announcements] = await Promise.all([api('/admin/coupons'), api('/admin/announcements')]); extrasError = ''; }
-    catch (e) { coupons = []; announcements = []; extrasError = esc(e.message); }
-    orders.sort((a, b) => (b.created_at || b.createdAt || '').localeCompare(a.created_at || a.createdAt || ''));
-    notifyNewOrders(orders);
-    renderStats(); fillFilters(); renderProductTable(); renderTables(); renderOrders(); fillSettings();
-  } catch (err) { toast('Error: ' + err.message); }
-  loadPqr();
-}
-
-/* ===== PQR ===== */
-async function loadPqr() {
-  try { pqrs = await api('/admin/pqr'); renderPqr(); }
-  catch (err) { $('pqrList').innerHTML = `<div class="panel"><p class="empty">${esc(err.message)}</p></div>`; }
-}
-function diasHabilesDesde(fecha) {
-  let d = new Date(fecha), n = 0; const hoy = new Date();
-  while (d < hoy) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 0 && w !== 6 && d <= hoy) n++; }
-  return n;
-}
-function renderPqr() {
-  $('pqrList').innerHTML = pqrs.map(q => {
-    const dias = diasHabilesDesde(q.created_at);
-    const limite = q.tipo === 'Solicitud sobre mis datos personales' ? 10 : 15;
-    const abierta = !['Respondida', 'Cerrada'].includes(q.estado);
-    const alerta = abierta && dias >= limite - 3 ? `<span class="pill warn">${dias} días hábiles · límite ${limite}</span>` : `<small>${dias} días hábiles</small>`;
-    const wa = (q.celular || '').replace(/\D/g, '');
-    return `<div class="order-card">
-      <div class="order-card__top"><div><h3>${esc(q.tipo)} · <span style="color:var(--muted);font-weight:400;font-size:.88rem">${esc(q.id)}</span></h3>
-        <small>${new Date(q.created_at).toLocaleString('es-CO')} · ${esc(q.nombre)} ${q.pedido ? '· Pedido ' + esc(q.pedido) : ''}</small></div>${alerta}</div>
-      <p style="white-space:pre-wrap;margin:10px 0">${esc(q.mensaje)}</p>
-      <div class="order-card__foot">
-        <select aria-label="Estado de ${esc(q.id)}" onchange="updatePqr('${esc(q.id)}',this.value)">${['Radicada','En trámite','Respondida','Cerrada'].map(s => `<option ${q.estado===s?'selected':''}>${s}</option>`).join('')}</select>
-        ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}?text=${encodeURIComponent('Hola ' + q.nombre + ', te escribimos de kAIRO sobre tu solicitud ' + q.id + '.')}">WhatsApp</a>` : ''}
-        ${q.correo ? `<a class="btn btn-line btn-sm" href="mailto:${esc(q.correo)}?subject=${encodeURIComponent('Respuesta a tu solicitud ' + q.id)}">Correo</a>` : ''}
-        <button class="btn-danger" style="margin-left:auto" onclick="removeRecord('pqr','${esc(q.id)}')">Eliminar</button>
-      </div></div>`;
-  }).join('') || '<div class="panel"><p class="empty">No hay solicitudes registradas.</p></div>';
-}
-async function updatePqr(id, estado) {
-  try { await api('/admin/pqr/' + id, { method: 'PUT', body: { estado } }); await loadPqr(); toast('Estado actualizado ✓'); }
-  catch (err) { toast(err.message); }
-}
-
-function notifyNewOrders(currentOrders) {
-  const fresh = ordersLoaded ? currentOrders.filter(order => !knownOrderIds.has(order.id)) : [];
-  knownOrderIds = new Set(currentOrders.map(order => order.id));
-  ordersLoaded = true;
-  if (!fresh.length) return;
-  const order = fresh[0];
-  const message = `${order.customer?.nombre || 'Cliente'} · ${money(order.total)}`;
-  toast(`Nuevo pedido: ${message}`);
-  if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification('Nuevo pedido kAIRO', { body: message, icon: '/img/logo.png' });
-  }
-}
-
-setInterval(() => {
-  if (TOKEN && document.visibilityState === 'visible') loadAll();
-}, 30000);
-
-/* ===== STATS ===== */
-async function renderStats() {
-  try {
-    const s = await api('/admin/stats');
-    $('statsGrid').innerHTML = [
-      { v: s.activeProducts, l: 'Productos visibles' },
-      { v: s.promos, l: 'Promos activas' },
-      { v: coupons.filter(c => c.active !== false).length, l: 'Cupones activos' },
-      { v: s.newOrders, l: 'Pedidos nuevos' },
-      { v: money(s.revenue), l: 'Total vendido' },
-    ].map(x => `<div class="stat"><b>${esc(String(x.v))}</b><span>${x.l}</span></div>`).join('');
-  } catch (_) {}
-  const recent = orders.slice(0, 5);
-  $('recentOrders').innerHTML = recent.length ? recent.map(o => `<tr>
-    <td><b>${esc(o.id)}</b><br><small>${new Date(o.created_at||o.createdAt).toLocaleString('es-CO')}</small></td>
-    <td>${esc((o.customer||{}).nombre||'—')}</td>
-    <td>${money(o.total)}</td>
-    <td><span class="pill ${o.status==='Nuevo'?'warn':'on'}">${esc(o.status)}</span></td>
-  </tr>`).join('') : '<tr><td colspan="4" class="empty">Todavía no hay pedidos.</td></tr>';
-}
-
-/* ===== PRODUCTS ===== */
-function thumbHTML(p) {
-  const bg = p.bg || p.shoeColor && '#f0ece6' || '#f0ece6';
-  const inner = p.image
-    ? `<img src="${esc(p.image)}" alt="" style="width:100%;height:100%;object-fit:contain">`
-    : `<svg viewBox="0 0 260 140" style="color:${esc(p.shoeColor||'#1d2733')};width:84%"><use href="#${esc(p.shape||'s-low')}"/></svg>`;
-  return `<div class="thumb" style="background:${esc(bg)}">${inner}</div>`;
-}
-
-function fillFilters() {
-  const keep = (el, items, first) => { const cur = el.value; el.innerHTML = `<option value="">${first}</option>` + items.map(x => `<option ${x === cur ? 'selected' : ''}>${esc(x)}</option>`).join(''); };
-  keep($('prodBrand'), brandsList(), 'Todas las marcas');
-  keep($('prodCat'), catsList(), 'Todas las categorías');
-  $('brandList').innerHTML = [...new Set(['Nike', 'Jordan', 'Adidas', 'Puma', 'New Balance', 'Converse', 'Vans', 'Reebok', 'Crocs', ...brandsList()])].map(b => `<option value="${esc(b)}">`).join('');
-  $('categoryList').innerHTML = [...new Set([...catsList(), 'Zapatos', 'Pantuflas', 'Deportivos'])].map(c => `<option value="${esc(c)}">`).join('');
-}
-
-function renderProductTable() {
-  const q = ($('prodSearch')?.value || '').toLowerCase();
-  const brand = $('prodBrand')?.value || '';
-  const cat = $('prodCat')?.value || '';
-  const list = products.filter(p => (!brand || p.brand === brand) && (!cat || p.category === cat) && (!q || (p.name + ' ' + p.brand + ' ' + (p.category || '')).toLowerCase().includes(q)));
-  $('productRows').innerHTML = list.map(p => `<tr>
-    <td><div class="cell-name">${thumbHTML(p)}<div><b>${esc(p.name)}</b><small>${esc(p.brand)} · ${esc(p.category || 'Tenis')} · ${esc(p.gender || 'Unisex')}</small></div></div></td>
-    <td>${p.salePrice ? `<span class="was">${money(p.price)}</span>${money(p.salePrice)}` : money(p.price)}</td>
-    <td>${p.stock ?? 0}</td>
-    <td>
-      <span class="pill ${p.active===false?'off':'on'}">${p.active===false?'Oculto':'Visible'}</span>
-      ${p.featured ? '<span class="pill warn" style="margin-left:5px">Portada</span>' : ''}
-    </td>
-    <td><div class="row-actions">
-      <button class="btn btn-line btn-sm" onclick="openProductForm('${esc(p.id)}')">Editar</button>
-      <button class="btn-danger" onclick="removeRecord('products','${esc(p.id)}')">Eliminar</button>
-    </div></td>
-  </tr>`).join('') || '<tr><td colspan="5" class="empty">No hay productos con ese filtro.</td></tr>';
-}
-
-function openProductForm(id) {
-  editingProduct = id ? products.find(p => p.id === id) : null;
-  const p = editingProduct || {};
-  $('prodDrawerTitle').textContent = editingProduct ? 'Editar producto' : 'Nuevo producto';
-  $('pName').value = p.name || '';
-  $('pBrand').value = p.brand || '';
-  $('pCategory').value = p.category || 'Tenis';
-  $('pGender').value = p.gender || 'Unisex';
-  $('pPrice').value = p.price || '';
-  $('pSale').value = p.salePrice || '';
-  $('pStock').value = p.stock ?? 10;
-  $('pTag').value = p.tag || '';
-  $('pDesc').value = p.desc || '';
-  $('pShape').value = p.shape || 's-low';
-  $('pShoeColor').value = p.shoeColor || '#1d2733';
-  $('pBg').value = p.bg || '#f3ece3';
-  $('pActive').checked = p.active !== false;
-  $('pFeatured').checked = !!p.featured;
-  prodImageUrl = p.image || '';
-  pickedSizes = new Set(p.sizes && p.sizes.length ? p.sizes : [36, 37, 38, 39, 40, 41, 42, 43]);
-  renderSizeChips();
-  renderColorRows(p.colors && p.colors.length ? p.colors : [{ n: 'Negro', h: '#1d2733' }]);
-  updateProdPreview();
-  $('prodFile').value = '';
-  openDrawer('productDrawer');
-}
-
-function updateProdPreview() {
-  const shape = $('pShape').value, color = $('pShoeColor').value, bg = $('pBg').value;
-  $('prodPreview').style.background = bg;
-  $('prodPreview').innerHTML = prodImageUrl
-    ? `<img src="${esc(prodImageUrl)}" alt="">`
-    : `<svg viewBox="0 0 260 140" style="color:${color};width:88%"><use href="#${shape}"/></svg>`;
-}
-
-function renderSizeChips() {
-  $('sizeChips').innerHTML = ALL_SIZES.map(s =>
-    `<button type="button" class="size-chip ${pickedSizes.has(s) ? 'on' : ''}" onclick="toggleSize(${s},this)">${s}</button>`).join('');
-}
-function toggleSize(s, el) { if (pickedSizes.has(s)) pickedSizes.delete(s); else pickedSizes.add(s); el.classList.toggle('on'); }
-
-function renderColorRows(colors) {
-  $('colorRows').innerHTML = colors.map(c => colorRowHTML(c.n, c.h, c.image)).join('');
-}
-function colorRowHTML(n, h, image = '') {
-  return `<div class="color-row" data-image="${esc(image)}">
-    <input type="text" value="${esc(n)}" placeholder="Nombre del color">
-    <input type="color" value="${esc(h)}">
-    <input class="color-image" type="file" accept="image/*" onchange="uploadColorFile(this)">
-    <div class="color-image-preview">${image ? `<img src="${esc(image)}" alt="">` : '<span>Sin imagen</span>'}</div>
-    <button type="button" onclick="this.closest('.color-row').remove()" style="font-size:1rem;color:var(--ember-dark)">✕</button>
-  </div>`;
-}
-function addColorRow() { $('colorRows').insertAdjacentHTML('beforeend', colorRowHTML('', '#333333')); }
-
-async function uploadColorFile(input) {
-  const file = input.files[0]; if (!file) return;
-  const row = input.closest('.color-row');
-  try {
-    const dataUrl = await fileToDataURL(file);
-    const r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: dataUrl } });
-    row.dataset.image = r.url;
-    row.querySelector('.color-image-preview').innerHTML = `<img src="${esc(r.url)}" alt="">`;
-    toast('Imagen del color subida ✓');
-  } catch (err) { toast('Error al subir: ' + err.message); }
-}
-
-async function uploadProductFile(input) {
-  const file = input.files[0]; if (!file) return;
-  try {
-    const dataUrl = await fileToDataURL(file);
-    const r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: dataUrl } });
-    prodImageUrl = r.url; updateProdPreview(); toast('Imagen subida ✓');
-  } catch (err) { toast('Error al subir: ' + err.message); }
-}
-
-function fileToDataURL(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = () => rej(new Error('No se pudo leer el archivo'));
-    r.readAsDataURL(file);
-  });
-}
-
-async function saveProduct() {
-  const colors = [...$('colorRows').querySelectorAll('.color-row')].map(row => ({
-    n: row.children[0].value.trim() || 'Color',
-    h: row.children[1].value,
-    image: row.dataset.image || ''
-  }));
-  const body = {
-    name: $('pName').value.trim(),
-    brand: $('pBrand').value.trim() || 'Otra',
-    category: $('pCategory').value.trim() || 'Tenis',
-    gender: $('pGender').value,
-    price: Number($('pPrice').value) || 0,
-    salePrice: Number($('pSale').value) || null,
-    stock: Number($('pStock').value) || 0,
-    tag: $('pTag').value.trim(),
-    desc: $('pDesc').value.trim(),
-    sizes: [...pickedSizes].sort((a, b) => a - b),
-    colors: colors.length ? colors : [{ n: 'Único', h: '#1d2733' }],
-    image: prodImageUrl,
-    shape: $('pShape').value,
-    shoeColor: $('pShoeColor').value,
-    bg: $('pBg').value,
-    active: $('pActive').checked,
-    featured: $('pFeatured').checked
-  };
-  if (!body.name || !body.price) { toast('Falta el nombre o el precio'); return; }
-  try {
-    if (editingProduct) await api('/admin/products/' + editingProduct.id, { method: 'PUT', body });
-    else await api('/admin/products', { method: 'POST', body });
-    closeDrawers(); await loadAll(); toast('Producto guardado ✓');
-  } catch (err) { toast('Error: ' + err.message); }
-}
-
-/* ===== FORMULARIOS GENÉRICOS: promociones, cupones, banners, barra y dinámicas ===== */
-const fmtDate = v => v ? new Date(v).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
-const toLocalInput = v => { if (!v) return ''; const d = new Date(v); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
-const vigencia = r => {
-  const now = new Date();
-  if (r.ends_at && new Date(r.ends_at) < now) return `<span class="pill off">Venció ${fmtDate(r.ends_at)}</span>`;
-  if (r.starts_at && new Date(r.starts_at) > now) return `<span class="pill warn">Empieza ${fmtDate(r.starts_at)}</span>`;
-  return r.ends_at ? `Hasta ${fmtDate(r.ends_at)}` : 'Sin fecha de fin';
-};
-const estado = r => `<span class="pill ${r.active === false ? 'off' : 'on'}">${r.active === false ? 'Inactivo' : 'Activo'}</span>`;
-const brandsList = () => [...new Set(products.map(p => p.brand).filter(Boolean))].sort();
-const catsList = () => [...new Set(['Tenis', 'Sandalias', 'Chanclas', 'Botas', ...products.map(p => p.category).filter(Boolean)])];
-const linkLabel = r => ({ ninguno: '—', producto: 'Producto: ' + (products.find(p => p.id === r.link_value)?.name || r.link_value), categoria: 'Categoría: ' + r.link_value, marca: 'Marca: ' + r.link_value, url: 'Enlace', whatsapp: 'WhatsApp' }[r.link_type || 'ninguno'] || '—');
-const scopeLabel = r => r.scope_type && r.scope_type !== 'todo'
-  ? ({ marca: 'Marca', categoria: 'Categoría', genero: 'Para', producto: 'Producto' }[r.scope_type] + ': ' + (r.scope_type === 'producto' ? (products.find(p => p.id === r.scope_value)?.name || r.scope_value) : r.scope_value))
-  : (r.scope && r.scope !== 'Todos' ? r.scope : 'Toda la tienda');
-
-/* Campos reutilizables */
-const F = {
-  dates: [
-    { key: 'starts_at', label: 'Empieza', type: 'datetime', half: true, help: 'Vacío = desde ya' },
-    { key: 'ends_at', label: 'Termina', type: 'datetime', half: true, help: 'Vacío = sin fecha de fin' }
-  ],
-  link: [
-    { key: 'link_type', label: 'Al tocarlo lleva a', type: 'select', options: [['ninguno', 'No lleva a ningún lado'], ['producto', 'Un producto'], ['categoria', 'Una categoría'], ['marca', 'Una marca'], ['whatsapp', 'WhatsApp con un mensaje'], ['url', 'Un enlace']], rerender: true },
-    { key: 'link_value', label: 'Destino', type: 'linkValue' }
-  ],
-  active: { key: 'active', label: 'Activo (visible en la tienda)', type: 'checkbox', def: true }
-};
-
-const FORMS = {
-  banners: {
-    name: 'banner', saved: 'Banner guardado ✓', endpoint: '/admin/announcements', key: 'id', fixed: { kind: 'banner' },
-    data: () => announcements.filter(a => a.kind === 'banner'),
-    fields: [
-      { key: 'title', label: 'Título grande *', type: 'text', max: 60, placeholder: 'Corre mejor. Llega más lejos.' },
-      { key: 'subtitle', label: 'Texto corto', type: 'text', max: 120, placeholder: 'Tenis de running para todos los días' },
-      { key: 'button_text', label: 'Texto del botón', type: 'text', max: 24, placeholder: 'Comprar ahora', half: true },
-      { key: 'color', label: 'Color del banner', type: 'color', def: '#146b4d', half: true },
-      ...F.link,
-      { key: 'image', label: 'Imagen del banner', type: 'image', help: 'Si el banner lleva a un producto y no subes imagen, se usa la foto de ese producto.' },
-      ...F.dates, F.active
-    ],
-    row: r => `<td><b>${esc(r.title)}</b><br><small>${esc(r.subtitle || '')}</small></td><td>${esc(linkLabel(r))}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
-  },
-  barra: {
-    name: 'aviso', saved: 'Aviso guardado ✓', endpoint: '/admin/announcements', key: 'id', fixed: { kind: 'barra' },
-    data: () => announcements.filter(a => a.kind === 'barra'),
-    fields: [
-      { key: 'title', label: 'Texto del aviso *', type: 'text', max: 90, placeholder: 'Envío gratis desde $300.000 hasta el domingo' },
-      ...F.link, ...F.dates, F.active
-    ],
-    row: r => `<td><b>${esc(r.title)}</b></td><td>${esc(linkLabel(r))}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
-  },
-  promos: {
-    name: 'promoción', saved: 'Promoción guardada ✓', endpoint: '/admin/promos', key: 'id',
-    data: () => promos,
-    fields: [
-      { key: 'title', label: 'Título *', type: 'text', max: 80, placeholder: '20 % en sandalias de mujer' },
-      { key: 'kind', label: 'Tipo', type: 'select', options: [['descuento', 'Descuento en el precio'], ['envio', 'Envío gratis desde un valor'], ['informativa', 'Solo aviso (no cambia precios)']], def: 'descuento', rerender: true },
-      { key: 'discount', label: 'Descuento %', type: 'number', min: 1, max: 90, showIf: r => r.kind === 'descuento', half: true },
-      { key: 'badge', label: 'Etiqueta corta', type: 'text', max: 20, placeholder: '-20 %', half: true },
-      { key: 'min_subtotal', label: 'Compra mínima (COP)', type: 'number', min: 0, showIf: r => r.kind === 'envio', help: 'Desde este valor en productos, el envío es gratis.' },
-      { key: 'scope_type', label: 'Aplica a', type: 'select', options: [['todo', 'Toda la tienda'], ['marca', 'Una marca'], ['categoria', 'Una categoría'], ['genero', 'Hombre o mujer'], ['producto', 'Un producto']], showIf: r => r.kind !== 'envio', rerender: true },
-      { key: 'scope_value', label: 'Cuál', type: 'scopeValue', showIf: r => r.kind !== 'envio' && r.scope_type && r.scope_type !== 'todo' },
-      { key: 'description', label: 'Descripción', type: 'textarea', max: 400 },
-      { key: 'conditions', label: 'Condiciones *', type: 'textarea', max: 2000, placeholder: 'Válido del 1 al 31 de octubre de 2026 o hasta agotar existencias (20 unidades). No acumulable con otras promociones. Aplica solo en compras por kairo…', help: 'Obligatorio para descuentos y envío gratis: vigencia, unidades disponibles y restricciones (Ley 1480, art. 33).', showIf: r => r.kind !== 'informativa' },
-      ...F.dates, F.active
-    ],
-    row: r => `<td><b>${esc(r.title)}</b><br><small>${esc(r.description || '')}</small></td><td>${{ descuento: `Descuento ${r.discount || 0} %`, envio: `Envío gratis desde ${money(r.min_subtotal)}`, informativa: 'Solo aviso' }[r.kind || 'informativa'] || 'Solo aviso'}</td><td>${esc(r.kind === 'envio' ? 'Todo el pedido' : scopeLabel(r))}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
-  },
-  coupons: {
-    name: 'cupón', saved: 'Cupón guardado ✓', endpoint: '/admin/coupons', key: 'code',
-    data: () => coupons,
-    fields: [
-      { key: 'code', label: 'Código *', type: 'text', max: 30, placeholder: 'KAIRO10', upper: true, lockOnEdit: true, help: 'Letras y números, sin espacios. No se puede cambiar después.' },
-      { key: 'type', label: 'Beneficio', type: 'select', options: [['porcentaje', 'Porcentaje de descuento'], ['valor', 'Valor fijo en pesos'], ['envio', 'Envío gratis']], def: 'porcentaje', rerender: true },
-      { key: 'value', label: 'Porcentaje %', type: 'number', min: 1, max: 90, showIf: r => r.type === 'porcentaje', half: true },
-      { key: 'max_discount', label: 'Tope del descuento (COP)', type: 'number', min: 0, showIf: r => r.type === 'porcentaje', half: true, help: '0 = sin tope' },
-      { key: 'value', label: 'Descuento en pesos', type: 'number', min: 1000, showIf: r => r.type === 'valor', id: 'valueCop' },
-      { key: 'min_subtotal', label: 'Compra mínima (COP)', type: 'number', min: 0, half: true, help: '0 = sin mínimo' },
-      { key: 'max_uses', label: 'Usos máximos', type: 'number', min: 0, half: true, help: '0 = ilimitado' },
-      { key: 'description', label: 'Descripción interna', type: 'text', max: 200, placeholder: 'Cupón para seguidores de Instagram' },
-      { key: 'conditions', label: 'Condiciones para el cliente', type: 'textarea', max: 2000, placeholder: 'Un uso por pedido. No acumulable con otros cupones. Válido hasta el 31 de octubre de 2026.' },
-      ...F.dates, F.active
-    ],
-    row: r => `<td><b class="code">${esc(r.code)}</b><br><small>${esc(r.description || '')}</small></td><td>${r.type === 'porcentaje' ? `${r.value} %${r.max_discount ? ' (tope ' + money(r.max_discount) + ')' : ''}` : r.type === 'valor' ? money(r.value) : 'Envío gratis'}${r.min_subtotal ? `<br><small>Desde ${money(r.min_subtotal)}</small>` : ''}</td><td>${r.uses || 0}${r.max_uses ? ' / ' + r.max_uses : ''}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
-  },
-  dinamicas: {
-    name: 'dinámica', saved: 'Dinámica guardada ✓', endpoint: '/admin/announcements', key: 'id', fixed: { kind: 'dinamica' },
-    data: () => announcements.filter(a => a.kind === 'dinamica'),
-    fields: [
-      { key: 'title', label: 'Nombre *', type: 'text', max: 80, placeholder: 'Reto: tu mejor foto con kAIRO' },
-      { key: 'subtitle', label: 'En una frase', type: 'text', max: 160, placeholder: 'Sube tu foto con tus tenis y etiquétanos. El jurado elige la más creativa.' },
-      { key: 'button_text', label: 'Texto del botón', type: 'text', max: 24, placeholder: 'Participar', half: true },
-      { key: 'color', label: 'Color', type: 'color', def: '#146b4d', half: true },
-      ...F.link,
-      { key: 'image', label: 'Imagen', type: 'image' },
-      { key: 'has_chance', label: 'El ganador se elige por sorteo o azar', type: 'checkbox', def: false, rerender: true },
-      { key: 'coljuegos_ref', label: 'Número de autorización de Coljuegos *', type: 'text', max: 80, showIf: r => r.has_chance, help: 'Sin este número la dinámica no se puede publicar.' },
-      { key: 'conditions', label: 'Bases y condiciones *', type: 'textarea', max: 4000, rows: 8, placeholder: 'Quién puede participar (mayores de edad residentes en Colombia), cómo participar, fechas, premio exacto, cómo y cuándo se elige al ganador, cómo se le avisa y plazo para reclamar.', help: 'Se muestran completas en la tienda. Mínimo 40 caracteres.' },
-      ...F.dates, F.active
-    ],
-    row: r => `<td><b>${esc(r.title)}</b><br><small>${esc(r.subtitle || '')}</small></td><td>${r.has_chance ? `Sorteo · ${r.coljuegos_ref ? 'Autorización ' + esc(r.coljuegos_ref) : '<span class="pill warn">Sin autorización</span>'}` : 'Concurso / reto'}</td><td>${vigencia(r)}</td><td>${estado(r)}</td>`
-  }
-};
-
-let formCfg = null, formRec = null, formEditing = false;
-
-function renderTables() {
-  for (const [k, cfg] of Object.entries(FORMS)) {
-    const el = $('rows-' + k); if (!el) continue;
-    const cols = (el.closest('table').querySelectorAll('th').length);
-    const list = cfg.data();
-    el.innerHTML = list.map(r => `<tr>${cfg.row(r)}<td><div class="row-actions">
-      <button class="btn btn-line btn-sm" onclick="openForm('${k}','${esc(r[cfg.key])}')">Editar</button>
-      <button class="btn-danger" onclick="removeRecord('${cfg.endpoint.split('/').pop()}','${esc(encodeURIComponent(r[cfg.key]))}')">Eliminar</button>
-    </div></td></tr>`).join('') || `<tr><td colspan="${cols}" class="empty">${extrasError || `Todavía no hay ${cfg.name === 'cupón' ? 'cupones' : cfg.name === 'promoción' ? 'promociones' : cfg.name + 's'}.`}</td></tr>`;
-  }
-}
-
-function openForm(kind, key) {
-  formCfg = FORMS[kind];
-  formEditing = !!key;
-  const found = key ? formCfg.data().find(r => String(r[formCfg.key]) === String(key)) : null;
-  formRec = found ? { ...found } : {};
-  if (!found) formCfg.fields.forEach(f => { if (f.def !== undefined && formRec[f.key] === undefined) formRec[f.key] = f.def; });
-  $('formTitle').textContent = (found ? 'Editar ' : 'Nuevo ') + formCfg.name;
-  renderForm();
-  openDrawer('formDrawer');
-  setTimeout(() => $('formBody').querySelector('input,select,textarea')?.focus(), 80);
-}
-
-function readForm() {
-  $('formBody').querySelectorAll('[data-k]').forEach(el => {
-    if (el.closest('.field')?.hidden) return;
-    const k = el.dataset.k;
-    if (el.type === 'checkbox') formRec[k] = el.checked;
-    else if (el.type === 'number') formRec[k] = el.value === '' ? 0 : Number(el.value);
-    else if (el.type === 'datetime-local') formRec[k] = el.value ? new Date(el.value).toISOString() : null;
-    else formRec[k] = el.dataset.upper ? el.value.toUpperCase().replace(/[^A-Z0-9_-]/g, '') : el.value;
-  });
-}
-
-function optionsFor(type) {
-  if (type === 'producto') return products.map(p => [p.id, `${p.name} · ${p.brand}`]);
-  if (type === 'categoria') return catsList().map(c => [c, c]);
-  if (type === 'marca') return brandsList().map(b => [b, b]);
-  if (type === 'genero') return [['Hombre', 'Hombre'], ['Mujer', 'Mujer'], ['Unisex', 'Unisex']];
-  return [];
-}
-
-function fieldHTML(f, i) {
-  const id = 'ff' + i, v = formRec[f.key];
-  const help = f.help ? `<small>${f.help}</small>` : '';
-  const sel = (opts, cur) => opts.map(([val, lab]) => `<option value="${esc(val)}" ${String(cur) === String(val) ? 'selected' : ''}>${esc(lab)}</option>`).join('');
-  let input = '';
-  const re = f.rerender ? ' onchange="readForm();renderForm()"' : '';
-  switch (f.type) {
-    case 'textarea': input = `<textarea id="${id}" data-k="${f.key}" maxlength="${f.max || 2000}" rows="${f.rows || 4}" placeholder="${esc(f.placeholder || '')}">${esc(v || '')}</textarea>`; break;
-    case 'number': input = `<input id="${id}" data-k="${f.key}" type="number" min="${f.min ?? 0}" ${f.max ? `max="${f.max}"` : ''} value="${v ?? ''}">`; break;
-    case 'select': input = `<select id="${id}" data-k="${f.key}"${re}>${sel(f.options, v ?? f.options[0][0])}</select>`; break;
-    case 'datetime': input = `<input id="${id}" data-k="${f.key}" type="datetime-local" value="${toLocalInput(v)}">`; break;
-    case 'color': input = `<input id="${id}" data-k="${f.key}" type="color" value="${esc(v || f.def || '#146b4d')}">`; break;
-    case 'checkbox': return `<label class="check field" ${f.showIf && !f.showIf(formRec) ? 'hidden' : ''}><input type="checkbox" data-k="${f.key}" ${v ? 'checked' : ''}${re}> ${f.label}</label>`;
-    case 'image': input = `<div class="img-preview img-preview--sm" id="${id}-prev">${v ? `<img src="${esc(v)}" alt="">` : '<span>Sin imagen</span>'}</div>
-        <input type="hidden" data-k="${f.key}" value="${esc(v || '')}" id="${id}">
-        <div class="row-actions" style="justify-content:flex-start"><input type="file" accept="image/*" onchange="uploadFormImage(this,'${id}')">${v ? `<button type="button" class="btn-danger" onclick="$('${id}').value='';readForm();renderForm()">Quitar imagen</button>` : ''}</div>`; break;
-    case 'linkValue': {
-      const t = formRec.link_type || 'ninguno';
-      if (t === 'ninguno') return '';
-      if (['producto', 'categoria', 'marca'].includes(t)) input = `<select id="${id}" data-k="link_value"><option value="">Elige…</option>${sel(optionsFor(t), v)}</select>`;
-      else input = `<input id="${id}" data-k="link_value" type="text" maxlength="300" value="${esc(v || '')}" placeholder="${t === 'url' ? 'https://… o /terminos.html' : 'Hola kAIRO, quiero participar en…'}">`;
-      return `<div class="field"><label for="${id}">${t === 'whatsapp' ? 'Mensaje de WhatsApp' : t === 'url' ? 'Enlace' : 'Cuál'}</label>${input}</div>`;
-    }
-    case 'scopeValue': input = `<select id="${id}" data-k="scope_value"><option value="">Elige…</option>${sel(optionsFor(formRec.scope_type), v)}</select>`; break;
-    default: {
-      const lock = f.lockOnEdit && formEditing ? 'readonly' : '';
-      input = `<input id="${id}" data-k="${f.key}" type="text" maxlength="${f.max || 200}" value="${esc(v || '')}" placeholder="${esc(f.placeholder || '')}" ${f.upper ? 'data-upper="1" style="text-transform:uppercase"' : ''} ${lock}>`;
-    }
-  }
-  return `<div class="field ${f.half ? 'half' : ''}" ${f.showIf && !f.showIf(formRec) ? 'hidden' : ''}><label for="${id}">${f.label}</label>${input}${help}</div>`;
-}
-
-function renderForm() {
-  $('formBody').innerHTML = '<div class="form-grid">' + formCfg.fields.map(fieldHTML).join('') + '</div>';
-}
-
-async function uploadFormImage(input, id) {
-  const file = input.files[0]; if (!file) return;
-  try {
-    const dataUrl = await fileToDataURL(file);
-    const r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: dataUrl } });
-    $(id).value = r.url; readForm(); renderForm(); toast('Imagen subida ✓');
-  } catch (err) { toast('Error al subir: ' + err.message); }
-}
-
-async function saveForm() {
-  readForm();
-  const body = { ...formRec, ...(formCfg.fixed || {}) };
-  // Solo se mandan los campos que el formulario muestra en este momento
-  const visible = new Set(formCfg.fields.filter(f => !f.showIf || f.showIf(formRec)).map(f => f.key === 'link_value' || f.type === 'linkValue' ? 'link_value' : f.key));
-  for (const k of Object.keys(body)) if (!visible.has(k) && !(k in (formCfg.fixed || {})) && !['link_type', 'scope_type', 'kind', 'type'].includes(k)) delete body[k];
-  if (body.kind === 'envio' || body.scope_type === 'todo') body.scope_value = '';
-  if (body.link_type === 'ninguno') body.link_value = '';
-  if (formCfg.endpoint.endsWith('coupons') && formEditing) delete body.code;
-  $('formSave').disabled = true;
-  try {
-    const key = formEditing ? encodeURIComponent(formRec[formCfg.key]) : '';
-    if (formEditing) await api(formCfg.endpoint + '/' + key, { method: 'PUT', body });
-    else await api(formCfg.endpoint, { method: 'POST', body });
-    closeDrawers(); await loadAll(); toast(formCfg.saved);
-  } catch (err) { toast(err.message, 5200); }
-  finally { $('formSave').disabled = false; }
-}
-
-/* Promociones: se dejan las funciones antiguas como alias por compatibilidad */
-function renderPromoTable() { renderTables(); }
-
-/* ===== ORDERS ===== */
-function renderOrders() {
-  $('orderList').innerHTML = orders.map(o => {
-    const c = o.customer || {};
-    const wa = (c.telefono || '').replace(/\D/g, '');
-    const date = new Date(o.created_at || o.createdAt).toLocaleString('es-CO');
-    return `<div class="order-card">
-      <div class="order-card__top">
-        <div><h3>${esc(c.nombre || 'Sin nombre')} · <span style="color:var(--muted);font-weight:400;font-size:.88rem">${esc(o.id)}</span></h3>
-          <small>${date} · ${esc(c.ciudad || '')} ${esc(c.direccion || '')}</small></div>
-        <span class="big-price">${money(o.total)}</span>
-      </div>
-      <ul class="order-items">${(o.items || []).map(i => `<li>${esc(i.brand)} ${esc(i.name)} — T${esc(String(i.size))} — ${esc(i.color)} × ${i.qty}</li>`).join('')}</ul>
-      <div class="order-card__foot">
-        <select onchange="updateOrderStatus('${esc(o.id)}',this.value)">
-          ${['Nuevo','Confirmado','Enviado','Entregado','Cancelado'].map(s => `<option ${o.status===s?'selected':''}>${s}</option>`).join('')}
-        </select>
-        <span class="pill off">${esc(c.pago || 'Sin método')}</span>
-        ${c.shippingAdvance ? `<span class="pill warn">Envío pagado: ${money(c.shippingAdvance)}</span>` : ''}
-        ${c.balanceDue ? `<span class="pill off">Saldo: ${money(c.balanceDue)}</span>` : ''}
-        ${c.packaging ? `<small>${esc(c.packaging)}</small>` : '<small>Sin caja por el momento</small>'}
-        ${(o.pricing || c.pricing || {}).coupon ? `<span class="pill warn">Cupón ${esc((o.pricing || c.pricing).coupon.code)}: -${money((o.pricing || c.pricing).coupon.discount)}</span>` : ''}
-        ${(o.pricing || c.pricing || {}).freeShipping ? '<span class="pill on">Envío gratis</span>' : ''}
-        ${c.consent ? `<span class="pill on" title="Autorización registrada el ${esc(new Date(c.consent.fecha).toLocaleString('es-CO'))}">Autorizó datos · v${esc(c.consent.version)}</span>` : '<span class="pill off">Sin registro de autorización</span>'}
-        ${wa ? `<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57${wa.slice(-10)}">Escribir al cliente</a>` : ''}
-        <button class="btn btn-line btn-sm" onclick="printOrderReceipt('${esc(o.id)}')">Ver recibo</button>
-        <button class="btn-danger" style="margin-left:auto" onclick="removeRecord('orders','${esc(o.id)}')">Eliminar</button>
-      </div>
-    </div>`;
-  }).join('') || '<div class="panel"><p class="empty">Todavía no hay pedidos registrados.</p></div>';
-}
-
-async function updateOrderStatus(id, status) {
-  try { await api('/admin/orders/' + id, { method: 'PUT', body: { status } }); await loadAll(); toast('Estado actualizado ✓'); }
-  catch (err) { toast(err.message); }
-}
-
-function printOrderReceipt(id) {
-  const order = orders.find(o => o.id === id); if (!order) return;
-  const c = order.customer || {};
-  const items = (order.items || []).map(i => `<tr><td>${esc(i.brand)} ${esc(i.name)}<small>Talla ${esc(String(i.size))} · ${esc(i.color)} · x${i.qty}</small></td><td>${money(i.price * i.qty)}</td></tr>`).join('');
-  const popup = window.open('', '_blank', 'width=720,height=800');
-  if (!popup) return toast('Permite ventanas emergentes para ver el recibo');
-  popup.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Recibo ${esc(order.id)}</title><style>body{font-family:Arial,sans-serif;color:#0b0d14;max-width:680px;margin:40px auto;padding:0 24px}h1{margin:0 0 4px}p{color:#555}.meta{display:flex;justify-content:space-between;border-bottom:2px solid #0b0d14;padding:14px 0;margin-bottom:18px}table{width:100%;border-collapse:collapse}td{padding:12px 0;border-bottom:1px solid #ddd}td:last-child{text-align:right;font-weight:bold}small{display:block;color:#777;margin-top:4px}.total{display:flex;justify-content:space-between;font-size:1.2rem;font-weight:bold;padding:18px 0}@media print{button{display:none}}</style></head><body><h1>kAIRO</h1><p>Recibo de pedido</p><div class="meta"><span>${esc(order.id)}</span><span>${new Date(order.created_at || order.createdAt).toLocaleString('es-CO')}</span></div><p><b>Cliente:</b> ${esc(c.nombre || '')}<br><b>Teléfono:</b> ${esc(c.telefono || '')}<br><b>Entrega:</b> ${esc(c.direccion || '')}, ${esc(c.ciudad || '')} ${esc(c.departamento || '')}</p><table>${items}</table><div class="total"><span>Total</span><span>${money(order.total)}</span></div><p><b>Pago:</b> ${esc(c.pago || 'Sin método')}</p><button onclick="print()">Imprimir / Guardar PDF</button></body></html>`);
-  popup.document.close();
-}
-
-/* ===== SETTINGS ===== */
-function fillSettings() {
-  $('sName').value = settings.storeName || '';
-  $('sTag').value = settings.tagline || '';
-  $('sWa').value = settings.whatsapp || '';
-
-}
-
-async function saveSettings() {
-  const body = {
-    storeName: $('sName').value.trim(),
-    tagline: $('sTag').value.trim(),
-    whatsapp: $('sWa').value.replace(/\D/g, '')
-  };
-  const pass = $('sPass').value.trim();
-  if (pass) body.adminPassword = pass;
-  try {
-    await api('/admin/settings', { method: 'PUT', body });
-    $('sPass').value = '';
-    await loadAll();
-    toast('Ajustes guardados ✓');
-  } catch (err) { toast('Error: ' + err.message); }
-}
-
-/* ===== COMMON ===== */
-async function removeRecord(table, id) {
-  if (!confirm('¿Eliminar este registro? No se puede deshacer.')) return;
-  try { await api(`/admin/${table}/${id}`, { method: 'DELETE' }); await loadAll(); toast('Eliminado'); }
-  catch (err) { toast(err.message); }
-}
-function openDrawer(id) { $(id).classList.add('on'); $('scrim').classList.add('on'); }
-function closeDrawers() {
-  document.querySelectorAll('.drawer').forEach(d => d.classList.remove('on'));
-  $('scrim').classList.remove('on');
-}
-</script>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/js/admin.js?v=5"></script>
 </body>
 </html>

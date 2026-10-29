@@ -1,9 +1,15 @@
 'use strict';
+/* POST /api/orders — registra un pedido.
+   - Recalcula precios, promociones y cupón en el servidor (nunca confía en el navegador).
+   - Asigna un número legible KS-AAAAMMDD-#### y arranca el seguimiento en "Recibido".
+   - Guarda la prueba de la aceptación de términos y de la autorización de datos (Ley 1581). */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
-const { priceCart, ANTICIPO_CONTRAENTREGA: ANTICIPO } = require('../lib/pricing');
+const { priceCart, ENVIO } = require('../lib/pricing');
+const { makeOrderNumber } = require('../lib/pedidos');
 
-const PAGOS = ['Contraentrega', 'Nequi / Daviplata'];
+const PAGOS = ['Nequi', 'Contraentrega'];
+const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
 
 async function sendWhatsApp(to, body) {
   const sid = process.env.TWILIO_ACCOUNT_SID;
@@ -15,24 +21,33 @@ async function sendWhatsApp(to, body) {
     To: `whatsapp:${to.replace(/^whatsapp:/, '')}`,
     Body: body
   });
-  const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
     method: 'POST',
     headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
     body: params
   });
-  return response.ok;
+  return r.ok;
 }
 
-function receiptText(id, items, total, customer, pricing = {}) {
-  const lines = (items || []).map(i => `- ${i.brand} ${i.name} | T${i.size} | ${i.color} x${i.qty} | $${Number(i.price * i.qty || 0).toLocaleString('es-CO')}`).join('\n');
-  return `kAIRO - Recibo de pedido ${id}\n\n${lines}\n\nTotal productos: $${Number(total || 0).toLocaleString('es-CO')}${pricing.coupon ? ' (cupón ' + pricing.coupon.code + ')' : ''}${pricing.freeShipping ? '\nEnvío: gratis' : ''}\nPago: ${customer.pago || 'Por confirmar'}\nEntrega: ${customer.direccion || ''}, ${customer.ciudad || ''}\n\nGracias por tu compra. Te confirmaremos el despacho por este medio.`;
-}
-
-/* Celular colombiano: 10 dígitos que empiezan por 3 (se acepta con o sin 57 adelante). */
-function celularColombia(raw) {
-  let d = String(raw || '').replace(/\D/g, '');
+/* Celular colombiano: 10 dígitos que empiezan por 3 (se acepta con 57 adelante) */
+function celularColombia(v) {
+  let d = String(v || '').replace(/\D/g, '');
   if (d.length === 12 && d.startsWith('57')) d = d.slice(2);
-  return /^3\d{9}$/.test(d) ? d : null;
+  return /^3\d{9}$/.test(d) ? d : '';
+}
+
+function receiptText(numero, items, customer, pricing) {
+  const lines = items.map(i => `- ${i.brand} ${i.name} | Talla ${i.size}${i.color ? ' | ' + i.color : ''} x${i.qty} | ${money(i.price * i.qty)}`).join('\n');
+  const extra = [];
+  if (pricing.promoSavings) extra.push(`Ahorro por promociones: -${money(pricing.promoSavings)}`);
+  if (pricing.coupon) extra.push(`Cupón ${pricing.coupon.code}: -${money(pricing.coupon.discount)}`);
+  extra.push(`Envío: ${pricing.freeShipping ? 'gratis' : money(pricing.envio)}`);
+  const pago = customer.pago === 'Nequi'
+    ? `Pago por Nequi: ${money(pricing.pagarAhora)} (QR o llave). Envíanos el comprobante.`
+    : `Contraentrega: anticipo de envío ${money(pricing.pagarAhora)} por Nequi y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
+  return `kAIRO Sneakers — Pedido ${numero}\n\n${lines}\n\n${extra.join('\n')}\nTotal: ${money(pricing.totalConEnvio)}\n${pago}\n` +
+    `Entrega: ${customer.direccion}, ${customer.ciudad}\nTodos los productos se entregan sin caja.\n\n` +
+    `Sigue tu pedido en /seguimiento.html con el número ${numero} y los últimos 4 dígitos de tu celular.`;
 }
 
 module.exports = async (req, res) => {
@@ -40,85 +55,89 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return err(res, 'Método no permitido', 405);
 
-  const { items, customer: c = {}, consent } = req.body || {};
+  const { items, customer: c = {}, consent = {}, coupon } = req.body || {};
 
-  /* Autorización de datos y aceptación de términos: obligatorias y separadas (Ley 1581 de 2012). */
-  if (!consent || consent.datos !== true || consent.terminos !== true) {
-    return err(res, 'Debes autorizar el tratamiento de datos y aceptar los términos', 400);
-  }
+  /* 1. Consentimiento (obligatorio, casillas sin marcar por defecto) */
+  if (consent.terminos !== true) return err(res, 'Debes aceptar los términos y condiciones', 400);
+  if (consent.datos !== true) return err(res, 'Debes autorizar el tratamiento de tus datos para poder enviar el pedido', 400);
 
-  /* Solo guardamos los campos necesarios para entregar el pedido (principio de finalidad).
-     Cualquier otro campo que llegue desde el navegador se descarta. */
-  const telefono = celularColombia(c.telefono);
+  /* 2. Solo guardamos los datos necesarios para entregar el pedido */
   const customer = {
     nombre: cleanText(c.nombre, 120),
-    telefono,
-    cedula: cleanText(c.cedula, 20).replace(/[^\dA-Za-z-]/g, ''),
+    telefono: celularColombia(c.telefono),
+    cedula: cleanText(c.cedula, 20).replace(/[^\dA-Za-z]/g, ''),
+    correo: cleanText(c.correo, 120),
     direccion: cleanText(c.direccion, 200),
-    barrio: cleanText(c.barrio, 160),
+    barrio: cleanText(c.barrio, 80),
     ciudad: cleanText(c.ciudad, 80),
     departamento: cleanText(c.departamento, 80),
     notas: cleanText(c.notas, 500),
-    pago: PAGOS.includes(c.pago) ? c.pago : null
+    pago: PAGOS.includes(c.pago) ? c.pago : null,
+    empaque: 'Sin caja'
   };
-  if (!customer.nombre || !customer.direccion || !customer.ciudad) return err(res, 'Faltan datos obligatorios de envío', 400);
-  if (!telefono) return err(res, 'Escribe un celular colombiano de 10 dígitos (ej. 300 123 4567)', 400);
+  if (!customer.nombre) return err(res, 'Escribe tu nombre completo', 400);
+  if (!customer.telefono) return err(res, 'Escribe un celular colombiano válido (10 dígitos, empieza por 3)', 400);
+  if (!customer.direccion || !customer.ciudad) return err(res, 'Escribe la dirección y la ciudad de entrega', 400);
+  if (customer.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.correo)) return err(res, 'El correo no es válido', 400);
   if (!customer.pago) return err(res, 'Elige un método de pago', 400);
 
-  // Precio, nombre, marca, promociones y cupón se recalculan contra la base de datos:
-  // nunca confiamos en lo que llega desde el navegador.
-  const r = await priceCart(supabase, items, req.body.coupon);
+  /* 3. Precios reales */
+  const r = await priceCart(supabase, items, coupon);
   if (r.error) return err(res, r.error, r.status || 400);
-  const verifiedItems = r.items;
-  const total = r.total;
 
-  const now = new Date().toISOString();
-  customer.shippingAdvance = customer.pago === 'Contraentrega' && !r.freeShipping ? ANTICIPO : 0;
-  customer.balanceDue = customer.pago === 'Contraentrega' ? total : 0;
-  customer.packaging = 'Sin caja por el momento';
-  /* Prueba de la autorización (Decreto 1074 de 2015: el responsable debe poder demostrarla). */
-  customer.consent = { datos: true, terminos: true, version: cleanText(consent.version, 20), fecha: now };
-
-  const id = 'ord-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-
+  const envio = r.freeShipping ? 0 : ENVIO;
+  const totalConEnvio = r.total + envio;
+  // Nequi: se paga todo antes del envío. Contraentrega: se paga el anticipo del envío por Nequi y el resto al recibir.
+  const pagarAhora = customer.pago === 'Nequi' ? totalConEnvio : ENVIO;
+  const saldoContraentrega = customer.pago === 'Contraentrega' ? Math.max(0, totalConEnvio - ENVIO) : 0;
   const pricing = {
     listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, subtotal: r.subtotal,
-    coupon: r.coupon ? { code: r.coupon.code, discount: r.coupon.discount, freeShipping: r.coupon.freeShipping } : null,
+    coupon: r.coupon ? { code: r.coupon.code, description: r.coupon.description, discount: r.coupon.discount, freeShipping: r.coupon.freeShipping } : null,
     freeShipping: r.freeShipping, shippingPromo: r.shippingPromo,
-    shipping: r.freeShipping ? 0 : (customer.pago === 'Contraentrega' ? ANTICIPO : null),
-    total
+    envio, total: r.total, totalConEnvio, pagarAhora, saldoContraentrega
   };
-  let { error } = await supabase.from('orders').insert({
-    id, customer, items: verifiedItems, total, status: 'Nuevo', pricing
-  });
-  // Si aún no existe la columna "pricing" (migración de octubre sin ejecutar), guardamos sin ella.
-  if (error && /pricing/i.test(error.message)) {
-    customer.pricing = pricing;
-    ({ error } = await supabase.from('orders').insert({ id, customer, items: verifiedItems, total, status: 'Nuevo' }));
-  }
+  customer.consent = {
+    terminos: true, datos: true, marketing: consent.marketing === true,
+    version: cleanText(consent.version, 20), fecha: new Date().toISOString()
+  };
+  const now = new Date().toISOString();
+  const tracking = { history: [{ status: 'Recibido', at: now }], guia: '', transportadora: '', nota: '' };
+  const items_ = r.items.map(({ image, ...i }) => ({ ...i, image, empaque: 'Sin caja' }));
 
-  if (error) {
-    console.error('Pedido no guardado:', error.message);
+  /* 4. Guardar (reintenta si el número ya existe; si faltan columnas nuevas, las guarda dentro de customer) */
+  let numero, saved = false, lastError = null;
+  for (let attempt = 0; attempt < 5 && !saved; attempt++) {
+    numero = makeOrderNumber();
+    let row = { id: numero, customer, items: items_, total: totalConEnvio, status: 'Recibido', pricing, tracking };
+    let { error } = await supabase.from('orders').insert(row);
+    if (error && /pricing|tracking/i.test(error.message) && /column/i.test(error.message)) {
+      row = { id: numero, customer: { ...customer, pricing, tracking }, items: items_, total: totalConEnvio, status: 'Recibido' };
+      ({ error } = await supabase.from('orders').insert(row));
+    }
+    if (!error) saved = true;
+    else if (!/duplicate|unique/i.test(error.message)) { lastError = error; break; }
+  }
+  if (!saved) {
+    console.error('Pedido no guardado:', lastError && lastError.message);
     return err(res, 'No se pudo guardar el pedido. Intenta de nuevo o escríbenos por WhatsApp.', 500);
   }
 
-  // Cuenta un uso del cupón. Se compara con el número de usos leído para no pisar
-  // otro pedido que haya usado el mismo cupón al mismo tiempo.
+  /* 5. Uso del cupón (optimista: si dos pedidos llegan a la vez, se cuenta el último valor leído + 1) */
   if (r.coupon) {
-    const { data: upd } = await supabase.from('coupons')
-      .update({ uses: r.coupon.uses + 1, updated_at: now })
-      .eq('code', r.coupon.code).eq('uses', r.coupon.uses).select('code');
-    if (!upd || !upd.length) {
-      const { data: cur } = await supabase.from('coupons').select('uses').eq('code', r.coupon.code).maybeSingle();
-      if (cur) await supabase.from('coupons').update({ uses: (Number(cur.uses) || 0) + 1, updated_at: now }).eq('code', r.coupon.code);
-    }
+    await supabase.from('coupons').update({ uses: r.coupon.uses + 1 }).eq('code', r.coupon.code).then(() => {}, () => {});
   }
 
-  const receipt = receiptText(id, verifiedItems, total, customer, pricing);
+  /* 6. Avisos por WhatsApp (si Twilio está configurado) */
+  const receipt = receiptText(numero, items_, customer, pricing);
   const adminNumber = process.env.ADMIN_WHATSAPP_TO || 'whatsapp:+573145312045';
   const [adminNotified, customerNotified] = await Promise.all([
     sendWhatsApp(adminNumber, `Nuevo pedido kAIRO\n\n${receipt}`),
-    sendWhatsApp('+57' + telefono, receipt)
+    sendWhatsApp('+57' + customer.telefono, receipt)
   ]).catch(() => [false, false]);
-  ok(res, { ok: true, id, total, pricing, adminNotified, customerNotified }, 201);
+
+  ok(res, {
+    ok: true, id: numero, numero, createdAt: now,
+    items: items_, pricing, pago: customer.pago,
+    adminNotified, customerNotified
+  }, 201);
 };
