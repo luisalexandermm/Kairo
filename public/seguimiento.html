@@ -64,6 +64,8 @@
 .items div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:.95rem}
 .items .tot{font-weight:800;border-top:1px solid var(--line);margin-top:6px;padding-top:8px}
 .note-box{background:#f4f8f5;border-radius:10px;padding:12px 14px;font-size:.93rem;margin-top:10px}
+.proof{display:grid;gap:10px;justify-items:start}
+.proof img{display:block;max-width:100%;max-height:380px;border-radius:10px;border:1px solid var(--line);background:#fff;object-fit:contain}
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .btn--line{background:#fff;color:#0e4d38;border:1.5px solid #0e4d38}
 .btn--line:hover{background:#e2f0e8;color:#0e4d38}
@@ -108,13 +110,15 @@
       (d.status === 'Cancelado' ? '<p class="callout">Este pedido fue cancelado. Si tienes dudas, escríbenos.</p>' : '<ol class="timeline" aria-label="Estados del pedido">' + pasos + '</ol>') +
       (d.guia ? '<div class="note-box"><b>Guía de envío:</b> ' + esc(d.guia) + (d.transportadora ? ' (' + esc(d.transportadora) + ')' : '') + '</div>' : '') +
       (d.nota ? '<div class="note-box"><b>Mensaje de la tienda:</b> ' + esc(d.nota) + '</div>' : '') +
-      (d.pagoReportado && d.status === 'Recibido' ? '<div class="note-box"><b>Recibimos la referencia de tu pago' + (d.pagoReportado.hasComprobante ? ' y la foto del comprobante' : '') + '.</b> La estamos verificando; cuando la confirmemos, el pedido pasa a “Pago confirmado”.</div>' : '') +
+      (d.pagoReportado && d.status === 'Recibido' ? '<div class="note-box"><b>Recibimos el reporte de tu pago' + (d.pagoReportado.hasComprobante ? ' con la foto del comprobante' : '') + '.</b> Lo estamos verificando; cuando lo confirmemos, el pedido pasa a “Pago confirmado”.</div>' : '') +
+      (d.pagoReportado && d.pagoReportado.comprobanteUrl ? '<div class="note-box proof"><b>Tu comprobante de pago</b><a href="' + esc(d.pagoReportado.comprobanteUrl) + '" target="_blank" rel="noopener"><img src="' + esc(d.pagoReportado.comprobanteUrl) + '" alt="Foto del comprobante de pago que enviaste"></a>' +
+        '<a class="btn btn--line" href="' + esc(d.pagoReportado.comprobanteDescarga || d.pagoReportado.comprobanteUrl) + '">Descargar comprobante</a></div>' : '') +
       '<div class="items">' + items + (d.discount ? '<div><span>Cupón ' + esc(d.couponCode) + '</span><span>-' + money(d.discount) + '</span></div>' : '') +
       (d.envio != null ? '<div><span>Envío</span><span>' + (d.envio ? money(d.envio) : 'Gratis') + '</span></div>' : '') +
       '<div class="tot"><span>Total</span><span>' + money(d.totalConEnvio || d.total) + '</span></div>' +
       (d.pago === 'Contraentrega' && d.saldoContraentrega ? '<div><span>Pagas al recibir</span><span>' + money(d.saldoContraentrega) + '</span></div>' : '') + '</div>' +
       '<p class="hint" style="margin-top:8px">Todos los productos se entregan sin caja.</p>' +
-      '<div class="actions"><a class="btn" href="/recibo.html?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent($('tCel').value) + '">Ver recibo</a>' +
+      '<div class="actions"><a class="btn" href="/recibo.html?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent($('tCel').value) + '">Ver y descargar recibo</a>' +
       '<a class="btn btn--line" href="https://wa.me/' + window.NEGOCIO.whatsapp + '?text=' + encodeURIComponent('Hola kAIRO, pregunto por mi pedido ' + d.numero) + '" target="_blank" rel="noopener">Preguntar por WhatsApp</a></div>' +
       '</div>';
   }

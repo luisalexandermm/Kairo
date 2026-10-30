@@ -593,8 +593,8 @@
     $('payCodNote').hidden = o.pago !== 'Contraentrega';
     $('payCodNote').textContent = o.pricing.freeShipping ? 'Tu pedido tiene envío gratis: el anticipo se descuenta de lo que pagas al recibir.' : 'El anticipo cubre el envío y confirma tu pedido contraentrega.';
     $('payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, pagué mi pedido ' + o.numero + ' por ' + money(val) + '. Te envío el comprobante.');
-    $('fRef').value = ''; fieldErr('fRef', '');
-    $('fReceipt').value = ''; $('fReceipt-status').textContent = '';
+    $('fReceipt').value = ''; fieldErr('fReceipt', ''); $('fReceipt-status').textContent = '';
+    showReceiptPreview(null);
     if (N.pintar) N.pintar();
   }
   function receiptData(file) {
@@ -633,10 +633,22 @@
       image.src = url;
     });
   }
+  /* Vista previa de la foto elegida, antes de enviarla */
+  var previewUrl = '';
+  function showReceiptPreview(file) {
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = ''; }
+    if (file && /^image\//.test(file.type)) { previewUrl = URL.createObjectURL(file); $('fReceiptPreview').src = previewUrl; }
+    else $('fReceiptPreview').removeAttribute('src');
+    $('fReceiptPreview').hidden = !previewUrl;
+  }
   $('fReceipt').addEventListener('change', function () {
     var file = this.files && this.files[0];
+    fieldErr('fReceipt', '');
     $('fReceipt-status').textContent = file ? 'Foto seleccionada: ' + file.name : '';
+    showReceiptPreview(file);
   });
+  /* La foto enviada solo se guarda en memoria (no en localStorage, por su tamaño) */
+  var sentProof = '';
   var COPY = { key: function () { return N.nequiLlave || ''; }, val: function () { return String(Math.round(payValue())); }, msg: function () { return S.order ? S.order.numero : ''; } };
   $('coStep2').addEventListener('click', async function (e) {
     var b = e.target.closest('[data-copy]'); if (!b) return;
@@ -649,23 +661,19 @@
   });
   $('refForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    var ref = $('fRef').value.trim();
-    if (!fieldErr('fRef', ref.length >= 3 ? '' : 'Escribe la referencia que aparece en tu comprobante de Nequi.')) { $('fRef').focus(); return; }
     var file = $('fReceipt').files && $('fReceipt').files[0];
+    if (!fieldErr('fReceipt', file ? '' : 'Sube la foto o captura del comprobante de Nequi.')) { $('fReceipt').focus(); return; }
     $('refBtn').disabled = true;
     try {
-      $('fReceipt-status').textContent = file ? 'Preparando y enviando la foto…' : '';
-      var comprobante = file ? await receiptData(file) : '';
-      var result = await api('/api/track', {
-        numero: S.order.numero, ultimos4: S.order.ultimos4, reportarPago: ref,
-        ...(comprobante ? { comprobante: comprobante } : {})
-      });
+      $('fReceipt-status').textContent = 'Preparando y enviando la foto…';
+      var comprobante = await receiptData(file);
+      var result = await api('/api/track', { numero: S.order.numero, ultimos4: S.order.ultimos4, reportarPago: true, comprobante: comprobante });
+      sentProof = comprobante;
       S.order.comprobante = result.comprobanteRecibido;
       S.order.step = 'reportado'; store.set(K_ORDER, S.order);
       renderDone(); showStep(3); $('doneTitle').focus();
     } catch (err) {
-      if (file) $('fReceipt-status').textContent = err instanceof TypeError ? 'No hay conexión. Intenta enviar la referencia y la foto de nuevo.' : err.message;
-      else fieldErr('fRef', err instanceof TypeError ? 'No hay conexión. Tu pedido está guardado; intenta de nuevo en un momento.' : err.message);
+      $('fReceipt-status').textContent = err instanceof TypeError ? 'No hay conexión. Tu pedido está guardado; intenta enviar la foto de nuevo.' : err.message;
       if (err.status === 409) { S.order.step = 'reportado'; store.set(K_ORDER, S.order); renderDone(); showStep(3); }
     } finally { $('refBtn').disabled = false; }
   });
@@ -673,12 +681,14 @@
   function renderDone() {
     var o = S.order, l = orderLinks(o);
     $('doneNo').textContent = o.numero;
-    $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos la referencia de tu pago' + (o.comprobante ? ' y la foto del comprobante' : '') + '. Cuando la verifiquemos, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
+    $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos ' + (o.comprobante ? 'la foto del comprobante de tu pago' : 'tu pedido') + '. Cuando verifiquemos el pago, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
     $('doneReceipt').href = l.recibo; $('doneTrack').href = l.seg;
+    $('doneProof').hidden = !sentProof;
+    if (sentProof) { $('doneProofImg').src = sentProof; $('doneProofDl').href = sentProof; $('doneProofDl').download = 'Comprobante-' + o.numero + '.jpg'; }
     $('doneWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, tengo una pregunta sobre mi pedido ' + o.numero);
   }
   $('doneClose').addEventListener('click', function () { finishOrder(); closeLayer($('coSheet')); });
-  function finishOrder() { S.order = null; store.del(K_ORDER); paying(false); renderResume(); }
+  function finishOrder() { S.order = null; sentProof = ''; store.del(K_ORDER); paying(false); renderResume(); }
 
   /* Mientras se paga: sin "jalar para recargar" y aviso antes de cerrar o recargar */
   var isPaying = false;

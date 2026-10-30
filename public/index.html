@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="kAIRO">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=8">
+<link rel="stylesheet" href="css/store.css?v=10">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -227,7 +227,7 @@
     </div>
     <div class="foot-bottom">
       <span>© 2026 <span data-negocio="nombreComercial"></span>. Las marcas y logotipos mencionados pertenecen a sus dueños.</span>
-      <a href="/admin.html" rel="nofollow">Acceso del administrador</a>
+      <a href="/admin.html" rel="nofollow">  </a>
     </div>
   </div>
 </footer>
@@ -353,9 +353,9 @@
       <p class="warn" id="payCodNote" hidden></p>
       <p class="warn"><b>Tranquilo si cambias a la app de Nequi:</b> tu pedido no se pierde. Si la página se cierra o se recarga, al volver la verás aquí mismo.</p>
       <form id="refForm" novalidate style="text-align:left">
-        <div class="field"><label for="fRef">Referencia o número del comprobante *</label><input id="fRef" maxlength="60" autocomplete="off" aria-describedby="fRef-e fRef-h"><p class="hint" id="fRef-h">Aparece en el comprobante de Nequi después de pagar.</p><p class="err" id="fRef-e" hidden></p></div>
-        <div class="field"><label for="fReceipt">Foto del comprobante (opcional)</label><input id="fReceipt" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="fReceipt-h fReceipt-status"><p class="hint" id="fReceipt-h">JPG, PNG o WEBP. La foto se reduce antes de enviarse y queda privada para que solo la revise la tienda.</p><p class="hint" id="fReceipt-status" role="status" aria-live="polite"></p></div>
-        <button type="submit" class="btn btn-primary btn-block" id="refBtn"><svg aria-hidden="true"><use href="#i-check"/></svg>Ya pagué, enviar referencia</button>
+        <div class="field"><label for="fReceipt">Foto o captura del comprobante de pago *</label><input id="fReceipt" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="fReceipt-h fReceipt-e fReceipt-status"><p class="hint" id="fReceipt-h">JPG, PNG o WEBP. La foto se reduce antes de enviarse y solo la ven tú y la tienda.</p><p class="err" id="fReceipt-e" hidden></p><p class="hint" id="fReceipt-status" role="status" aria-live="polite"></p></div>
+        <img class="proof-img" id="fReceiptPreview" alt="Vista previa del comprobante que vas a enviar" hidden>
+        <button type="submit" class="btn btn-primary btn-block" id="refBtn"><svg aria-hidden="true"><use href="#i-check"/></svg>Ya pagué, enviar comprobante</button>
       </form>
       <a class="btn btn-wa btn-block" id="payWa" href="#" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Enviar comprobante por WhatsApp</a>
     </div>
@@ -368,6 +368,10 @@
       <h3 id="doneTitle" tabindex="-1">¡Recibimos tu pedido!</h3>
       <p class="order-no" id="doneNo"></p>
       <p id="doneTxt"></p>
+      <div id="doneProof" hidden>
+        <img class="proof-img" id="doneProofImg" alt="Comprobante de pago que enviaste">
+        <a class="btn btn-line btn-block" id="doneProofDl" href="#">Descargar mi comprobante</a>
+      </div>
       <p class="warn">Guarda tu número de pedido: con él y los últimos 4 dígitos de tu celular puedes ver el estado de tu envío.</p>
       <div style="display:grid;gap:10px">
         <a class="btn btn-primary" id="doneReceipt" href="#">Ver y descargar recibo</a>
@@ -381,6 +385,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/tienda.js?v=8"></script>
+<script src="js/tienda.js?v=9"></script>
 </body>
 </html>

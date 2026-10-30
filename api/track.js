@@ -2,7 +2,8 @@
 /* POST /api/track — seguimiento público de un pedido.
    Pide el número del pedido + los últimos 4 dígitos del celular, y nunca devuelve
    cédula, correo, teléfono ni la dirección completa.
-   Con { reportarPago: "referencia" } el cliente informa que ya pagó por Nequi. */
+   Con { reportarPago: true, comprobante: "data:image/..." } el cliente informa que ya pagó
+   por Nequi subiendo la foto del comprobante. */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
 const { normalizeStatus, trackingOf, buildSteps } = require('../lib/pedidos');
@@ -63,44 +64,40 @@ module.exports = async (req, res) => {
 
   /* El cliente reporta su pago por Nequi */
   if (b.reportarPago != null) {
-    const ref = cleanText(b.reportarPago, 60);
-    if (ref.length < 3) return err(res, 'Escribe la referencia o el número del comprobante de Nequi', 400);
+    const ref = typeof b.reportarPago === 'string' ? cleanText(b.reportarPago, 60) : '';
     if (status !== 'Recibido') return err(res, 'Este pedido ya no está esperando el pago.', 409);
+    if (!b.comprobante) return err(res, 'Sube la foto del comprobante de pago.', 400);
 
-    let uploadedPath = '';
-    let mime = '';
-    if (b.comprobante != null && b.comprobante !== '') {
-      const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(String(b.comprobante));
-      if (!match) return err(res, 'La foto debe estar en formato JPG, PNG o WEBP.', 400);
-      if (match[2].length > Math.ceil(MAX_RECEIPT_BYTES / 3) * 4) return err(res, 'La foto debe pesar máximo 2 MB.', 400);
-      mime = RECEIPT_TYPES[match[1].toLowerCase()].mime;
-      const image = Buffer.from(match[2], 'base64');
-      if (!image.length || image.length > MAX_RECEIPT_BYTES) return err(res, 'La foto debe pesar máximo 2 MB.', 400);
-      const validSignature = mime === 'image/jpeg'
-        ? image[0] === 0xff && image[1] === 0xd8 && image[2] === 0xff
-        : mime === 'image/png'
-          ? image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
-          : image.toString('ascii', 0, 4) === 'RIFF' && image.toString('ascii', 8, 12) === 'WEBP';
-      if (!validSignature) return err(res, 'El archivo no parece ser una imagen válida.', 400);
+    const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/]+={0,2})$/i.exec(String(b.comprobante));
+    if (!match) return err(res, 'La foto debe estar en formato JPG, PNG o WEBP.', 400);
+    if (match[2].length > Math.ceil(MAX_RECEIPT_BYTES / 3) * 4) return err(res, 'La foto debe pesar máximo 2 MB.', 400);
+    const mime = RECEIPT_TYPES[match[1].toLowerCase()].mime;
+    const image = Buffer.from(match[2], 'base64');
+    if (!image.length || image.length > MAX_RECEIPT_BYTES) return err(res, 'La foto debe pesar máximo 2 MB.', 400);
+    const validSignature = mime === 'image/jpeg'
+      ? image[0] === 0xff && image[1] === 0xd8 && image[2] === 0xff
+      : mime === 'image/png'
+        ? image.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+        : image.toString('ascii', 0, 4) === 'RIFF' && image.toString('ascii', 8, 12) === 'WEBP';
+    if (!validSignature) return err(res, 'El archivo no parece ser una imagen válida.', 400);
 
-      const ext = RECEIPT_TYPES[match[1].toLowerCase()].ext;
-      uploadedPath = `${numero}/${Date.now()}-${randomBytes(8).toString('hex')}.${ext}`;
-      try {
-        const { error: uploadError } = await supabase.storage.from(RECEIPT_BUCKET).upload(uploadedPath, image, {
-          contentType: mime, upsert: false
-        });
-        if (uploadError) {
-          console.error('Comprobante no subido:', uploadError.message);
-          return err(res, 'No se pudo subir la foto. Intenta de nuevo o envíanos el comprobante por WhatsApp.', 500);
-        }
-      } catch (uploadError) {
+    const ext = RECEIPT_TYPES[match[1].toLowerCase()].ext;
+    const uploadedPath = `${numero}/${Date.now()}-${randomBytes(8).toString('hex')}.${ext}`;
+    try {
+      const { error: uploadError } = await supabase.storage.from(RECEIPT_BUCKET).upload(uploadedPath, image, {
+        contentType: mime, upsert: false
+      });
+      if (uploadError) {
         console.error('Comprobante no subido:', uploadError.message);
         return err(res, 'No se pudo subir la foto. Intenta de nuevo o envíanos el comprobante por WhatsApp.', 500);
       }
+    } catch (uploadError) {
+      console.error('Comprobante no subido:', uploadError.message);
+      return err(res, 'No se pudo subir la foto. Intenta de nuevo o envíanos el comprobante por WhatsApp.', 500);
     }
 
     const at = new Date().toISOString();
-    const tracking = { ...t, history: [...t.history, { status: 'Pago reportado', at, ref }] };
+    const tracking = { ...t, history: [...t.history, { status: 'Pago reportado', at, ...(ref ? { ref } : {}) }] };
     const previousPath = o.customer.pagoReportado && o.customer.pagoReportado.comprobantePath;
     const customer = {
       ...o.customer,
@@ -131,6 +128,25 @@ module.exports = async (req, res) => {
 
   const steps = buildSteps(o);
   const cur = steps.find(s => s.state === 'current') || steps[steps.length - 1];
+
+  /* Enlaces temporales para que el cliente vea y descargue la foto que subió */
+  const receiptPath = o.customer.pagoReportado && o.customer.pagoReportado.comprobantePath;
+  let comprobanteUrl = '';
+  let comprobanteDescarga = '';
+  if (receiptPath && receiptPath.startsWith(`${numero}/`)) {
+    try {
+      const bucket = supabase.storage.from(RECEIPT_BUCKET);
+      const [view, download] = await Promise.all([
+        bucket.createSignedUrl(receiptPath, 600),
+        bucket.createSignedUrl(receiptPath, 600, { download: `Comprobante-${numero}.${receiptPath.split('.').pop()}` })
+      ]);
+      if (view.error || download.error) console.error('No se pudo firmar el comprobante:', (view.error || download.error).message);
+      else { comprobanteUrl = view.data.signedUrl; comprobanteDescarga = download.data.signedUrl; }
+    } catch (signError) {
+      console.error('No se pudo firmar el comprobante:', signError.message);
+    }
+  }
+
   ok(res, {
     numero: o.id, createdAt: o.created_at,
     pago: o.customer.pago || '', ciudad: o.customer.ciudad || '',
@@ -140,7 +156,8 @@ module.exports = async (req, res) => {
     steps, guia: t.guia, transportadora: t.transportadora, nota: t.nota,
     pagoReportado: o.customer.pagoReportado ? {
       at: o.customer.pagoReportado.at,
-      hasComprobante: !!o.customer.pagoReportado.comprobantePath
+      hasComprobante: !!o.customer.pagoReportado.comprobantePath,
+      comprobanteUrl, comprobanteDescarga
     } : null,
     items: (o.items || []).map(i => ({ brand: i.brand, name: i.name, size: i.size, color: i.color, qty: i.qty, price: i.price, listPrice: i.listPrice, image: i.image || '' })),
     discount: pricing.coupon ? pricing.coupon.discount : 0,
