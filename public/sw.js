@@ -3,11 +3,12 @@
    - Imágenes, fuentes y scripts propios: copia local primero.
    - Nunca guarda nada de /api/ (precios, pedidos, panel).
    - No recarga la página por su cuenta: una actualización nunca interrumpe un pago. */
-const CACHE = 'kairo-v10';
+const CACHE = 'kairo-v11';
 const APP_SHELL = [
   '/', '/index.html', '/css/fonts.css', '/css/store.css?v=8', '/js/negocio.js', '/js/loader.js', '/js/tienda.js?v=8',
   '/manifest.webmanifest', '/img/kairo-logo-negro.png', '/img/kairo-logo-blanco.png', '/img/nequi-qr.png',
-  '/img/icon-192.png', '/img/favicon-96.png', '/seguimiento.html', '/recibo.html'
+  '/img/icon-180.png', '/img/icon-192.png', '/img/icon-512.png', '/img/icon-maskable-512.png',
+  '/img/favicon-96.png', '/seguimiento.html', '/recibo.html'
 ];
 
 self.addEventListener('install', event => {

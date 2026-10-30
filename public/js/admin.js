@@ -62,15 +62,29 @@
   function menu(open) { $('app').classList.toggle('menu-open', open); $('adminMenuBtn').setAttribute('aria-expanded', String(open)); }
   $('adminMenuBtn').addEventListener('click', function () { menu(!$('app').classList.contains('menu-open')); });
   $('adminNavBackdrop').addEventListener('click', function () { menu(false); });
-  document.querySelectorAll('.nav-item[data-view]').forEach(function (b) {
+  $('adminMenuClose').addEventListener('click', function () { menu(false); $('adminMenuBtn').focus(); });
+  document.querySelectorAll('[data-view]').forEach(function (b) {
     b.addEventListener('click', function () { show(b.dataset.view); menu(false); });
   });
   function show(view) {
-    document.querySelectorAll('.nav-item[data-view]').forEach(function (x) { if (x.dataset.view === view) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current'); });
+    document.querySelectorAll('[data-view]').forEach(function (x) { if (x.dataset.view === view) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current'); });
+    $('adminMenuBtn').classList.toggle('on', !document.querySelector('.bnav [data-view="' + view + '"]'));
     document.querySelectorAll('.view').forEach(function (v) { v.classList.toggle('on', v.id === 'view-' + view); });
     $('main').focus({ preventScroll: true }); window.scrollTo(0, 0);
   }
   document.addEventListener('click', function (e) { if (e.target.closest('[data-reload]')) loadAll(); });
+
+  /* En móvil las tablas se ven como tarjetas: cada celda lleva el nombre de su columna. */
+  function labelTables() {
+    document.querySelectorAll('.panel table').forEach(function (t) {
+      var heads = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) { return th.querySelector('.sr-only') ? '' : th.textContent.trim(); });
+      t.querySelectorAll('tbody tr').forEach(function (tr) {
+        Array.prototype.forEach.call(tr.children, function (td, i) { if (heads[i] && !td.hasAttribute('colspan')) td.setAttribute('data-label', heads[i]); });
+      });
+    });
+  }
+  var labelQueued = false;
+  new MutationObserver(function () { if (labelQueued) return; labelQueued = true; requestAnimationFrame(function () { labelQueued = false; labelTables(); }); }).observe($('main'), { childList: true, subtree: true });
 
   /* ---------------- carga ---------------- */
   async function loadAll() {
@@ -115,6 +129,7 @@
     $('navNew').hidden = !waitingPay; $('navNew').textContent = waitingPay; $('navNew').setAttribute('aria-label', waitingPay + ' por confirmar');
     var pq = s.pqrPending || D.pqrs.filter(function (p) { return p.estado === 'Radicada'; }).length;
     $('navPqr').hidden = !pq; $('navPqr').textContent = pq;
+    $('bnNew').hidden = !waitingPay; $('bnNew').textContent = waitingPay; $('bnPqr').hidden = !pq; $('bnPqr').textContent = pq;
     $('recentOrders').innerHTML = D.orders.slice(0, 6).map(function (o) {
       return '<tr><td><b class="order-no">' + esc(o.id) + '</b><br><small>' + fdate(o.created_at) + '</small></td><td>' + esc((o.customer || {}).nombre || '—') + '</td><td>' + money(o.total) + '</td><td>' + statusPill(o) + '</td></tr>';
     }).join('') || '<tr><td colspan="4" class="empty">Todavía no hay pedidos.</td></tr>';
@@ -596,6 +611,7 @@
   $('scrim').addEventListener('click', closeDrawers);
   document.querySelectorAll('[data-close-drawer]').forEach(function (b) { b.addEventListener('click', closeDrawers); });
   document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('app').classList.contains('menu-open')) { menu(false); $('adminMenuBtn').focus(); return; }
     var d = document.querySelector('.drawer.on'); if (!d) return;
     if (e.key === 'Escape') { closeDrawers(); return; }
     if (e.key !== 'Tab') return;

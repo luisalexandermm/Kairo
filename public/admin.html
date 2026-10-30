@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <meta name="theme-color" content="#0e0e0e">
 <link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/admin.css?v=5">
+<link rel="stylesheet" href="/css/admin.css?v=6">
 <script src="/js/negocio.js"></script>
 </head>
 <body>
@@ -21,6 +21,11 @@
 <symbol id="s-boot" viewBox="0 0 260 140"><path d="M52 14h60c8 0 12 5 12 13v46c0 14 6 24 18 30 12 6 30 8 48 10 18 2 34 6 44 14 8 6 11 13 9 20H24c-8 0-12-5-11-13 1-9 7-15 16-19 8-4 12-10 12-19V27c0-8 4-13 11-13Z" fill="currentColor"/></symbol>
 <symbol id="s-sandal" viewBox="0 0 260 140"><path d="M14 112c0-8 6-14 14-14h196c12 0 22 6 22 14s-10 14-22 14H28c-8 0-14-6-14-14Z" fill="currentColor"/><path d="M70 100c6-30 22-52 46-60M170 100c-4-30-18-50-40-58M86 72h70" stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/></symbol>
 <symbol id="s-slide" viewBox="0 0 260 140"><path d="M14 114c0-7 6-12 13-12h198c12 0 21 5 21 12s-9 12-21 12H27c-7 0-13-5-13-12Z" fill="currentColor"/><path d="M60 102c4-26 30-44 70-46 40 2 64 20 70 46Z" fill="currentColor"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4zM3.5 7.5 12 11.5l8.5-4M12 11.5v9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-shoe" viewBox="0 0 24 24"><path d="M2.5 17V9.5c0-.6.5-1 1-1h2.3c.4 0 .8.3 1 .6.8 1.4 2.4 2 3.9 1.5l1.6-.5c.6-.2 1.2 0 1.5.5l1.4 2.2c.4.6 1 1 1.8 1.1l2.3.4c1.4.2 2.2 1.2 2.2 2.4V17a1 1 0 0 1-1 1H3.5a1 1 0 0 1-1-1ZM2.5 15h19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h6.5v6.5H4zM13.5 4H20v6.5h-6.5zM4 13.5h6.5V20H4zM13.5 13.5H20V20h-6.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
 </defs></svg>
 
 <!-- INGRESO -->
@@ -40,6 +45,7 @@
   <aside id="sidebar" aria-label="Secciones del panel">
     <div class="logo"><img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers" width="178" height="38"></div>
     <small>Administración</small>
+    <button type="button" class="sheet-close" id="adminMenuClose" aria-label="Cerrar menú">✕</button>
     <nav>
       <button class="nav-item" data-view="resumen" aria-current="page">Resumen</button>
       <button class="nav-item" data-view="pedidos">Pedidos <span class="count" id="navNew" hidden></span></button>
@@ -62,7 +68,7 @@
   <main id="main" tabindex="-1">
     <div class="mobile-bar">
       <img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers" width="140" height="30">
-      <button class="icon-btn" id="adminMenuBtn" aria-label="Abrir menú del panel" aria-expanded="false" aria-controls="sidebar">☰</button>
+      <a class="btn btn-line btn-sm" href="/" target="_blank" rel="noopener">Ver tienda</a>
     </div>
 
     <!-- Resumen -->
@@ -133,6 +139,15 @@
       </div>
     </section>
   </main>
+
+  <!-- MENÚ INFERIOR (móvil) -->
+  <nav class="bnav" aria-label="Menú inferior del panel">
+    <button type="button" data-view="resumen" aria-current="page"><svg aria-hidden="true"><use href="#i-home"/></svg>Resumen</button>
+    <button type="button" data-view="pedidos"><span class="ico"><svg aria-hidden="true"><use href="#i-box"/></svg><span class="badge" id="bnNew" hidden></span></span>Pedidos</button>
+    <button type="button" data-view="productos"><svg aria-hidden="true"><use href="#i-shoe"/></svg>Productos</button>
+    <button type="button" data-view="pqr"><span class="ico"><svg aria-hidden="true"><use href="#i-chat"/></svg><span class="badge" id="bnPqr" hidden></span></span>PQR</button>
+    <button type="button" id="adminMenuBtn" aria-label="Más secciones" aria-expanded="false" aria-controls="sidebar"><svg aria-hidden="true"><use href="#i-grid"/></svg>Más</button>
+  </nav>
 </div>
 
 <!-- CAJÓN PRODUCTO -->
@@ -201,6 +216,6 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/js/admin.js?v=7"></script>
+<script src="/js/admin.js?v=8"></script>
 </body>
 </html>

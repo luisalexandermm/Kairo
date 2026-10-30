@@ -119,22 +119,80 @@ tr:last-child td{border-bottom:none}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:12px 22px;border-radius:999px;font-weight:700;font-size:.86rem;opacity:0;pointer-events:none;transition:.25s;z-index:90}.toast.on{opacity:1;transform:translateX(-50%)}
 
+.bnav,.sheet-close{display:none}
 @media(max-width:900px){
+  :root{--nav-h:68px}
   .app.on{grid-template-columns:1fr}
-  aside{position:fixed;z-index:80;right:0;top:0;width:min(300px,86vw);height:100vh;transform:translateX(100%);transition:transform .28s;box-shadow:-20px 0 45px -30px rgba(0,0,0,.8)}
+  /* "Más": el menú lateral se vuelve una hoja que sube desde abajo */
+  aside{position:fixed;z-index:80;left:0;right:0;bottom:0;top:auto;width:100%;height:auto;max-height:86vh;border-radius:22px 22px 0 0;padding:22px 16px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .3s;box-shadow:0 -20px 45px -25px rgba(0,0,0,.8);overscroll-behavior:contain}
+  aside::before{content:"";position:absolute;top:8px;left:50%;width:42px;height:4px;margin-left:-21px;border-radius:4px;background:rgba(255,255,255,.25)}
   .app.menu-open aside{transform:none}
+  aside .logo img{height:30px}
+  aside small{padding:4px 8px 14px}
+  .sheet-close{display:flex;position:absolute;top:18px;right:14px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);color:#fff;font-size:1rem;align-items:center;justify-content:center}
+  aside nav{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .nav-item{padding:13px 12px;font-size:.88rem;background:rgba(255,255,255,.05);min-height:48px}
+  aside .foot{flex-direction:row;justify-content:space-between;padding-top:14px;margin-top:14px}
+  aside .foot a,aside .foot button{padding:11px 10px;font-size:.9rem}
   .admin-nav-backdrop{display:block;position:fixed;inset:0;z-index:70;background:rgba(11,13,20,.55);opacity:0;pointer-events:none;transition:opacity .28s}
   .app.menu-open .admin-nav-backdrop{opacity:1;pointer-events:auto}
-  aside .logo{font-size:1.3rem;padding:0 8px 0 0}
-  aside .foot{padding-bottom:8px}
-  aside .foot a,aside .foot button{padding:11px 10px;font-size:.9rem}
-  .mobile-bar{display:flex;justify-content:flex-end;padding:18px 0 16px;margin-bottom:22px;min-height:74px}
-  .mobile-bar .icon-btn{display:flex;width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;font-size:1.25rem;line-height:1;align-items:center;justify-content:center;flex:0 0 40px;margin-left:auto}
-  .mobile-bar{justify-content:space-between}
-  main{padding:18px 18px 60px}.g2,.g3{grid-template-columns:1fr}
-  table{min-width:640px}
+
+  /* menú inferior, igual que en la tienda */
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);align-items:center;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));z-index:40;width:min(520px,calc(100% - 20px));height:var(--nav-h);background:#0f1512;border-radius:26px;box-shadow:0 16px 36px -14px rgba(0,0,0,.6)}
+  .bnav button{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#c9d4ce;font-size:.68rem;font-weight:700;min-width:0}
+  .bnav svg{width:22px;height:22px}
+  .bnav .ico{position:relative;display:block;width:22px;height:22px}
+  .bnav .badge{position:absolute;top:-7px;left:14px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--lime);color:#0e0e0e;font-size:.66rem;font-weight:800;line-height:18px;text-align:center;box-shadow:0 0 0 2px #0f1512}
+  .bnav [aria-current="page"],.bnav .on{color:var(--lime)}
+  .bnav :focus-visible{outline-color:var(--lime);outline-offset:-4px;border-radius:18px}
+
+  .mobile-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 0;margin:0 -16px 18px;padding-left:16px;padding-right:16px;border-bottom:1px solid var(--line);background:rgba(238,243,240,.94);backdrop-filter:blur(8px)}
+  .mobile-bar img{height:26px}
+  main{padding:0 16px calc(var(--nav-h) + 34px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom));max-width:calc(100% - 32px);text-align:center}
+
+  /* encabezados y barras */
+  .head{align-items:flex-start;gap:12px;margin-bottom:18px}
+  .head h1{font-size:1.6rem}.head p{font-size:.86rem}
+  .head>.btn{width:100%}
+  .toolbar input,.toolbar select{flex:1 1 100%;min-width:0;min-height:44px}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px 16px;padding:0 16px 4px;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+  .tabs button{flex:0 0 auto;min-height:40px}
+  .stats{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+  .stat{padding:14px}.stat b{font-size:1.5rem}.stat span{font-size:.7rem}
+
+  /* tablas como tarjetas */
+  div.panel{background:transparent;border:0;overflow:visible}
+  .panel table,.panel tbody,.panel tr,.panel td{display:block;min-width:0;width:100%}
+  .panel thead{display:none}
+  .panel tr{background:#fff;border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;padding:6px 0}
+  .panel td{border:0;padding:7px 14px;display:flow-root;text-align:right;font-size:.88rem}
+  .panel td[data-label]::before{content:attr(data-label);float:left;margin-right:14px;padding-top:2px;max-width:45%;text-align:left;font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+  .panel td:first-child{display:block;text-align:left;padding-top:10px;padding-bottom:10px}
+  .panel td:first-child::before{display:none}
+  .panel td .row-actions{width:100%;justify-content:flex-start;gap:16px}
+  .panel td:last-child:has(.row-actions){border-top:1px solid var(--line);margin-top:4px;padding-top:10px}
+  .panel td.empty{display:block;text-align:center;padding:30px 14px;background:#fff;border-radius:var(--r)}
+  .panel tr:has(td.empty){padding:0}
+
+  /* pedidos */
+  .order-card{padding:16px}
+  .order-actions .btn,.order-card__foot .btn{flex:1 1 auto}
+  .order-card select{min-height:40px}
+
+  /* cajones a pantalla completa */
+  .drawer{width:100%}
+  .drawer__head{padding:16px 18px}.drawer__body{padding:18px}
+  .drawer__foot{padding:14px 18px calc(14px + env(safe-area-inset-bottom))}
+  .field input,.field select,.field textarea{min-height:44px;font-size:16px}
+  .btn-sm{min-height:38px}
+  .g2,.g3{grid-template-columns:1fr}
   .color-row{grid-template-columns:1fr 54px;}.color-row input[type=file],.color-image-preview{grid-column:1}.color-row button{grid-column:2;grid-row:2}
   .tl-form{grid-template-columns:1fr}
+  #settingsForm{padding:18px!important}
+  .qr-mini{align-items:flex-start}
+  .qr-mini img{width:76px;height:76px}
+  code{word-break:break-all}
 }
 /* ---------- Octubre 2026: formularios genéricos, recibos y seguimiento ---------- */
 fieldset{border:0;min-width:0}
