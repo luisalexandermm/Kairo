@@ -9,7 +9,10 @@
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/legal.css?v=3">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0e0e0e">
 <script src="js/negocio.js"></script>
+<script src="/js/pwa.js" defer></script>
 <style>
 .rc{background:#fff;border:1px solid var(--line);border-radius:18px;padding:28px 26px;max-width:720px;margin:0 auto}
 .rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;border-bottom:2px solid #0e0e0e;padding-bottom:16px;margin-bottom:16px}
@@ -41,7 +44,7 @@
 </head>
 <body>
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
-<header class="l-head"><div class="in"><a class="l-brand" href="/"><img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers, ir a la tienda" width="187" height="40"></a><nav aria-label="Volver"><a href="/seguimiento.html">Seguir un pedido</a></nav></div></header>
+<header class="l-head"><div class="in"><a class="l-brand" href="/"><img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers, ir a la tienda" width="187" height="40"></a><nav aria-label="Volver"><a href="/#pedidos">Mis pedidos</a></nav></div></header>
 
 <main id="contenido" tabindex="-1">
   <div id="out" aria-live="polite">
@@ -98,7 +101,7 @@
       ? 'Contraentrega: anticipo de envío ' + money(d.pagarAhora) + ' por Nequi y ' + money(d.saldoContraentrega) + ' al recibir'
       : 'Nequi: ' + money(d.pagarAhora || d.totalConEnvio) + ' antes del envío';
     $('out').innerHTML =
-      '<div class="tools"><button class="btn" type="button" id="print">Descargar o imprimir (PDF)</button><a class="btn btn--line" href="/seguimiento.html?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent(c) + '">Ver seguimiento</a></div>' +
+      '<div class="tools"><button class="btn" type="button" id="print">Descargar o imprimir (PDF)</button><a class="btn btn--line" href="/?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent(c) + '#pedidos">Ver en Mis pedidos</a></div>' +
       '<article class="rc" aria-labelledby="rcTitle">' +
       '<div class="rc-top"><div><img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers" width="215" height="46">' +
       '<div class="rc-biz"><span data-negocio="responsable"></span> · NIT <span data-negocio="nit"></span><br><span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span><br>WhatsApp <span data-negocio="telefonoVisible"></span> · <span data-negocio="correo"></span></div></div>' +

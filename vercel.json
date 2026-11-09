@@ -6,6 +6,7 @@
     { "src": "api/track.js", "use": "@vercel/node" },
     { "src": "api/coupon.js", "use": "@vercel/node" },
     { "src": "api/pqr.js", "use": "@vercel/node" },
+    { "src": "api/mis-pedidos.js", "use": "@vercel/node" },
     { "src": "api/admin.js", "use": "@vercel/node" },
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
@@ -29,6 +30,7 @@
     { "src": "/api/track", "dest": "/api/track.js" },
     { "src": "/api/coupon", "dest": "/api/coupon.js" },
     { "src": "/api/pqr", "dest": "/api/pqr.js" },
+    { "src": "/api/mis-pedidos", "dest": "/api/mis-pedidos.js" },
     { "src": "/api/admin", "dest": "/api/admin.js" },
     { "src": "/api/admin/(.*)", "dest": "/api/admin.js" },
     { "src": "/(.*)", "dest": "/public/$1" }

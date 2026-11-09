@@ -9,7 +9,10 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/legal.css?v=3">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0e0e0e">
 <script src="/js/negocio.js"></script>
+<script src="/js/pwa.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -38,6 +41,9 @@
         <tr><td>Caché de la aplicación (service worker)</td><td>Guarda copias de las páginas, estilos, fuentes e imágenes para que la tienda cargue más rápido y se pueda instalar en el celular.</td><td>No. Solo archivos del sitio.</td></tr>
         <tr><td>Pedido en curso (almacenamiento local)</td><td>Mientras pagas por Nequi, recuerda el carrito y el número de tu pedido para que no se pierdan si cambias a la app de Nequi o la página se recarga. Se borra al terminar la compra o, como máximo, a las 48 horas.</td><td>Solo los productos, el número de pedido, tu primer nombre, la ciudad y los últimos 4 dígitos de tu celular (para consultar el pedido), en tu propio navegador. No se envía a nadie.</td></tr>
         <tr><td>Carrito (almacenamiento local)</td><td>Recuerda los productos, tallas y colores que agregaste, y el cupón, para que no se pierdan si recargas la página. Se borra al terminar la compra o al vaciar el carrito.</td><td>Solo los productos elegidos, en tu propio navegador. No se envía a nadie hasta que haces el pedido.</td></tr>
+        <tr><td>Mis pedidos (almacenamiento local)</td><td>Un código aleatorio de este dispositivo que se envía con cada compra, para que tus pedidos aparezcan solos en “Mis pedidos” sin crear una cuenta. También guarda una copia del último estado de tus pedidos para verlos sin señal.</td><td>El código no te identifica (en nuestra base solo se guarda una versión cifrada). La copia incluye los productos, el número de pedido, tu primer nombre, la ciudad y los últimos 4 dígitos del celular, en tu propio navegador.</td></tr>
+        <tr><td>Datos de envío recordados (almacenamiento local)</td><td>Solo si dejas marcada la casilla “Recordar mis datos” al comprar: llena el formulario por ti la próxima vez. Desmarca la casilla en tu siguiente compra para borrarlos.</td><td>Sí: nombre, celular, cédula, correo y dirección que escribiste, guardados únicamente en tu propio navegador. No se envían a nadie hasta que haces un pedido.</td></tr>
+        <tr><td>Favoritos (almacenamiento local)</td><td>Recuerda los modelos que marcaste con el corazón.</td><td>No. Solo los códigos de los productos.</td></tr>
       </tbody>
     </table></div>
     <p>Las fuentes tipográficas y las animaciones están alojadas en este mismo sitio, así que tu navegador no se conecta a Google Fonts ni a otros servidores externos. Las fotos de los productos se cargan desde nuestro proveedor de almacenamiento (Supabase), que, como cualquier servidor, recibe la dirección IP de quien pide la imagen; no instala cookies.</p>
@@ -60,7 +66,7 @@
   </section>
 </main>
 <footer class="l-foot"><nav class="in" aria-label="Información legal">
-  <a href="/terminos.html">Términos y condiciones</a><a href="/privacidad.html">Privacidad</a><a href="/cookies.html" aria-current="page">Cookies</a><a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a><a href="/pqr.html">PQR</a><a href="/seguimiento.html">Seguimiento de pedido</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio</a>
+  <a href="/terminos.html">Términos y condiciones</a><a href="/privacidad.html">Privacidad</a><a href="/cookies.html" aria-current="page">Cookies</a><a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a><a href="/pqr.html">PQR</a><a href="/#pedidos">Mis pedidos</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio</a>
 </nav></footer>
 </body>
 </html>

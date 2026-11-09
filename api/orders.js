@@ -6,7 +6,7 @@
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
 const { priceCart, ENVIO } = require('../lib/pricing');
-const { makeOrderNumber } = require('../lib/pedidos');
+const { makeOrderNumber, clienteHash } = require('../lib/pedidos');
 
 const PAGOS = ['Nequi', 'Contraentrega'];
 const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
@@ -46,8 +46,8 @@ function receiptText(numero, items, customer, pricing) {
     ? `Pago por Nequi: ${money(pricing.pagarAhora)} (QR o llave). Envíanos el comprobante.`
     : `Contraentrega: anticipo de envío ${money(pricing.pagarAhora)} por Nequi y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
   return `kAIRO Sneakers — Pedido ${numero}\n\n${lines}\n\n${extra.join('\n')}\nTotal: ${money(pricing.totalConEnvio)}\n${pago}\n` +
-    `Entrega: ${customer.direccion}, ${customer.ciudad}\nTodos los productos se entregan sin caja.\n\n` +
-    `Sigue tu pedido en /seguimiento.html con el número ${numero} y los últimos 4 dígitos de tu celular.`;
+    `Entrega${customer.entrega ? ' ' + customer.entrega.toLowerCase() : ''}: ${customer.direccion}, ${customer.ciudad}\nTodos los productos se entregan sin caja.\n\n` +
+    `Sigue tu pedido en la sección "Mis pedidos" de la tienda (número ${numero}).`;
 }
 
 module.exports = async (req, res) => {
@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'POST') return err(res, 'Método no permitido', 405);
 
-  const { items, customer: c = {}, consent = {}, coupon } = req.body || {};
+  const { items, customer: c = {}, consent = {}, coupon, cliente } = req.body || {};
 
   /* 1. Consentimiento (obligatorio, casillas sin marcar por defecto) */
   if (consent.terminos !== true) return err(res, 'Debes aceptar los términos y condiciones', 400);
@@ -73,8 +73,13 @@ module.exports = async (req, res) => {
     departamento: cleanText(c.departamento, 80),
     notas: cleanText(c.notas, 500),
     pago: PAGOS.includes(c.pago) ? c.pago : null,
+    // Local (Quibdó) o Nacional: solo informativo, no cambia precios ni envío
+    entrega: ['Local', 'Nacional'].includes(c.entrega) ? c.entrega : null,
     empaque: 'Sin caja'
   };
+  // Liga el pedido al dispositivo del cliente para "Mis pedidos" (solo se guarda el hash)
+  const clienteId = clienteHash(cliente);
+  if (clienteId) customer.clienteId = clienteId;
   if (!customer.nombre) return err(res, 'Escribe tu nombre completo', 400);
   if (!customer.telefono) return err(res, 'Escribe un celular colombiano válido (10 dígitos, empieza por 3)', 400);
   if (!customer.direccion || !customer.ciudad) return err(res, 'Escribe la dirección y la ciudad de entrega', 400);

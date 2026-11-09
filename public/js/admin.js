@@ -33,6 +33,14 @@
   }
 
   /* ---------------- ingreso ---------------- */
+  // El panel se usa desde el navegador, nunca dentro de la app instalada de la tienda
+  if ((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true) {
+    TOKEN = null;
+    $('loginForm').innerHTML = '<div class="logo"><img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers" width="243" height="52"></div>' +
+      '<p>El panel de administración se abre desde el navegador, no desde la app.</p>' +
+      '<a class="btn btn-primary" href="/admin.html" target="_blank" rel="noopener">Abrir en el navegador</a>';
+    return;
+  }
   $('loginForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     var pass = $('passInput').value;
@@ -168,7 +176,7 @@
     var q = ($('ordSearch').value || '').trim().toLowerCase();
     var list = D.orders.filter(ordMatch).filter(function (o) {
       if (!q) return true; var c = o.customer || {};
-      return (o.id + ' ' + (c.nombre || '') + ' ' + (c.telefono || '') + ' ' + (c.ciudad || '')).toLowerCase().indexOf(q) > -1;
+      return (o.id + ' ' + (c.nombre || '') + ' ' + (c.telefono || '') + ' ' + (c.ciudad || '') + ' ' + (c.entrega || '')).toLowerCase().indexOf(q) > -1;
     });
     if (D.ordersError) { $('orderList').innerHTML = '<p class="form-msg bad">' + esc(D.ordersError) + '</p>'; return; }
     $('orderList').innerHTML = list.map(function (o) {
@@ -190,7 +198,7 @@
         '<div class="order-card__top"><div><h2 class="order-no" id="o-' + esc(o.id) + '">' + esc(o.id) + '</h2><small>' + fdate(o.created_at) + '</small></div><span class="big-price">' + money(o.total) + '</span></div>' +
         '<div class="order-meta">' + statusPill(o) + '<span class="pill off">' + esc(c.pago || 'Sin método') + '</span>' + (pr.coupon ? '<span class="pill off">Cupón ' + esc(pr.coupon.code) + '</span>' : '') + '<span class="pill warn">Sin caja</span></div>' +
         (c.pagoReportado ? '<p class="ref-box"><b>El cliente reportó su pago</b>' + (c.pagoReportado.ref ? ' · Referencia: ' + esc(c.pagoReportado.ref) : '') + ' <small>(' + fdate(c.pagoReportado.at) + ')</small><br>Revisa que el pago esté en tu Nequi antes de confirmar.' + (c.pagoReportado.hasComprobante ? ' <button class="btn btn-line btn-sm" type="button" data-proof="' + esc(o.id) + '">Ver foto del comprobante</button>' : '') + '</p>' : '') +
-        '<p><b>' + esc(c.nombre || 'Sin nombre') + '</b> · ' + esc(tel) + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + (c.correo ? ' · ' + esc(c.correo) : '') + '<br><small>' + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</small>' + (c.notas ? '<br><small>Notas: ' + esc(c.notas) + '</small>' : '') + '</p>' +
+        '<p><b>' + esc(c.nombre || 'Sin nombre') + '</b> · ' + esc(tel) + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + (c.correo ? ' · ' + esc(c.correo) : '') + '<br><small>' + (c.entrega ? '<b>' + esc(c.entrega === 'Local' ? 'Local · Quibdó' : 'Nacional') + '</b> · ' : '') + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</small>' + (c.notas ? '<br><small>Notas: ' + esc(c.notas) + '</small>' : '') + '</p>' +
         '<ul class="order-items">' + items + '</ul>' + lines +
         '<ol class="timeline" aria-label="Seguimiento del pedido">' + steps.map(function (s) { return '<li class="' + s.state + '">' + esc(s.label) + (s.at ? '<small>' + fdate(s.at) + '</small>' : '') + '</li>'; }).join('') + '</ol>' +
         '<form class="tl-form" data-track="' + esc(o.id) + '">' +
@@ -259,7 +267,7 @@
       '<div class="top"><div><img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers"><div class="biz">' + biz('responsable') + ' · NIT ' + biz('nit') + '<br>' + biz('direccion') + ', ' + biz('ciudad') + '<br>WhatsApp ' + biz('telefonoVisible') + '</div></div>' +
       '<div class="no"><small>Recibo de pedido</small><b>' + esc(o.id) + '</b><br><small>' + esc(o.status) + '</small></div></div>' +
       '<div class="grid"><div><b>Fecha</b>' + fdate(o.created_at) + '</div><div><b>Forma de pago</b>' + esc(c.pago || '') + (c.pagoReportado ? ' · Ref. ' + esc(c.pagoReportado.ref) : '') + '</div>' +
-      '<div><b>Cliente</b>' + esc(c.nombre || '') + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + '<br>' + esc(c.telefono || '') + '</div><div><b>Entrega</b>' + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</div>' +
+      '<div><b>Cliente</b>' + esc(c.nombre || '') + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + '<br>' + esc(c.telefono || '') + '</div><div><b>Entrega' + (c.entrega ? ' ' + esc(c.entrega.toLowerCase()) : '') + '</b>' + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</div>' +
       ((o.tracking || {}).guia ? '<div><b>Guía</b>' + esc(o.tracking.guia) + ' ' + esc(o.tracking.transportadora || '') + '</div>' : '') +
       (c.pago === 'Contraentrega' && pr.saldoContraentrega != null ? '<div><b>Cobrar al entregar</b>' + money(pr.saldoContraentrega) + '</div>' : '') + '</div>' +
       '<table><thead><tr><th>Producto</th><th class="n">Cant.</th><th class="n">Precio</th><th class="n">Valor</th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table>' +
@@ -356,13 +364,22 @@
       shape: $('pShape').value, shoeColor: $('pShoeColor').value, bg: $('pBg').value,
       active: $('pActive').checked, featured: $('pFeatured').checked
     };
-    var e = !body.name ? 'Escribe el nombre del producto.' : !body.brand ? 'Escribe la marca.' : !body.price ? 'Escribe el precio.' : body.salePrice && body.salePrice >= body.price ? 'El precio de oferta debe ser menor que el precio normal.' : !body.sizes.length ? 'Elige al menos una talla.' : '';
-    if (e) { $('prodErr').textContent = e; $('prodErr').hidden = false; return; }
+    var bad = !body.name ? ['pName', 'Escribe el nombre del producto.'] : !body.brand ? ['pBrand', 'Escribe la marca.'] : !body.price ? ['pPrice', 'Escribe el precio.'] : body.salePrice && body.salePrice >= body.price ? ['pSale', 'El precio de oferta debe ser menor que el precio normal.'] : !body.sizes.length ? ['sizeChips', 'Elige al menos una talla.'] : null;
+    // El mensaje queda al final del cajón: lo mostramos también en un aviso y llevamos al campo
+    function showErr(msg, field) {
+      $('prodErr').textContent = msg; $('prodErr').hidden = false; toast(msg, 4500);
+      var f = field && $(field);
+      if (f) { f.scrollIntoView({ block: 'center' }); if (f.focus) f.focus(); } else $('prodErr').scrollIntoView({ block: 'nearest' });
+    }
+    if (bad) { showErr(bad[1], bad[0]); return; }
+    $('prodErr').hidden = true;
+    var btn = this; btn.disabled = true; btn.textContent = 'Guardando…';
     try {
       if (editingProduct) await api('/admin/products/' + encodeURIComponent(editingProduct.id), { method: 'PUT', body: body });
       else await api('/admin/products', { method: 'POST', body: body });
-      closeDrawers(); await loadAll(); toast('Producto guardado');
-    } catch (err) { $('prodErr').textContent = err.message; $('prodErr').hidden = false; }
+      closeDrawers(); toast('Producto guardado'); await loadAll();
+    } catch (err) { showErr('No se guardó: ' + err.message); }
+    finally { btn.disabled = false; btn.textContent = 'Guardar producto'; }
   });
 
   /* ---------------- formularios genéricos ---------------- */

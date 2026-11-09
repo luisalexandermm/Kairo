@@ -6,15 +6,17 @@
 <title>kAIRO Sneakers — Tenis, sandalias y chanclas para hombre y mujer</title>
 <meta name="description" content="Tenis, sandalias, chanclas y botas para hombre y mujer. Envíos a toda Colombia. Paga por Nequi o contraentrega y sigue tu pedido en línea.">
 <meta name="theme-color" content="#0e0e0e">
+<meta name="color-scheme" content="only light">
 <link rel="icon" href="img/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="96x96" href="img/favicon-96.png">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="kAIRO">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=11">
+<link rel="stylesheet" href="css/store.css?v=15">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -28,7 +30,7 @@
   }, 6000);
 </script>
 <noscript><style>.k-loader{display:none!important}html.k-loading body{overflow:auto}</style></noscript>
-<script src="/js/negocio.js"></script>
+<script src="js/negocio.js"></script>
 </head>
 <body>
 
@@ -65,7 +67,7 @@
   </div>
   <span class="sr-only">Cargando tu experiencia en KAIRO Sneakers.</span>
 </div>
-<script src="/js/loader.js"></script>
+<script src="js/loader.js"></script>
 
 <!-- ============ ÍCONOS ============ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
@@ -90,7 +92,13 @@
 <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
 <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-<symbol id="s-low" viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M60 44c8-5 20-8 33-7 15 1 25 8 30 17" stroke="rgba(255,255,255,.5)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 60l10-16M58 66l11-17M71 71l11-18" stroke="rgba(255,255,255,.6)" stroke-width="3.2" stroke-linecap="round"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/><path d="M10 124h236" stroke="#fff" stroke-width="5" opacity=".7"/></symbol>
+<symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20.3s-7.8-4.6-9.2-9.6C1.9 7.4 4 4.2 7.3 4.2c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.4 3.2 4.5 6.5-1.4 5-9.2 9.6-9.2 9.6Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+<symbol id="i-heart-on" viewBox="0 0 24 24"><path d="M12 20.3s-7.8-4.6-9.2-9.6C1.9 7.4 4 4.2 7.3 4.2c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.4 3.2 4.5 6.5-1.4 5-9.2 9.6-9.2 9.6Z" fill="currentColor" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+<symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4zM3.5 7.5 12 11.5l8.5-4M12 11.5v9M7.8 5.5l8.4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7M20 4v4.7h-4.7M20 12a8 8 0 0 1-13.7 5.6L4 15.3M4 20v-4.7h4.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="s-low"viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M60 44c8-5 20-8 33-7 15 1 25 8 30 17" stroke="rgba(255,255,255,.5)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 60l10-16M58 66l11-17M71 71l11-18" stroke="rgba(255,255,255,.6)" stroke-width="3.2" stroke-linecap="round"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/><path d="M10 124h236" stroke="#fff" stroke-width="5" opacity=".7"/></symbol>
 <symbol id="s-high" viewBox="0 0 260 140"><path d="M10 118c-3-13 3-22 14-26 9-3 14-8 17-16 3-9 4-20 4-32 0-9 5-14 14-14h44c9 0 13 5 13 14 0 14 3 25 12 33 7 6 16 9 27 10 16 2 36 2 52 8 13 5 21 14 22 24 1 8-3 13-11 13H20c-6 0-9-2-10-4Z" fill="currentColor"/><path d="M60 36h44M60 52h44M60 68h44" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/><path d="M150 62c20-2 44 2 60 16" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/><path d="M12 124h234" stroke="#fff" stroke-width="5" opacity=".7"/></symbol>
 <symbol id="s-boot" viewBox="0 0 260 140"><path d="M52 14h60c8 0 12 5 12 13v46c0 14 6 24 18 30 12 6 30 8 48 10 18 2 34 6 44 14 8 6 11 13 9 20H24c-8 0-12-5-11-13 1-9 7-15 16-19 8-4 12-10 12-19V27c0-8 4-13 11-13Z" fill="currentColor"/><path d="M60 30h46M60 48h46M60 66h46" stroke="rgba(255,255,255,.35)" stroke-width="4" stroke-linecap="round"/></symbol>
 <symbol id="s-sandal" viewBox="0 0 260 140"><path d="M14 112c0-8 6-14 14-14h196c12 0 22 6 22 14s-10 14-22 14H28c-8 0-14-6-14-14Z" fill="currentColor"/><path d="M70 100c6-30 22-52 46-60M170 100c-4-30-18-50-40-58M86 72h70" stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M20 118h220" stroke="#fff" stroke-width="4" opacity=".6"/></symbol>
@@ -105,27 +113,30 @@
 
 <header class="hdr" id="hdr">
   <div class="wrap">
-    <a class="brand" href="#inicio"><img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers, inicio" width="159" height="34"></a>
+    <a class="brand" href="#inicio" aria-label="kAIRO Sneakers, ir al inicio"><img src="img/kairo-logo-negro.png" alt="" width="179" height="38" onerror="this.parentNode.classList.add('brand--txt')"><span class="brand__txt" aria-hidden="true">KAIRO<small>SNEAKERS</small></span></a>
     <nav aria-label="Principal">
       <button type="button" data-goto-gender="Hombre">Hombre</button>
       <button type="button" data-goto-gender="Mujer">Mujer</button>
       <a href="#catalogo">Catálogo</a>
-      <a href="/seguimiento.html">Seguir mi pedido</a>
+      <button type="button" data-open-orders>Mis pedidos</button>
     </nav>
     <form class="search" role="search" id="searchForm" onsubmit="return false">
       <label for="q"><svg aria-hidden="true"><use href="#i-search"/></svg><span class="sr-only">Buscar por marca, modelo o tipo</span>
         <input id="q" type="search" placeholder="Busca Nike, sandalias, Samba…" autocomplete="off" enterkeyhint="search">
         <button type="button" class="clear" id="qClear" hidden>Borrar</button>
       </label>
+      <button type="button" class="search__x" id="qClose" aria-label="Cerrar el buscador"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
     </form>
     <div class="hdr__actions">
       <button class="icon-btn" type="button" id="searchBtn" aria-label="Buscar en el catálogo" aria-expanded="false" aria-controls="searchForm"><svg aria-hidden="true"><use href="#i-search"/></svg></button>
+      <button class="icon-btn icon-btn--desk" type="button" id="favBtn" aria-haspopup="dialog" aria-label="Ver favoritos"><svg aria-hidden="true"><use href="#i-heart"/></svg><span class="badge" id="favBadge" hidden>0</span></button>
       <button class="icon-btn" type="button" id="cartBtn" aria-haspopup="dialog" aria-label="Abrir carrito, 0 productos"><svg aria-hidden="true"><use href="#i-cart"/></svg><span class="badge" id="cartBadge" hidden>0</span></button>
     </div>
   </div>
 </header>
 
 <div class="resume" id="resumeBar" hidden></div>
+<div class="resume" id="installBar" hidden></div>
 
 <main id="inicio">
   <h1 class="sr-only">kAIRO Sneakers: tenis, sandalias, chanclas y botas para hombre y mujer</h1>
@@ -142,7 +153,7 @@
     <ul class="perks" aria-label="Por qué comprar en kAIRO">
       <li><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Envíos a toda Colombia</b>Directo a tu puerta</span></li>
       <li><svg aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Nequi o contraentrega</b>Paga como prefieras</span></li>
-      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Sigue tu pedido</b>Con tu número de pedido</span></li>
+      <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Tus pedidos, guardados</b>Síguelos desde la app</span></li>
       <li><svg aria-hidden="true"><use href="#i-spark"/></svg><span><b>Retracto en 5 días</b>Compra con tranquilidad</span></li>
     </ul>
 
@@ -182,10 +193,10 @@
     </section>
 
     <section class="help" aria-labelledby="h-help">
-      <div><h2 id="h-help">¿Dudas con la talla, el pago o tu envío?</h2><p>Escríbenos por WhatsApp o consulta el estado de tu pedido con su número.</p></div>
+      <div><h2 id="h-help">¿Dudas con la talla, el pago o tu envío?</h2><p>Escríbenos por WhatsApp o mira el estado de tus compras en Mis pedidos.</p></div>
       <div class="help__actions">
         <a class="btn btn-lime" id="waHelp" href="#" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>WhatsApp</a>
-        <a class="btn btn-light" href="/seguimiento.html"><svg aria-hidden="true"><use href="#i-truck"/></svg>Seguir mi pedido</a>
+        <button type="button" class="btn btn-light" data-open-orders><svg aria-hidden="true"><use href="#i-box"/></svg>Mis pedidos</button>
       </div>
     </section>
   </div>
@@ -195,7 +206,7 @@
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers" width="178" height="38">
+        <img src="img/kairo-logo-blanco.png" alt="kAIRO Sneakers" width="178" height="38">
         <p style="margin:12px 0 10px">Tenis, sandalias, chanclas y botas para hombre y mujer. Envíos a toda Colombia. Todos los productos se entregan sin caja.</p>
         <div class="foot-data">
     
@@ -210,7 +221,8 @@
         <button type="button" class="link-foot" data-goto-gender="Mujer">Mujer</button>
         <button type="button" class="link-foot" data-goto-cat="Sandalias">Sandalias</button>
         <button type="button" class="link-foot" data-goto-cat="Chanclas">Chanclas</button>
-        <a href="/seguimiento.html">Seguir mi pedido</a>
+        <button type="button" class="link-foot" data-open-orders>Mis pedidos</button>
+        <button type="button" class="link-foot" data-open-favs>Favoritos</button>
       </div>
       <div class="foot-col"><h3>Legal</h3>
         <a href="/terminos.html">Términos y condiciones</a>
@@ -227,7 +239,7 @@
     </div>
     <div class="foot-bottom">
       <span>© 2026 <span data-negocio="nombreComercial"></span>. Las marcas y logotipos mencionados pertenecen a sus dueños.</span>
-      <a href="/admin.html" rel="nofollow">.</a>
+      <a href="/admin.html" rel="nofollow" id="adminLink">.</a>
     </div>
   </div>
 </footer>
@@ -235,18 +247,18 @@
 
 <!-- ============ MENÚ INFERIOR ============ -->
 <nav class="bnav" id="bnav" aria-label="Menú inferior">
-  <a href="#inicio" aria-current="page"><svg aria-hidden="true"><use href="#i-home"/></svg>Inicio</a>
-  <button type="button" id="bnSearch"><svg aria-hidden="true"><use href="#i-search"/></svg>Buscar</button>
+  <button type="button" id="bnHome" data-nav="home" aria-current="page"><svg aria-hidden="true"><use href="#i-home"/></svg>Inicio</button>
+  <button type="button" id="bnShop" data-nav="shop"><svg aria-hidden="true"><use href="#i-grid"/></svg>Catálogo</button>
   <button type="button" class="bnav__cart" id="bnCart" aria-haspopup="dialog" aria-label="Abrir carrito, 0 productos"><span class="ring"><svg aria-hidden="true"><use href="#i-cart"/></svg></span><span class="badge" id="bnBadge" hidden>0</span></button>
-  <a href="/seguimiento.html"><svg aria-hidden="true"><use href="#i-truck"/></svg>Mi pedido</a>
-  <a id="bnWa" href="#" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Ayuda</a>
+  <button type="button" id="bnFav" data-nav="fav" aria-haspopup="dialog"><span class="bn-ico"><svg aria-hidden="true"><use href="#i-heart"/></svg><span class="badge" id="bnFavBadge" hidden>0</span></span>Favoritos</button>
+  <button type="button" id="bnOrders" data-nav="orders" aria-haspopup="dialog"><span class="bn-ico"><svg aria-hidden="true"><use href="#i-box"/></svg><span class="badge" id="bnOrdBadge" hidden>0</span></span>Pedidos</button>
 </nav>
 
 <div class="overlay" id="overlay"></div>
 
 <!-- ============ DETALLE DEL PRODUCTO ============ -->
 <div class="sheet sheet--center" id="pdSheet" role="dialog" aria-modal="true" aria-labelledby="pdName">
-  <div class="sheet__head"><span class="pd__brand" id="pdBrand"></span><button type="button" class="x-btn" data-close aria-label="Cerrar detalle"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <div class="sheet__head"><span class="pd__brand" id="pdBrand"></span><span class="head-tools"><button type="button" class="x-btn fav-btn" id="pdFav" aria-pressed="false" aria-label="Guardar en favoritos"><svg aria-hidden="true"><use href="#i-heart"/></svg></button><button type="button" class="x-btn" data-close aria-label="Cerrar detalle"><svg aria-hidden="true"><use href="#i-close"/></svg></button></span></div>
   <div class="sheet__body">
     <div class="pd">
       <div class="pd__media" id="pdMedia"></div>
@@ -300,6 +312,14 @@
     <div class="summary" id="coSummary"></div>
     <form id="orderForm" novalidate>
       <p class="hint" style="font-size:.84rem;color:var(--muted);margin-bottom:10px">Los campos con <span aria-hidden="true">*</span><span class="sr-only">asterisco</span> son obligatorios.</p>
+      <fieldset class="field" id="fEntrega" aria-describedby="fEntrega-e">
+        <legend>¿Dónde recibes el pedido? *</legend>
+        <div class="pay" id="entregaOpts">
+          <label><input type="radio" name="entrega" value="Local"><b>Local · Quibdó</b><small>Estás aquí en Quibdó.</small></label>
+          <label><input type="radio" name="entrega" value="Nacional"><b>Nacional</b><small>Envío a otra ciudad de Colombia.</small></label>
+        </div>
+        <p class="err" id="fEntrega-e" hidden></p>
+      </fieldset>
       <div class="field"><label for="fNombre">Nombre completo *</label><input id="fNombre" autocomplete="name" required maxlength="120" aria-describedby="fNombre-e"><p class="err" id="fNombre-e" hidden></p></div>
       <div class="row2">
         <div class="field"><label for="fTel">Celular *</label><input id="fTel" type="tel" inputmode="numeric" autocomplete="tel-national" required maxlength="14" placeholder="300 000 0000" aria-describedby="fTel-e"><p class="err" id="fTel-e" hidden></p></div>
@@ -323,6 +343,7 @@
       <div class="totals" id="coTotals"></div>
       <label class="consent"><input type="checkbox" id="cTerm" aria-describedby="consent-e"><span>Acepto los <a href="/terminos.html" target="_blank" rel="noopener">términos y condiciones</a> y entiendo que <b>los productos se entregan sin caja</b>. *</span></label>
       <label class="consent"><input type="checkbox" id="cDatos" aria-describedby="consent-e"><span>Autorizo el tratamiento de mis datos para gestionar y entregar este pedido, según la <a href="/privacidad.html" target="_blank" rel="noopener">política de datos personales</a>. *</span></label>
+      <label class="consent consent--soft"><input type="checkbox" id="cRecordar" checked><span>Recordar mis datos de envío en este celular para la próxima compra.</span></label>
       <p class="err form-err" id="consent-e" hidden></p>
       <p class="form-err" id="orderErr" role="alert" hidden></p>
       <button type="submit" class="btn btn-primary btn-block" id="orderBtn">Confirmar pedido e ir a pagar</button>
@@ -336,8 +357,8 @@
       <p class="lock-note"><svg aria-hidden="true"><use href="#i-lock"/></svg><span>Tu pedido <b id="payNo"></b> ya está guardado</span></p>
       <h3 id="payTitle">Paga con Nequi</h3>
       <p class="pay-amount" id="payAmount"></p>
-      <div class="qr"><img src="/img/nequi-qr.png" width="720" height="720" alt="Código QR de pago Bre-B por Nequi a nombre de Luis Moreno"></div>
-      <a class="btn btn-line" href="/img/nequi-qr.png" download="QR-Nequi-kAIRO.png" id="qrSave">Guardar QR en el celular</a>
+      <div class="qr"><img src="img/nequi-qr.png" width="720" height="720" alt="Código QR de pago Bre-B por Nequi a nombre de Luis Moreno"></div>
+      <a class="btn btn-line" href="img/nequi-qr.png" download="QR-Nequi-kAIRO.png" id="qrSave">Guardar QR en el celular</a>
       <ul class="kv" aria-label="Datos para pagar">
         <li><span><small>Titular</small><b data-negocio="nequiTitular"></b></span></li>
         <li><span><small>Llave Bre-B</small><b id="payKey" data-negocio="nequiLlave"></b></span><button type="button" class="copy" data-copy="key" aria-label="Copiar la llave">Copiar</button></li>
@@ -372,10 +393,10 @@
         <img class="proof-img" id="doneProofImg" alt="Comprobante de pago que enviaste">
         <a class="btn btn-line btn-block" id="doneProofDl" href="#">Descargar mi comprobante</a>
       </div>
-      <p class="warn">Guarda tu número de pedido: con él y los últimos 4 dígitos de tu celular puedes ver el estado de tu envío.</p>
+      <p class="ok-note"><svg aria-hidden="true"><use href="#i-box"/></svg><span>Tu pedido quedó guardado en <b>Mis pedidos</b>. Desde ahí ves su estado en cualquier momento, sin escribir el número.</span></p>
       <div style="display:grid;gap:10px">
-        <a class="btn btn-primary" id="doneReceipt" href="#">Ver y descargar recibo</a>
-        <a class="btn btn-line" id="doneTrack" href="#">Seguir mi pedido</a>
+        <button type="button" class="btn btn-primary" id="doneTrack"><svg aria-hidden="true"><use href="#i-box"/></svg>Ver en Mis pedidos</button>
+        <a class="btn btn-line" id="doneReceipt" href="#">Ver y descargar recibo</a>
         <a class="btn btn-wa" id="doneWa" href="#" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Escribir por WhatsApp</a>
         <button type="button" class="btn btn-light" id="doneClose">Seguir comprando</button>
       </div>
@@ -383,8 +404,27 @@
   </div>
 </div>
 
+<!-- ============ MIS PEDIDOS ============ -->
+<div class="sheet sheet--tall" id="ordersSheet" role="dialog" aria-modal="true" aria-labelledby="ordTitle">
+  <div class="sheet__head">
+    <button type="button" class="x-btn" id="ordBack" aria-label="Volver a la lista de pedidos" hidden><svg aria-hidden="true"><use href="#i-back"/></svg></button>
+    <div class="head-title"><h2 id="ordTitle">Mis pedidos</h2><small id="ordHello"></small></div>
+    <span class="head-tools"><button type="button" class="x-btn" id="ordRefresh" aria-label="Actualizar pedidos"><svg aria-hidden="true"><use href="#i-repeat"/></svg></button><button type="button" class="x-btn" data-close aria-label="Cerrar mis pedidos"><svg aria-hidden="true"><use href="#i-close"/></svg></button></span>
+  </div>
+  <div class="ord-tabs" id="ordTabs" role="tablist" aria-label="Filtrar pedidos"></div>
+  <div class="sheet__body" id="ordList" aria-live="polite"></div>
+  <div class="sheet__body" id="ordDetail" hidden tabindex="-1"></div>
+</div>
+
+<!-- ============ FAVORITOS ============ -->
+<div class="sheet sheet--tall" id="favSheet" role="dialog" aria-modal="true" aria-labelledby="favTitle">
+  <div class="sheet__head"><div class="head-title"><h2 id="favTitle">Favoritos</h2><small id="favCount"></small></div><button type="button" class="x-btn" data-close aria-label="Cerrar favoritos"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <div class="sheet__body" id="favList"></div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/tienda.js?v=9"></script>
+<script src="js/tienda.js?v=13"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>

@@ -2,11 +2,13 @@
    - Páginas y estilos: primero la red (siempre lo más nuevo), con copia por si no hay señal.
    - Imágenes, fuentes y scripts propios: copia local primero.
    - Nunca guarda nada de /api/ (precios, pedidos, panel).
-   - No recarga la página por su cuenta: una actualización nunca interrumpe un pago. */
-const CACHE = 'kairo-v11';
+   - No recarga la página por su cuenta: una actualización nunca interrumpe un pago.
+   - El panel (/admin) no pasa por aquí: se usa desde el navegador, por fuera de la app.
+   ⚠️ Al subir un ?v= en index.html o en las páginas, cámbialo también aquí y sube CACHE. */
+const CACHE = 'kairo-v17';
 const APP_SHELL = [
-  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=8', '/js/negocio.js', '/js/loader.js', '/js/tienda.js?v=8',
-  '/manifest.webmanifest', '/img/kairo-logo-negro.png', '/img/kairo-logo-blanco.png', '/img/nequi-qr.png',
+  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=15', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
+  '/js/tienda.js?v=13', '/js/pwa.js', '/manifest.webmanifest', '/img/kairo-logo-negro.png', '/img/kairo-logo-blanco.png', '/img/nequi-qr.png',
   '/img/icon-180.png', '/img/icon-192.png', '/img/icon-512.png', '/img/icon-maskable-512.png',
   '/img/favicon-96.png', '/seguimiento.html', '/recibo.html'
 ];
@@ -35,7 +37,7 @@ self.addEventListener('fetch', event => {
   });
 
   if (req.mode === 'navigate' || req.destination === 'style' || req.destination === 'script') {
-    event.respondWith(fromNetwork().catch(() => caches.match(req, { ignoreSearch: req.mode === 'navigate' }).then(r => r || caches.match('/'))));
+    event.respondWith(fromNetwork().catch(() => caches.match(req, { ignoreSearch: true }).then(r => r || caches.match('/'))));
     return;
   }
   event.respondWith(caches.match(req).then(cached => cached || fromNetwork()));

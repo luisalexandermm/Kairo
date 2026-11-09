@@ -9,7 +9,10 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <link rel="stylesheet" href="/css/fonts.css">
 <link rel="stylesheet" href="/css/legal.css?v=3">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0e0e0e">
 <script src="/js/negocio.js"></script>
+<script src="/js/pwa.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -77,7 +80,7 @@
       <li>El sitio registra el pedido y te entrega un <b>número de pedido</b> y un recibo. Luego te muestra el QR de Nequi con el valor exacto a pagar (todo el pedido si pagas por Nequi, o el anticipo del envío si es contraentrega).</li>
       <li>Te confirmamos por WhatsApp disponibilidad, valor del envío y fecha estimada de entrega. <b>El pedido queda en firme con esa confirmación.</b></li>
     </ol>
-    <p>Puedes descargar el recibo desde la ventana del pedido o desde la <a href="/seguimiento.html">página de seguimiento</a>. El recibo no reemplaza la factura electrónica; si la necesitas, pídela por WhatsApp.</p>
+    <p>Puedes descargar el recibo desde la ventana del pedido o desde la sección <a href="/#pedidos">Mis pedidos</a> de la tienda. El recibo no reemplaza la factura electrónica; si la necesitas, pídela por WhatsApp.</p>
   </section>
 
   <section id="pagos" aria-labelledby="h-pag">
@@ -94,7 +97,7 @@
     <ul>
       <li>Plazo estimado de entrega: <span data-negocio="plazoEntrega"></span>. La fecha concreta se confirma por WhatsApp.</li>
       <li>Si no se acuerda otro plazo, la entrega se hará a más tardar dentro de los 30 días calendario siguientes al pedido. Si nos retrasamos, puedes elegir esperar o que te devolvamos el dinero.</li>
-      <li>Puedes ver el estado de tu pedido en la <a href="/seguimiento.html">página de seguimiento</a> con tu número de pedido y los últimos 4 dígitos de tu celular.</li>
+      <li>Puedes ver el estado de tus pedidos en la sección <a href="/#pedidos">Mis pedidos</a> de la tienda: los pedidos hechos desde tu celular aparecen ahí automáticamente, y los hechos desde otro dispositivo se agregan con el número de pedido y los últimos 4 dígitos del celular.</li>
       <li>Revisa el paquete al recibirlo. Si llega abierto o dañado, déjalo anotado con la transportadora y escríbenos.</li>
     </ul>
   </section>
@@ -153,7 +156,7 @@
   </section>
 </main>
 <footer class="l-foot"><nav class="in" aria-label="Información legal">
-  <a href="/terminos.html" aria-current="page">Términos y condiciones</a><a href="/privacidad.html">Privacidad</a><a href="/cookies.html">Cookies</a><a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a><a href="/pqr.html">PQR</a><a href="/seguimiento.html">Seguimiento de pedido</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio</a>
+  <a href="/terminos.html" aria-current="page">Términos y condiciones</a><a href="/privacidad.html">Privacidad</a><a href="/cookies.html">Cookies</a><a href="/cambios-y-devoluciones.html">Cambios y devoluciones</a><a href="/pqr.html">PQR</a><a href="/#pedidos">Mis pedidos</a><a href="https://www.sic.gov.co" target="_blank" rel="noopener">Superintendencia de Industria y Comercio</a>
 </nav></footer>
 </body>
 </html>
