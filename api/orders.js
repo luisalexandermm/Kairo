@@ -7,27 +7,14 @@ const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
 const { priceCart, ENVIO } = require('../lib/pricing');
 const { makeOrderNumber, clienteHash } = require('../lib/pedidos');
+const { wompiReady, checkoutUrl } = require('../lib/wompi');
+const { sendWhatsApp, adminWhatsApp } = require('../lib/whatsapp');
 
-const PAGOS = ['Nequi', 'Contraentrega'];
+/* Wompi (tarjeta, PSE, Nequi, Bancolombia) solo aparece si sus llaves están configuradas */
+const pagosDisponibles = () => (wompiReady() ? ['Wompi', 'Nequi', 'Contraentrega'] : ['Nequi', 'Contraentrega']);
+/* Por ahora solo se hacen pedidos para entregar en Quibdó */
+const CIUDAD = 'Quibdó', DEPARTAMENTO = 'Chocó';
 const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
-
-async function sendWhatsApp(to, body) {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_WHATSAPP_FROM;
-  if (!sid || !token || !from || !to) return false;
-  const params = new URLSearchParams({
-    From: `whatsapp:${from.replace(/^whatsapp:/, '')}`,
-    To: `whatsapp:${to.replace(/^whatsapp:/, '')}`,
-    Body: body
-  });
-  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
-    method: 'POST',
-    headers: { Authorization: 'Basic ' + Buffer.from(`${sid}:${token}`).toString('base64'), 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: params
-  });
-  return r.ok;
-}
 
 /* Celular colombiano: 10 dígitos que empiezan por 3 (se acepta con 57 adelante) */
 function celularColombia(v) {
@@ -42,7 +29,9 @@ function receiptText(numero, items, customer, pricing) {
   if (pricing.promoSavings) extra.push(`Ahorro por promociones: -${money(pricing.promoSavings)}`);
   if (pricing.coupon) extra.push(`Cupón ${pricing.coupon.code}: -${money(pricing.coupon.discount)}`);
   extra.push(`Envío: ${pricing.freeShipping ? 'gratis' : money(pricing.envio)}`);
-  const pago = customer.pago === 'Nequi'
+  const pago = customer.pago === 'Wompi'
+    ? `Pago en línea con Wompi: ${money(pricing.pagarAhora)}.`
+    : customer.pago === 'Nequi'
     ? `Pago por Nequi: ${money(pricing.pagarAhora)} (QR o llave). Envíanos el comprobante.`
     : `Contraentrega: anticipo de envío ${money(pricing.pagarAhora)} por Nequi y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
   return `kAIRO Sneakers — Pedido ${numero}\n\n${lines}\n\n${extra.join('\n')}\nTotal: ${money(pricing.totalConEnvio)}\n${pago}\n` +
@@ -69,12 +58,11 @@ module.exports = async (req, res) => {
     correo: cleanText(c.correo, 120),
     direccion: cleanText(c.direccion, 200),
     barrio: cleanText(c.barrio, 80),
-    ciudad: cleanText(c.ciudad, 80),
-    departamento: cleanText(c.departamento, 80),
+    ciudad: CIUDAD,
+    departamento: DEPARTAMENTO,
     notas: cleanText(c.notas, 500),
-    pago: PAGOS.includes(c.pago) ? c.pago : null,
-    // Local (Quibdó) o Nacional: solo informativo, no cambia precios ni envío
-    entrega: ['Local', 'Nacional'].includes(c.entrega) ? c.entrega : null,
+    pago: pagosDisponibles().includes(c.pago) ? c.pago : null,
+    entrega: 'Local',
     empaque: 'Sin caja'
   };
   // Liga el pedido al dispositivo del cliente para "Mis pedidos" (solo se guarda el hash)
@@ -82,7 +70,8 @@ module.exports = async (req, res) => {
   if (clienteId) customer.clienteId = clienteId;
   if (!customer.nombre) return err(res, 'Escribe tu nombre completo', 400);
   if (!customer.telefono) return err(res, 'Escribe un celular colombiano válido (10 dígitos, empieza por 3)', 400);
-  if (!customer.direccion || !customer.ciudad) return err(res, 'Escribe la dirección y la ciudad de entrega', 400);
+  if (c.ciudad && !/^quibd[oó]$/i.test(cleanText(c.ciudad, 80))) return err(res, 'Por ahora solo hacemos entregas en Quibdó.', 400);
+  if (!customer.direccion) return err(res, 'Escribe la dirección de entrega en Quibdó', 400);
   if (customer.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.correo)) return err(res, 'El correo no es válido', 400);
   if (!customer.pago) return err(res, 'Elige un método de pago', 400);
 
@@ -92,8 +81,8 @@ module.exports = async (req, res) => {
 
   const envio = r.freeShipping ? 0 : ENVIO;
   const totalConEnvio = r.total + envio;
-  // Nequi: se paga todo antes del envío. Contraentrega: se paga el anticipo del envío por Nequi y el resto al recibir.
-  const pagarAhora = customer.pago === 'Nequi' ? totalConEnvio : ENVIO;
+  // Wompi y Nequi: se paga todo antes del envío. Contraentrega: se paga el anticipo del envío por Nequi y el resto al recibir.
+  const pagarAhora = customer.pago === 'Contraentrega' ? ENVIO : totalConEnvio;
   const saldoContraentrega = customer.pago === 'Contraentrega' ? Math.max(0, totalConEnvio - ENVIO) : 0;
   const pricing = {
     listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, subtotal: r.subtotal,
@@ -134,15 +123,19 @@ module.exports = async (req, res) => {
 
   /* 6. Avisos por WhatsApp (si Twilio está configurado) */
   const receipt = receiptText(numero, items_, customer, pricing);
-  const adminNumber = process.env.ADMIN_WHATSAPP_TO || 'whatsapp:+573145312045';
+  const adminNumber = adminWhatsApp();
   const [adminNotified, customerNotified] = await Promise.all([
     sendWhatsApp(adminNumber, `Nuevo pedido kAIRO\n\n${receipt}`),
     sendWhatsApp('+57' + customer.telefono, receipt)
   ]).catch(() => [false, false]);
 
+  /* 7. Pago en línea: link firmado al checkout de Wompi */
+  const wompi = customer.pago === 'Wompi' ? checkoutUrl(req, { numero, amount: pagarAhora, customer }) : null;
+
   ok(res, {
     ok: true, id: numero, numero, createdAt: now,
     items: items_, pricing, pago: customer.pago,
+    checkoutUrl: wompi ? wompi.url : null,
     adminNotified, customerNotified
   }, 201);
 };

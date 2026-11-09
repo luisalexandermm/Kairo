@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>kAIRO Sneakers — Tenis, sandalias y chanclas para hombre y mujer</title>
-<meta name="description" content="Tenis, sandalias, chanclas y botas para hombre y mujer. Envíos a toda Colombia. Paga por Nequi o contraentrega y sigue tu pedido en línea.">
+<meta name="description" content="Tenis, sandalias, chanclas y botas para hombre y mujer. Entregas en Quibdó. Paga en línea, por Nequi o contraentrega y sigue tu pedido en línea.">
 <meta name="theme-color" content="#0e0e0e">
 <meta name="color-scheme" content="only light">
 <link rel="icon" href="img/favicon.ico" sizes="any">
@@ -151,8 +151,8 @@
     </section>
 
     <ul class="perks" aria-label="Por qué comprar en kAIRO">
-      <li><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Envíos a toda Colombia</b>Directo a tu puerta</span></li>
-      <li><svg aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Nequi o contraentrega</b>Paga como prefieras</span></li>
+      <li><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Entregas en Quibdó</b>Directo a tu puerta</span></li>
+      <li><svg aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Pago en línea, Nequi o contraentrega</b>Paga como prefieras</span></li>
       <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Tus pedidos, guardados</b>Síguelos desde la app</span></li>
       <li><svg aria-hidden="true"><use href="#i-spark"/></svg><span><b>Retracto en 5 días</b>Compra con tranquilidad</span></li>
     </ul>
@@ -207,7 +207,7 @@
     <div class="foot-grid">
       <div>
         <img src="img/kairo-logo-blanco.png" alt="kAIRO Sneakers" width="178" height="38">
-        <p style="margin:12px 0 10px">Tenis, sandalias, chanclas y botas para hombre y mujer. Envíos a toda Colombia. Todos los productos se entregan sin caja.</p>
+        <p style="margin:12px 0 10px">Tenis, sandalias, chanclas y botas para hombre y mujer. Por ahora entregamos solo en Quibdó. Todos los productos se entregan sin caja.</p>
         <div class="foot-data">
     
           <span>Dirección: <span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span></span>
@@ -312,29 +312,23 @@
     <div class="summary" id="coSummary"></div>
     <form id="orderForm" novalidate>
       <p class="hint" style="font-size:.84rem;color:var(--muted);margin-bottom:10px">Los campos con <span aria-hidden="true">*</span><span class="sr-only">asterisco</span> son obligatorios.</p>
-      <fieldset class="field" id="fEntrega" aria-describedby="fEntrega-e">
-        <legend>¿Dónde recibes el pedido? *</legend>
-        <div class="pay" id="entregaOpts">
-          <label><input type="radio" name="entrega" value="Local"><b>Local · Quibdó</b><small>Estás aquí en Quibdó.</small></label>
-          <label><input type="radio" name="entrega" value="Nacional"><b>Nacional</b><small>Envío a otra ciudad de Colombia.</small></label>
-        </div>
-        <p class="err" id="fEntrega-e" hidden></p>
-      </fieldset>
+      <p class="notice-box" id="soloQuibdo"><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Por ahora solo entregamos en Quibdó.</b> Llevamos tu pedido a tu casa o trabajo dentro de la ciudad.</span></p>
       <div class="field"><label for="fNombre">Nombre completo *</label><input id="fNombre" autocomplete="name" required maxlength="120" aria-describedby="fNombre-e"><p class="err" id="fNombre-e" hidden></p></div>
       <div class="row2">
         <div class="field"><label for="fTel">Celular *</label><input id="fTel" type="tel" inputmode="numeric" autocomplete="tel-national" required maxlength="14" placeholder="300 000 0000" aria-describedby="fTel-e"><p class="err" id="fTel-e" hidden></p></div>
         <div class="field"><label for="fCed">Cédula</label><input id="fCed" inputmode="numeric" maxlength="15" aria-describedby="fCed-h"><p class="hint" id="fCed-h">Opcional. La pide la transportadora.</p></div>
       </div>
       <div class="field"><label for="fCorreo">Correo</label><input id="fCorreo" type="email" autocomplete="email" maxlength="120" aria-describedby="fCorreo-e"><p class="err" id="fCorreo-e" hidden></p></div>
-      <div class="field"><label for="fDir">Dirección *</label><input id="fDir" autocomplete="street-address" required maxlength="200" placeholder="Calle, número, apartamento" aria-describedby="fDir-e"><p class="err" id="fDir-e" hidden></p></div>
+      <div class="field"><label for="fDir">Dirección en Quibdó *</label><input id="fDir" autocomplete="street-address" required maxlength="200" placeholder="Calle, número, apartamento" aria-describedby="fDir-e"><p class="err" id="fDir-e" hidden></p></div>
       <div class="row2">
-        <div class="field"><label for="fCiudad">Ciudad *</label><input id="fCiudad" autocomplete="address-level2" required maxlength="80" aria-describedby="fCiudad-e"><p class="err" id="fCiudad-e" hidden></p></div>
-        <div class="field"><label for="fDepto">Departamento</label><input id="fDepto" autocomplete="address-level1" maxlength="80"></div>
+        <div class="field"><label for="fCiudad">Ciudad</label><input id="fCiudad" value="Quibdó" readonly aria-readonly="true"></div>
+        <div class="field"><label for="fDepto">Departamento</label><input id="fDepto" value="Chocó" readonly aria-readonly="true"></div>
       </div>
       <div class="field"><label for="fBarrio">Barrio y referencias</label><input id="fBarrio" maxlength="80"></div>
       <fieldset class="field">
         <legend>Forma de pago *</legend>
         <div class="pay" id="payOpts">
+          <label id="payWompiOpt" hidden><input type="radio" name="pago" value="Wompi" disabled><b>Pago en línea (Wompi)</b><small id="payWompiTxt">Tarjeta débito o crédito, PSE, Nequi o Bancolombia.</small></label>
           <label><input type="radio" name="pago" value="Nequi" checked><b>Nequi (QR o llave)</b><small id="payNequiTxt">Pagas todo ahora con el QR que te mostramos.</small></label>
           <label><input type="radio" name="pago" value="Contraentrega"><b>Contraentrega</b><small id="payCodTxt">Pagas el anticipo del envío por Nequi y el resto al recibir.</small></label>
         </div>
@@ -357,6 +351,13 @@
       <p class="lock-note"><svg aria-hidden="true"><use href="#i-lock"/></svg><span>Tu pedido <b id="payNo"></b> ya está guardado</span></p>
       <h3 id="payTitle">Paga con Nequi</h3>
       <p class="pay-amount" id="payAmount"></p>
+      <div id="payWompi" hidden>
+        <p id="wompiMsg">Te llevamos a la página segura de Wompi para pagar con tarjeta, PSE, Nequi o Bancolombia.</p>
+        <button type="button" class="btn btn-primary btn-block" id="wompiBtn"><svg aria-hidden="true"><use href="#i-lock"/></svg>Pagar en línea</button>
+        <button type="button" class="btn btn-line btn-block" id="wompiCheck" hidden>Ya pagué, revisar estado</button>
+        <p class="mini-note">Pago procesado por Wompi (Bancolombia). kAIRO no ve ni guarda los datos de tu tarjeta.</p>
+      </div>
+      <div id="payNequi">
       <div class="qr"><img src="img/nequi-qr.png" width="720" height="720" alt="Código QR de pago Bre-B por Nequi a nombre de Luis Moreno"></div>
       <a class="btn btn-line" href="img/nequi-qr.png" download="QR-Nequi-kAIRO.png" id="qrSave">Guardar QR en el celular</a>
       <ul class="kv" aria-label="Datos para pagar">
@@ -379,6 +380,7 @@
         <button type="submit" class="btn btn-primary btn-block" id="refBtn"><svg aria-hidden="true"><use href="#i-check"/></svg>Ya pagué, enviar comprobante</button>
       </form>
       <a class="btn btn-wa btn-block" id="payWa" href="#" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Enviar comprobante por WhatsApp</a>
+      </div>
     </div>
   </div>
 

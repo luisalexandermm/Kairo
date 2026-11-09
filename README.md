@@ -13,6 +13,14 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 - **“Sin caja”** en todas las tarjetas, el detalle, el carrito, el resumen de compra, el recibo y el mensaje de WhatsApp.
 - **Hombre / Mujer**: tarjetas grandes con conteo, encabezado del género con sub-filtros por tipo (tenis, sandalias, chanclas, botas). Los filtros de género y categoría se combinan.
 
+## Pasarela de pago Wompi y entregas solo en Quibdó (9 de noviembre de 2026)
+- **Por ahora los pedidos son solo para Quibdó**: el formulario ya no pregunta local/nacional; ciudad (Quibdó) y departamento (Chocó) vienen fijos y el servidor rechaza cualquier otra ciudad.
+- **Pago en línea con Wompi** (tarjeta, PSE, Nequi, Bancolombia). Es la opción por defecto cuando está configurada; Nequi con QR y contraentrega siguen disponibles.
+  - El link de pago se firma en el servidor (`lib/wompi.js`), así el cliente no puede cambiar el valor.
+  - El pedido pasa solo a **Pago confirmado** cuando Wompi responde `APPROVED` y el valor coincide (se consulta la API de Wompi; no se confía en la URL de regreso).
+  - Si el pago se rechaza, el cliente puede intentarlo de nuevo desde la misma pantalla o desde Mis pedidos.
+- **Configurar** (comercios.wompi.co → Desarrolladores): pon `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET` y `SITE_URL` en Vercel, y en Wompi registra la URL de eventos `https://TU_DOMINIO/api/wompi`. Prueba primero con las llaves `pub_test_…` (sandbox) y luego cámbialas por las `pub_prod_…`.
+
 ## Instalación
 1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql` (también crea el bucket privado para las fotos de comprobantes).
 2. Copia `.env.example` a `.env` y llénalo. En Vercel pon las mismas variables.

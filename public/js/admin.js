@@ -142,6 +142,7 @@
       return '<tr><td><b class="order-no">' + esc(o.id) + '</b><br><small>' + fdate(o.created_at) + '</small></td><td>' + esc((o.customer || {}).nombre || '—') + '</td><td>' + money(o.total) + '</td><td>' + statusPill(o) + '</td></tr>';
     }).join('') || '<tr><td colspan="4" class="empty">Todavía no hay pedidos.</td></tr>';
   }
+  var WOMPI_TXT = { APPROVED: 'pago aprobado', DECLINED: 'pago rechazado', VOIDED: 'pago anulado', ERROR: 'error en el pago', PENDING: 'pago en proceso', REVISAR: 'aprobado con valor distinto, revisar en Wompi' };
   function statusPill(o) {
     var s = o.status, rep = o.customer && o.customer.pagoReportado;
     var cls = s === 'Cancelado' ? 'bad' : s === 'Recibido' ? (rep ? 'lime' : 'warn') : s === 'Entregado' ? 'on' : 'off';
@@ -190,13 +191,14 @@
           (pr.coupon && pr.coupon.discount ? '<div><span>Cupón ' + esc(pr.coupon.code) + '</span><span>-' + money(pr.coupon.discount) + '</span></div>' : '') +
           '<div><span>Envío</span><span>' + (pr.envio ? money(pr.envio) : 'Gratis') + '</span></div>' +
           '<div><b>Total</b><b>' + money(pr.totalConEnvio != null ? pr.totalConEnvio : o.total) + '</b></div>' +
-          (c.pago === 'Contraentrega' ? '<div><span>Anticipo por Nequi</span><span>' + money(pr.pagarAhora) + '</span></div><div><span>Cobrar al entregar</span><span>' + money(pr.saldoContraentrega) + '</span></div>' : '<div><span>Debe llegar a tu Nequi</span><span>' + money(pr.pagarAhora) + '</span></div>') +
+          (c.pago === 'Contraentrega' ? '<div><span>Anticipo por Nequi</span><span>' + money(pr.pagarAhora) + '</span></div><div><span>Cobrar al entregar</span><span>' + money(pr.saldoContraentrega) + '</span></div>' : '<div><span>' + (c.pago === 'Wompi' ? 'Pago en línea (Wompi)' : 'Debe llegar a tu Nequi') + '</span><span>' + money(pr.pagarAhora) + '</span></div>') +
           '</div>';
       }
       var waText = 'Hola ' + (c.nombre || '').split(' ')[0] + ', te escribimos de kAIRO sobre tu pedido ' + o.id + '. Puedes ver el estado aquí: ' + trackLink(o);
       return '<article class="order-card' + (o.status === 'Recibido' ? ' is-new' : '') + '" aria-labelledby="o-' + esc(o.id) + '">' +
         '<div class="order-card__top"><div><h2 class="order-no" id="o-' + esc(o.id) + '">' + esc(o.id) + '</h2><small>' + fdate(o.created_at) + '</small></div><span class="big-price">' + money(o.total) + '</span></div>' +
         '<div class="order-meta">' + statusPill(o) + '<span class="pill off">' + esc(c.pago || 'Sin método') + '</span>' + (pr.coupon ? '<span class="pill off">Cupón ' + esc(pr.coupon.code) + '</span>' : '') + '<span class="pill warn">Sin caja</span></div>' +
+        (c.wompi ? '<p class="ref-box"><b>Wompi: ' + esc(WOMPI_TXT[c.wompi.status] || c.wompi.status) + '</b>' + (c.wompi.metodo ? ' · ' + esc(c.wompi.metodo) : '') + ' · ' + money(c.wompi.valor) + ' <small>(' + fdate(c.wompi.at) + ')</small><br>Transacción ' + esc(c.wompi.transactionId) + ' · Ref. ' + esc(c.wompi.reference) + '</p>' : '') +
         (c.pagoReportado ? '<p class="ref-box"><b>El cliente reportó su pago</b>' + (c.pagoReportado.ref ? ' · Referencia: ' + esc(c.pagoReportado.ref) : '') + ' <small>(' + fdate(c.pagoReportado.at) + ')</small><br>Revisa que el pago esté en tu Nequi antes de confirmar.' + (c.pagoReportado.hasComprobante ? ' <button class="btn btn-line btn-sm" type="button" data-proof="' + esc(o.id) + '">Ver foto del comprobante</button>' : '') + '</p>' : '') +
         '<p><b>' + esc(c.nombre || 'Sin nombre') + '</b> · ' + esc(tel) + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + (c.correo ? ' · ' + esc(c.correo) : '') + '<br><small>' + (c.entrega ? '<b>' + esc(c.entrega === 'Local' ? 'Local · Quibdó' : 'Nacional') + '</b> · ' : '') + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</small>' + (c.notas ? '<br><small>Notas: ' + esc(c.notas) + '</small>' : '') + '</p>' +
         '<ul class="order-items">' + items + '</ul>' + lines +
@@ -222,6 +224,7 @@
     var id = f.dataset.track, o = D.orders.find(function (x) { return x.id === id; });
     var body = { status: f.status.value, guia: f.guia.value.trim(), transportadora: f.transportadora.value.trim(), nota: f.nota.value.trim() };
     if (o && o.status === 'Recibido' && body.status !== 'Recibido' && body.status !== 'Cancelado' &&
+      !(o.customer && o.customer.wompi && o.customer.wompi.status === 'APPROVED') &&
       !confirm('¿Ya verificaste en tu Nequi que llegó el pago de ' + money((o.pricing || {}).pagarAhora || o.total) + ' para el pedido ' + id + '?')) return;
     var btn = f.querySelector('[type=submit]'); btn.disabled = true;
     try {

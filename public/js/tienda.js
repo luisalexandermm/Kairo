@@ -528,7 +528,8 @@
     if (c.disc) h += '<div class="save"><span>Cupón ' + esc(S.coupon.code) + '</span><span>-' + money(c.disc) + '</span></div>';
     h += '<div><span>Envío' + (c.shipPromo && !(S.coupon && S.coupon.freeShipping) ? ' (' + esc(c.shipPromo.title) + ')' : '') + '</span><span>' + (c.free ? 'Gratis' : money(c.envio)) + '</span></div>';
     h += '<div class="grand"><span>Total</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    if (pago === 'Contraentrega') h += '<div><span>Pagas ahora por Nequi (anticipo de envío)</span><span>' + money(ENVIO) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - ENVIO)) + '</span></div>';
+    if (pago === 'Wompi') h += '<div><span>Pagas ahora en línea</span><span>' + money(c.totalConEnvio) + '</span></div>';
+    else if (pago === 'Contraentrega') h += '<div><span>Pagas ahora por Nequi (anticipo de envío)</span><span>' + money(ENVIO) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - ENVIO)) + '</span></div>';
     else if (pago === 'Nequi') h += '<div><span>Pagas ahora por Nequi</span><span>' + money(c.totalConEnvio) + '</span></div>';
     return h;
   }
@@ -596,6 +597,7 @@
     $('coSummary').innerHTML = c.lines.map(function (l) { return '<div><span>' + esc(l.p.brand + ' ' + l.p.name) + ' · T' + esc(l.size) + (l.color ? ' · ' + esc(l.color) : '') + ' ×' + l.qty + '</span><span>' + money(l.price * l.qty) + '</span></div>'; }).join('') +
       '<div><span>Empaque</span><span>Sin caja</span></div>';
     $('coTotals').innerHTML = totalsHTML(c, currentPago());
+    $('payWompiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' con tarjeta, PSE, Nequi o Bancolombia.';
     $('payNequiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' ahora con el QR que te mostramos.';
     $('payCodTxt').textContent = 'Pagas ' + money(ENVIO) + ' de anticipo del envío por Nequi y ' + money(Math.max(0, c.totalConEnvio - ENVIO)) + ' al recibir.';
   }
@@ -607,19 +609,11 @@
     prefillProfile();
     renderCheckoutSummary(); showStep(1);
     $('orderErr').hidden = true;
-    openLayer($('coSheet'), document.querySelector('input[name="entrega"]'), replace === true);
+    openLayer($('coSheet'), $('fNombre'), replace === true);
   }
   $('toCheckout').addEventListener('click', function () { openCheckout(); });
-  // Local = Quibdó: llenamos la ciudad; si cambia a nacional, quitamos ese relleno
-  document.querySelectorAll('input[name="entrega"]').forEach(function (r) {
-    r.addEventListener('change', function () {
-      fieldErr('fEntrega', '');
-      var auto = $('fCiudad').value.trim().toLowerCase().replace('ó', 'o') === 'quibdo';
-      if (r.value === 'Local') { $('fCiudad').value = 'Quibdó'; if (!$('fDepto').value.trim()) $('fDepto').value = 'Chocó'; fieldErr('fCiudad', ''); }
-      else if (auto) { $('fCiudad').value = ''; if ($('fDepto').value.trim() === 'Chocó') $('fDepto').value = ''; }
-    });
-  });
-  function currentEntrega() { var r = document.querySelector('input[name="entrega"]:checked'); return r ? r.value : ''; }
+  // Por ahora todos los pedidos se entregan en Quibdó
+  function currentEntrega() { return 'Local'; }
 
   function fieldErr(id, msg) { var i = $(id), e = $(id + '-e'); i.setAttribute('aria-invalid', msg ? 'true' : 'false'); if (e) { e.textContent = msg || ''; e.hidden = !msg; } return !msg; }
   function telDigits(v) { var d = String(v || '').replace(/\D/g, ''); if (d.length === 12 && d.indexOf('57') === 0) d = d.slice(2); return d; }
@@ -628,15 +622,13 @@
     e.preventDefault(); if (sending) return;
     var v = function (id) { return $(id).value.trim(); };
     var checks = [
-      ['fEntrega', currentEntrega() ? '' : 'Elige si el pedido es local (Quibdó) o nacional.'],
       ['fNombre', v('fNombre').length >= 3 ? '' : 'Escribe tu nombre y apellido.'],
       ['fTel', /^3\d{9}$/.test(telDigits(v('fTel'))) ? '' : 'Escribe un celular de 10 dígitos que empiece por 3.'],
       ['fCorreo', !v('fCorreo') || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('fCorreo')) ? '' : 'Revisa el correo (ejemplo: nombre@correo.com).'],
-      ['fDir', v('fDir').length >= 5 ? '' : 'Escribe la dirección de entrega.'],
-      ['fCiudad', v('fCiudad').length >= 2 ? '' : 'Escribe la ciudad.']
+      ['fDir', v('fDir').length >= 5 ? '' : 'Escribe la dirección de entrega en Quibdó.']
     ];
     var firstBad = null;
-    checks.forEach(function (c) { if (!fieldErr(c[0], c[1]) && !firstBad) firstBad = c[0] === 'fEntrega' ? document.querySelector('input[name="entrega"]') : $(c[0]); });
+    checks.forEach(function (c) { if (!fieldErr(c[0], c[1]) && !firstBad) firstBad = $(c[0]); });
     var cErr = !$('cTerm').checked ? 'Para continuar acepta los términos y condiciones.' : !$('cDatos').checked ? 'Para continuar autoriza el tratamiento de tus datos para gestionar el pedido.' : '';
     $('consent-e').textContent = cErr; $('consent-e').hidden = !cErr;
     if (cErr && !firstBad) firstBad = !$('cTerm').checked ? $('cTerm') : $('cDatos');
@@ -644,7 +636,7 @@
 
     sending = true; $('orderBtn').disabled = true; $('orderBtn').textContent = 'Guardando tu pedido…'; $('orderErr').hidden = true;
     var pago = currentPago();
-    var customer = { nombre: v('fNombre'), telefono: telDigits(v('fTel')), cedula: v('fCed'), correo: v('fCorreo'), direccion: v('fDir'), barrio: v('fBarrio'), ciudad: v('fCiudad'), departamento: v('fDepto'), notas: v('fNotas'), pago: pago, entrega: currentEntrega() };
+    var customer = { nombre: v('fNombre'), telefono: telDigits(v('fTel')), cedula: v('fCed'), correo: v('fCorreo'), direccion: v('fDir'), barrio: v('fBarrio'), ciudad: 'Quibdó', departamento: 'Chocó', notas: v('fNotas'), pago: pago, entrega: currentEntrega() };
     try {
       var d = await api('/api/orders', { items: itemsPayload(), coupon: S.coupon ? S.coupon.code : '', customer: customer, cliente: clienteId(), consent: { terminos: true, datos: true, version: N.versionPoliticas || '' } });
       if ($('cRecordar').checked) store.set(K_PERFIL, { nombre: customer.nombre, telefono: customer.telefono, cedula: customer.cedula, correo: customer.correo, direccion: customer.direccion, barrio: customer.barrio, ciudad: customer.ciudad, departamento: customer.departamento, entrega: customer.entrega });
@@ -656,10 +648,12 @@
         createdAt: d.createdAt, step: 'pago', at: Date.now()
       };
       store.set(K_ORDER, S.order);
+      if (d.checkoutUrl) wompiUrl = d.checkoutUrl;
       S.cart = []; S.coupon = null; saveCart(); renderCart(); $('couponIn').value = ''; $('couponMsg').textContent = '';
       $('orderForm').reset();
       renderPayment(); showStep(2);
       setTimeout(function () { $('payTitle').setAttribute('tabindex', '-1'); $('payTitle').focus(); }, 50);
+      if (S.order.pago === 'Wompi') goWompi();
     } catch (err) {
       $('orderErr').textContent = err instanceof TypeError ? 'No hay conexión. Tu carrito sigue guardado: revisa tu internet e intenta de nuevo.' : err.message;
       $('orderErr').hidden = false; $('orderErr').focus && $('orderErr').setAttribute('tabindex', '-1'); $('orderErr').focus();
@@ -672,7 +666,10 @@
   function renderPayment() {
     var o = S.order, val = payValue();
     $('payNo').textContent = o.numero;
-    $('payTitle').textContent = o.pago === 'Contraentrega' ? 'Paga el anticipo del envío' : 'Paga con Nequi';
+    var online = o.pago === 'Wompi';
+    $('payWompi').hidden = !online; $('payNequi').hidden = online;
+    $('payTitle').textContent = online ? 'Paga en línea' : o.pago === 'Contraentrega' ? 'Paga el anticipo del envío' : 'Paga con Nequi';
+    if (online) renderWompiState(o.wompiEstado || '');
     $('payAmount').innerHTML = money(val) + '<small>' + (o.pago === 'Contraentrega' ? 'Anticipo de envío. El resto (' + money(o.pricing.saldoContraentrega) + ') lo pagas al recibir.' : 'Total de tu pedido con envío') + '</small>';
     $('payVal').textContent = money(val);
     $('payMsg').textContent = o.numero;
@@ -683,6 +680,61 @@
     showReceiptPreview(null);
     if (N.pintar) N.pintar();
   }
+  /* ---------------- pago en línea (Wompi) ---------------- */
+  var wompiUrl = '';
+  var WOMPI_TXT = {
+    '': ['Te llevamos a la página segura de Wompi para pagar con tarjeta, PSE, Nequi o Bancolombia.', 'Pagar en línea'],
+    PENDING: ['Tu pago está en proceso. Si ya lo completaste, espera unos segundos y revisa el estado.', 'Pagar de nuevo'],
+    DECLINED: ['El pago fue rechazado. No se te cobró nada: puedes intentarlo de nuevo con otro medio.', 'Intentar de nuevo'],
+    VOIDED: ['El pago fue anulado. Puedes intentarlo de nuevo.', 'Intentar de nuevo'],
+    ERROR: ['Hubo un error con el pago. No se te cobró nada: puedes intentarlo de nuevo.', 'Intentar de nuevo']
+  };
+  function renderWompiState(estado) {
+    var t = WOMPI_TXT[estado] || WOMPI_TXT[''];
+    $('wompiMsg').textContent = t[0];
+    $('wompiBtn').lastChild.textContent = t[1];
+    $('wompiBtn').disabled = false;
+    $('wompiCheck').hidden = !(S.order && S.order.wompiTx);
+  }
+  async function goWompi() {
+    var b = $('wompiBtn'); b.disabled = true;
+    try {
+      var url = wompiUrl;
+      if (!url) url = (await api('/api/wompi', { accion: 'checkout', numero: S.order.numero, ultimos4: S.order.ultimos4 })).checkoutUrl;
+      wompiUrl = '';
+      paying(false); // sin aviso de "salir de la página": vamos a Wompi y volvemos
+      location.href = url;
+    } catch (err) {
+      b.disabled = false;
+      toast(err instanceof TypeError ? 'No hay conexión. Intenta de nuevo.' : err.message);
+      if (err.status === 409) checkWompi();
+    }
+  }
+  $('wompiBtn').addEventListener('click', goWompi);
+  async function verifyWompi(id) {
+    try {
+      var r = await api('/api/wompi', { accion: 'verificar', id: id });
+      var mine = S.order && S.order.numero === r.numero;
+      if (r.estado === 'APPROVED' || r.pedido !== 'Recibido') {
+        MP.stale = true;
+        if (!mine) { toast('Pago aprobado para el pedido ' + r.numero + '.'); if (hasHistory()) fetchOrders(); return; }
+        S.order.step = 'pagado'; S.order.wompiEstado = 'APPROVED'; store.set(K_ORDER, S.order);
+        resumeOrder();
+        return;
+      }
+      if (!mine) { toast('El pago del pedido ' + r.numero + ' quedó ' + (r.estado === 'PENDING' ? 'en proceso.' : 'rechazado.')); return; }
+      S.order.wompiEstado = r.estado; S.order.wompiTx = id; store.set(K_ORDER, S.order);
+      resumeOrder();
+    } catch (err) {
+      toast(err instanceof TypeError ? 'No hay conexión para revisar tu pago. Intenta de nuevo.' : err.message);
+      if (S.order && S.order.step === 'pago') resumeOrder();
+    }
+  }
+  function checkWompi() {
+    if (S.order && S.order.wompiTx) { if (stack.indexOf($('coSheet')) > -1) closeLayer($('coSheet'), false, true); verifyWompi(S.order.wompiTx); }
+  }
+  $('wompiCheck').addEventListener('click', checkWompi);
+
   function receiptData(file) {
     if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return Promise.reject(new Error('Elige una imagen JPG, PNG o WEBP.'));
     if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error('La foto original debe pesar menos de 12 MB.'));
@@ -768,7 +820,9 @@
   function renderDone() {
     var o = S.order, l = orderLinks(o);
     $('doneNo').textContent = o.numero;
-    $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos ' + (o.comprobante ? 'la foto del comprobante de tu pago' : 'tu pedido') + '. Cuando verifiquemos el pago, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
+    $('doneTitle').textContent = o.step === 'pagado' ? '¡Pago aprobado!' : '¡Recibimos tu pedido!';
+    if (o.step === 'pagado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Tu pago en línea fue aprobado y ya estamos preparando tu pedido para entregarlo en Quibdó. Te escribimos por WhatsApp.';
+    else $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos ' + (o.comprobante ? 'la foto del comprobante de tu pago' : 'tu pedido') + '. Cuando verifiquemos el pago, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
     $('doneReceipt').href = l.recibo;
     $('doneProof').hidden = !sentProof;
     if (sentProof) { $('doneProofImg').src = sentProof; $('doneProofDl').href = sentProof; $('doneProofDl').download = 'Comprobante-' + o.numero + '.jpg'; }
@@ -801,7 +855,7 @@
     renderInstall();
     if (!o || stack.indexOf($('coSheet')) > -1) { bar.hidden = true; bar.innerHTML = ''; return; }
     bar.hidden = false;
-    bar.innerHTML = '<div class="wrap"><span><b>Pedido ' + esc(o.numero) + '</b> · ' + (o.step === 'pago' ? 'pendiente de pago' : 'pago reportado') + '</span>' +
+    bar.innerHTML = '<div class="wrap"><span><b>Pedido ' + esc(o.numero) + '</b> · ' + (o.step === 'pago' ? 'pendiente de pago' : o.step === 'pagado' ? 'pago aprobado' : 'pago reportado') + '</span>' +
       '<button type="button" class="btn btn-lime" id="resumeBtn">' + (o.step === 'pago' ? 'Continuar con el pago' : 'Ver pedido') + '</button>' +
       '<button type="button" class="link-btn" id="resumeX">' + (o.step === 'pago' ? 'Ya no lo quiero' : 'Cerrar') + '</button></div>';
     $('resumeBtn').addEventListener('click', function () { resumeOrder(); });
@@ -821,9 +875,8 @@
   /* ---------------- datos de envío recordados (solo en este dispositivo) ---------------- */
   function prefillProfile() {
     var p = store.get(K_PERFIL); if (!p) return;
-    var map = { fNombre: 'nombre', fTel: 'telefono', fCed: 'cedula', fCorreo: 'correo', fDir: 'direccion', fBarrio: 'barrio', fCiudad: 'ciudad', fDepto: 'departamento' };
+    var map = { fNombre: 'nombre', fTel: 'telefono', fCed: 'cedula', fCorreo: 'correo', fDir: 'direccion', fBarrio: 'barrio' };
     Object.keys(map).forEach(function (id) { if (!$(id).value.trim() && p[map[id]]) $(id).value = p[map[id]]; });
-    if (p.entrega && !currentEntrega()) { var r = document.querySelector('input[name="entrega"][value="' + (p.entrega === 'Local' ? 'Local' : 'Nacional') + '"]'); if (r) r.checked = true; }
   }
 
   /* ---------------- favoritos ---------------- */
@@ -913,6 +966,7 @@
   }
   function stageHint(o) {
     var s = stage(o);
+    if (s === 'pagar' && o.pago === 'Wompi') return 'Paga ' + money(o.pricing.pagarAhora) + ' en línea para confirmarlo.';
     if (s === 'pagar') return o.pago === 'Contraentrega' ? 'Paga ' + money(o.pricing.pagarAhora) + ' de anticipo por Nequi para confirmarlo.' : 'Paga ' + money(o.pricing.pagarAhora) + ' por Nequi para confirmarlo.';
     if (s === 'proceso' && o.status === 'Recibido') return 'Recibimos tu comprobante. Lo estamos verificando.';
     if (s === 'proceso') return o.statusLabel + '. Te avisamos cuando salga.';
@@ -1104,6 +1158,9 @@
     var s = S.settings || {};
     if (s.whatsapp && /^\d{10,13}$/.test(s.whatsapp)) WA = s.whatsapp;
     if (s.anticipo) ENVIO = Number(s.anticipo) || ENVIO;
+    // Pago en línea: solo si Wompi está configurado en el servidor. Queda como opción por defecto.
+    var wr = document.querySelector('input[name="pago"][value="Wompi"]');
+    if (s.wompi && $('payWompiOpt').hidden) { $('payWompiOpt').hidden = false; wr.disabled = false; wr.checked = true; if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
     var m = encodeURIComponent('Hola kAIRO, quiero hacer una consulta.');
     $('waHelp').href = 'https://wa.me/' + WA + '?text=' + m;
   }
@@ -1163,7 +1220,10 @@
     var qs = new URLSearchParams(location.search), lnkNum = String(qs.get('pedido') || '').toUpperCase().slice(0, 20), lnkCel = String(qs.get('c') || '').replace(/\D/g, '').slice(-4);
     var wantOrders = location.hash === '#pedidos' || !!lnkNum;
     if (lnkNum && /^KS-\d{8}-\d{4}$/.test(lnkNum) && /^\d{4}$/.test(lnkCel)) rememberOrder(lnkNum, lnkCel);
-    if (wantOrders) { try { history.replaceState(null, '', location.pathname); } catch (e) { } }
+    var wompiTx = qs.get('wompi') ? String(qs.get('id') || '').slice(0, 64) : '';
+    if (wantOrders || qs.get('wompi')) { try { history.replaceState(null, '', location.pathname); } catch (e) { } }
+    // Volvió de pagar en Wompi: se consulta el resultado real del pago
+    if (wompiTx) { verifyWompi(wompiTx); return; }
     // Volvió después de una recarga o de cambiar a Nequi: lo llevamos directo al pago
     if (S.order && S.order.step === 'pago' && !stack.length) resumeOrder();
     else if (wantOrders && !stack.length) openOrders(/^KS-\d{8}-\d{4}$/.test(lnkNum) ? lnkNum : '');
