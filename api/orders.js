@@ -65,6 +65,8 @@ module.exports = async (req, res) => {
 
   /* 2. Solo guardamos los datos necesarios para entregar el pedido */
   const entrega = ENTREGAS.includes(c.entrega) ? c.entrega : null;
+  // La página vieja (guardada en el celular) mandaba "Local"/"Nacional" y no tiene los botones nuevos
+  if (!entrega && ['Local', 'Nacional', undefined].includes(c.entrega)) return err(res, 'La tienda se actualizó. Recarga la página para elegir si recoges en la tienda o quieres domicilio.', 409);
   if (!entrega) return err(res, 'Elige si recoges en la tienda o quieres domicilio', 400);
   const recoge = entrega === 'Recoger';
   const customer = {
