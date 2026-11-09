@@ -69,7 +69,8 @@ module.exports = async (req, res) => {
       storeName: settings.store_name, tagline: settings.tagline, whatsapp: settings.whatsapp,
       heroHeadline: settings.hero_headline, shippingNote: settings.shipping_note,
       anticipo: ENVIO,
-      wompi: require('../lib/wompi').wompiReady()
+      wompi: require('../lib/wompi').wompiReady(),
+      domicilios: require('../lib/domicilios').sanitize(settings.domicilios)
     },
     products: (products || []).map(mapProduct),
     promos: livePromos.map(pubPromo),

@@ -8,7 +8,6 @@
 (function () {
   'use strict';
   var N = window.NEGOCIO || {};
-  var ENVIO = Number(N.anticipoEnvioContraentrega) || 25000;
   var WA = N.whatsapp || '573145312045';
   var CATS = ['Tenis', 'Sandalias', 'Chanclas', 'Botas'];
   var CAT_ICON = { Todo: 'i-bolt', Nuevo: 'i-spark', Tenis: 'i-sneaker', Sandalias: 'i-sandal', Chanclas: 'i-flip', Botas: 'i-boot' };
@@ -518,18 +517,24 @@
     var disc = S.coupon ? Math.min(S.coupon.discount || 0, sub) : 0;
     var shipPromo = S.promos.filter(function (p) { return p.kind === 'envio' && sub >= (p.minSubtotal || 0); })[0];
     var free = !!(S.coupon && S.coupon.freeShipping) || !!shipPromo;
-    var envio = free ? 0 : ENVIO;
+    var modo = currentEntrega(), dom = domicilioPrecio();
+    // envio = null mientras no se sepa (todavía no elige cómo recibir o no elige barrio)
+    var envio = modo === 'Recoger' ? 0 : dom == null ? null : free ? 0 : dom;
     var total = Math.max(0, sub - disc);
-    return { lines: lines, list: list, sub: sub, save: list - sub, disc: disc, free: free, shipPromo: shipPromo, envio: envio, total: total, totalConEnvio: total + envio, count: lines.reduce(function (s, l) { return s + l.qty; }, 0) };
+    return { lines: lines, list: list, sub: sub, save: list - sub, disc: disc, free: free, shipPromo: shipPromo, modo: modo, dom: dom, envio: envio, total: total, totalConEnvio: total + (envio || 0), count: lines.reduce(function (s, l) { return s + l.qty; }, 0) };
   }
   function totalsHTML(c, pago) {
     var h = '<div><span>Productos</span><span>' + money(c.list) + '</span></div>';
     if (c.save) h += '<div class="save"><span>Promociones</span><span>-' + money(c.save) + '</span></div>';
     if (c.disc) h += '<div class="save"><span>Cupón ' + esc(S.coupon.code) + '</span><span>-' + money(c.disc) + '</span></div>';
-    h += '<div><span>Envío' + (c.shipPromo && !(S.coupon && S.coupon.freeShipping) ? ' (' + esc(c.shipPromo.title) + ')' : '') + '</span><span>' + (c.free ? 'Gratis' : money(c.envio)) + '</span></div>';
+    var promoTxt = c.shipPromo && !(S.coupon && S.coupon.freeShipping) ? ' (' + esc(c.shipPromo.title) + ')' : '';
+    if (c.modo === 'Recoger') h += '<div><span>Recoger en la tienda</span><span>Gratis</span></div>';
+    else if (c.envio == null) h += '<div><span>Domicilio</span><span>' + (c.modo === 'Domicilio' ? 'Elige tu barrio' : 'Gratis si recoges · hasta ' + money(DOM.max)) + '</span></div>';
+    else h += '<div><span>Domicilio' + promoTxt + '</span><span>' + (c.envio ? money(c.envio) : 'Gratis') + '</span></div>';
     h += '<div class="grand"><span>Total</span><span>' + money(c.totalConEnvio) + '</span></div>';
     if (pago === 'Wompi') h += '<div><span>Pagas ahora en línea</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    else if (pago === 'Contraentrega') h += '<div><span>Pagas ahora por Nequi (anticipo de envío)</span><span>' + money(ENVIO) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - ENVIO)) + '</span></div>';
+    else if (pago === 'Contraentrega' && c.dom != null) h += '<div><span>Pagas ahora por Nequi (domicilio)</span><span>' + money(Math.min(c.dom, c.totalConEnvio)) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - c.dom)) + '</span></div>';
+    else if (pago === 'En tienda') h += '<div><span>Pagas al recoger en la tienda</span><span>' + money(c.totalConEnvio) + '</span></div>';
     else if (pago === 'Nequi') h += '<div><span>Pagas ahora por Nequi</span><span>' + money(c.totalConEnvio) + '</span></div>';
     return h;
   }
@@ -599,7 +604,8 @@
     $('coTotals').innerHTML = totalsHTML(c, currentPago());
     $('payWompiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' con tarjeta, PSE, Nequi o Bancolombia.';
     $('payNequiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' ahora con el QR que te mostramos.';
-    $('payCodTxt').textContent = 'Pagas ' + money(ENVIO) + ' de anticipo del envío por Nequi y ' + money(Math.max(0, c.totalConEnvio - ENVIO)) + ' al recibir.';
+    $('payCodTxt').textContent = c.dom == null ? 'Pagas el domicilio por Nequi y el resto al recibir.' : 'Pagas ' + money(Math.min(c.dom, c.totalConEnvio)) + ' del domicilio por Nequi y ' + money(Math.max(0, c.totalConEnvio - c.dom)) + ' al recibir.';
+    $('payTiendaTxt').textContent = 'No pagas nada ahora: pagas ' + money(c.totalConEnvio) + ' cuando lo recojas.';
   }
   document.querySelectorAll('input[name="pago"]').forEach(function (r) { r.addEventListener('change', renderCheckoutSummary); });
   function openCheckout(replace) {
@@ -609,11 +615,52 @@
     prefillProfile();
     renderCheckoutSummary(); showStep(1);
     $('orderErr').hidden = true;
-    openLayer($('coSheet'), $('fNombre'), replace === true);
+    syncEntrega();
+    openLayer($('coSheet'), document.querySelector('input[name="entrega"]'), replace === true);
   }
   $('toCheckout').addEventListener('click', function () { openCheckout(); });
-  // Por ahora todos los pedidos se entregan en Quibdó
-  function currentEntrega() { return 'Local'; }
+  /* ---------------- cómo recibe: recoger en la tienda o domicilio en Quibdó ---------------- */
+  // Barrios y precios del domicilio (se configuran en el panel; máximo $10.000)
+  var DOM = { barrios: [], otro: 10000, max: 10000 };
+  function currentEntrega() { var r = document.querySelector('input[name="entrega"]:checked'); return r ? r.value : ''; }
+  function barrioActual() { var sel = $('fBarrioSel').value; return sel === '__otro' ? $('fBarrio').value.trim() : sel; }
+  function domicilioPrecio() {
+    if (currentEntrega() !== 'Domicilio') return null;
+    var sel = $('fBarrioSel').value; if (!sel) return null;
+    var b = DOM.barrios.find(function (x) { return x.nombre === sel; });
+    return b ? b.precio : DOM.otro;
+  }
+  function renderBarrios() {
+    var cur = $('fBarrioSel').value;
+    $('fBarrioSel').innerHTML = '<option value="">Elige tu barrio</option>' +
+      DOM.barrios.map(function (b) { return '<option value="' + esc(b.nombre) + '">' + esc(b.nombre) + ' · ' + (b.precio ? money(b.precio) : 'Gratis') + '</option>'; }).join('') +
+      '<option value="__otro">' + (DOM.barrios.length ? 'Otro barrio' : 'Mi barrio') + ' · ' + (DOM.otro ? money(DOM.otro) : 'Gratis') + '</option>';
+    if (cur && [].some.call($('fBarrioSel').options, function (o) { return o.value === cur; })) $('fBarrioSel').value = cur;
+    var precios = DOM.barrios.map(function (b) { return b.precio; }).concat([DOM.otro]);
+    var min = Math.min.apply(null, precios), max = Math.max.apply(null, precios);
+    $('domDesde').textContent = min === max ? (max ? 'Domicilio ' + money(max) + '.' : 'Domicilio gratis.') : 'Según tu barrio: de ' + money(min) + ' a ' + money(max) + '.';
+    $('fBarrioSel-h').textContent = 'El domicilio cuesta máximo ' + money(DOM.max) + '.';
+  }
+  function syncEntrega() {
+    var m = currentEntrega();
+    $('pickupNote').hidden = m !== 'Recoger';
+    $('domFields').hidden = m !== 'Domicilio';
+    $('fBarrioOtroBox').hidden = $('fBarrioSel').value !== '__otro';
+    // Contraentrega solo con domicilio; "separar y pagar al recoger" solo si recoge
+    [['payCodOpt', m === 'Domicilio'], ['payTiendaOpt', m === 'Recoger']].forEach(function (x) {
+      var lbl = $(x[0]), inp = lbl.querySelector('input');
+      lbl.hidden = !x[1]; inp.disabled = !x[1]; if (!x[1]) inp.checked = false;
+    });
+    if (!document.querySelector('input[name="pago"]:checked')) {
+      var first = [].find.call(document.querySelectorAll('input[name="pago"]'), function (i) { return !i.disabled; });
+      if (first) first.checked = true;
+    }
+    if (N.pintar && m === 'Recoger') N.pintar();
+    renderCheckoutSummary();
+  }
+  document.querySelectorAll('input[name="entrega"]').forEach(function (r) { r.addEventListener('change', function () { fieldErr('fEntrega', ''); syncEntrega(); }); });
+  $('fBarrioSel').addEventListener('change', function () { fieldErr('fBarrioSel', ''); syncEntrega(); if (this.value === '__otro') $('fBarrio').focus(); });
+  renderBarrios();
 
   function fieldErr(id, msg) { var i = $(id), e = $(id + '-e'); i.setAttribute('aria-invalid', msg ? 'true' : 'false'); if (e) { e.textContent = msg || ''; e.hidden = !msg; } return !msg; }
   function telDigits(v) { var d = String(v || '').replace(/\D/g, ''); if (d.length === 12 && d.indexOf('57') === 0) d = d.slice(2); return d; }
@@ -621,14 +668,18 @@
   $('orderForm').addEventListener('submit', async function (e) {
     e.preventDefault(); if (sending) return;
     var v = function (id) { return $(id).value.trim(); };
+    var dom = currentEntrega() === 'Domicilio', otro = $('fBarrioSel').value === '__otro';
     var checks = [
+      ['fEntrega', currentEntrega() ? '' : 'Elige si recoges en la tienda o quieres domicilio.'],
       ['fNombre', v('fNombre').length >= 3 ? '' : 'Escribe tu nombre y apellido.'],
       ['fTel', /^3\d{9}$/.test(telDigits(v('fTel'))) ? '' : 'Escribe un celular de 10 dígitos que empiece por 3.'],
       ['fCorreo', !v('fCorreo') || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('fCorreo')) ? '' : 'Revisa el correo (ejemplo: nombre@correo.com).'],
-      ['fDir', v('fDir').length >= 5 ? '' : 'Escribe la dirección de entrega en Quibdó.']
+      ['fBarrioSel', !dom || $('fBarrioSel').value ? '' : 'Elige tu barrio para calcular el domicilio.'],
+      ['fBarrio', !dom || !otro || v('fBarrio').length >= 3 ? '' : 'Escribe el nombre de tu barrio.'],
+      ['fDir', !dom || v('fDir').length >= 5 ? '' : 'Escribe la dirección de entrega.']
     ];
     var firstBad = null;
-    checks.forEach(function (c) { if (!fieldErr(c[0], c[1]) && !firstBad) firstBad = $(c[0]); });
+    checks.forEach(function (c) { if (!fieldErr(c[0], c[1]) && !firstBad) firstBad = c[0] === 'fEntrega' ? document.querySelector('input[name="entrega"]') : $(c[0]); });
     var cErr = !$('cTerm').checked ? 'Para continuar acepta los términos y condiciones.' : !$('cDatos').checked ? 'Para continuar autoriza el tratamiento de tus datos para gestionar el pedido.' : '';
     $('consent-e').textContent = cErr; $('consent-e').hidden = !cErr;
     if (cErr && !firstBad) firstBad = !$('cTerm').checked ? $('cTerm') : $('cDatos');
@@ -636,21 +687,30 @@
 
     sending = true; $('orderBtn').disabled = true; $('orderBtn').textContent = 'Guardando tu pedido…'; $('orderErr').hidden = true;
     var pago = currentPago();
-    var customer = { nombre: v('fNombre'), telefono: telDigits(v('fTel')), cedula: v('fCed'), correo: v('fCorreo'), direccion: v('fDir'), barrio: v('fBarrio'), ciudad: 'Quibdó', departamento: 'Chocó', notas: v('fNotas'), pago: pago, entrega: currentEntrega() };
+    var customer = { nombre: v('fNombre'), telefono: telDigits(v('fTel')), cedula: v('fCed'), correo: v('fCorreo'), direccion: dom ? v('fDir') : '', barrio: dom ? barrioActual() : '', ciudad: 'Quibdó', departamento: 'Chocó', notas: v('fNotas'), pago: pago, entrega: currentEntrega() };
     try {
       var d = await api('/api/orders', { items: itemsPayload(), coupon: S.coupon ? S.coupon.code : '', customer: customer, cliente: clienteId(), consent: { terminos: true, datos: true, version: N.versionPoliticas || '' } });
-      if ($('cRecordar').checked) store.set(K_PERFIL, { nombre: customer.nombre, telefono: customer.telefono, cedula: customer.cedula, correo: customer.correo, direccion: customer.direccion, barrio: customer.barrio, ciudad: customer.ciudad, departamento: customer.departamento, entrega: customer.entrega });
+      if ($('cRecordar').checked) {
+        var prev = store.get(K_PERFIL) || {};
+        store.set(K_PERFIL, { nombre: customer.nombre, telefono: customer.telefono, cedula: customer.cedula, correo: customer.correo, direccion: customer.direccion || prev.direccion || '', barrio: customer.barrio || prev.barrio || '', entrega: customer.entrega });
+      }
       else store.del(K_PERFIL);
       rememberOrder(d.numero, customer.telefono.slice(-4));
       S.order = {
         numero: d.numero, ultimos4: customer.telefono.slice(-4), nombre: customer.nombre.split(' ')[0], ciudad: customer.ciudad,
-        pago: d.pago, pricing: d.pricing, items: d.items.map(function (i) { return { brand: i.brand, name: i.name, size: i.size, color: i.color, qty: i.qty, price: i.price }; }),
+        pago: d.pago, entrega: customer.entrega, pricing: d.pricing, items: d.items.map(function (i) { return { brand: i.brand, name: i.name, size: i.size, color: i.color, qty: i.qty, price: i.price }; }),
         createdAt: d.createdAt, step: 'pago', at: Date.now()
       };
       store.set(K_ORDER, S.order);
       if (d.checkoutUrl) wompiUrl = d.checkoutUrl;
       S.cart = []; S.coupon = null; saveCart(); renderCart(); $('couponIn').value = ''; $('couponMsg').textContent = '';
-      $('orderForm').reset();
+      $('orderForm').reset(); syncEntrega();
+      // Separado (pagar al recoger) o sin nada que pagar ahora: directo a "listo"
+      if (!d.pricing.pagarAhora) {
+        S.order.step = 'separado'; store.set(K_ORDER, S.order); MP.stale = true;
+        renderDone(); showStep(3); setTimeout(function () { $('doneTitle').focus(); }, 50);
+        return;
+      }
       renderPayment(); showStep(2);
       setTimeout(function () { $('payTitle').setAttribute('tabindex', '-1'); $('payTitle').focus(); }, 50);
       if (S.order.pago === 'Wompi') goWompi();
@@ -662,19 +722,19 @@
   });
 
   /* ---------------- pago Nequi ---------------- */
-  function payValue() { var o = S.order; return o.pricing.pagarAhora != null ? o.pricing.pagarAhora : (o.pago === 'Nequi' ? o.pricing.totalConEnvio : ENVIO); }
+  function payValue() { var o = S.order; return o.pricing.pagarAhora != null ? o.pricing.pagarAhora : o.pricing.totalConEnvio; }
   function renderPayment() {
     var o = S.order, val = payValue();
     $('payNo').textContent = o.numero;
     var online = o.pago === 'Wompi';
     $('payWompi').hidden = !online; $('payNequi').hidden = online;
-    $('payTitle').textContent = online ? 'Paga en línea' : o.pago === 'Contraentrega' ? 'Paga el anticipo del envío' : 'Paga con Nequi';
+    $('payTitle').textContent = online ? 'Paga en línea' : o.pago === 'Contraentrega' ? 'Paga el domicilio' : 'Paga con Nequi';
     if (online) renderWompiState(o.wompiEstado || '');
-    $('payAmount').innerHTML = money(val) + '<small>' + (o.pago === 'Contraentrega' ? 'Anticipo de envío. El resto (' + money(o.pricing.saldoContraentrega) + ') lo pagas al recibir.' : 'Total de tu pedido con envío') + '</small>';
+    $('payAmount').innerHTML = money(val) + '<small>' + (o.pago === 'Contraentrega' ? 'Valor del domicilio. El resto (' + money(o.pricing.saldoContraentrega) + ') lo pagas al recibir.' : o.entrega === 'Recoger' ? 'Total de tu pedido (lo recoges en la tienda)' : 'Total de tu pedido con domicilio') + '</small>';
     $('payVal').textContent = money(val);
     $('payMsg').textContent = o.numero;
     $('payCodNote').hidden = o.pago !== 'Contraentrega';
-    $('payCodNote').textContent = o.pricing.freeShipping ? 'Tu pedido tiene envío gratis: el anticipo se descuenta de lo que pagas al recibir.' : 'El anticipo cubre el envío y confirma tu pedido contraentrega.';
+    $('payCodNote').textContent = o.pricing.freeShipping ? 'Tu pedido tiene domicilio gratis: este valor se descuenta de lo que pagas al recibir.' : 'Este pago cubre el domicilio y confirma tu pedido contraentrega.';
     $('payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, pagué mi pedido ' + o.numero + ' por ' + money(val) + '. Te envío el comprobante.');
     $('fReceipt').value = ''; fieldErr('fReceipt', ''); $('fReceipt-status').textContent = '';
     showReceiptPreview(null);
@@ -820,8 +880,10 @@
   function renderDone() {
     var o = S.order, l = orderLinks(o);
     $('doneNo').textContent = o.numero;
-    $('doneTitle').textContent = o.step === 'pagado' ? '¡Pago aprobado!' : '¡Recibimos tu pedido!';
-    if (o.step === 'pagado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Tu pago en línea fue aprobado y ya estamos preparando tu pedido para entregarlo en Quibdó. Te escribimos por WhatsApp.';
+    var recoge = o.entrega === 'Recoger', saldo = o.pricing && o.pricing.saldoContraentrega != null ? o.pricing.saldoContraentrega : 0;
+    $('doneTitle').textContent = o.step === 'pagado' ? '¡Pago aprobado!' : o.step === 'separado' && recoge ? '¡Te lo separamos!' : '¡Recibimos tu pedido!';
+    if (o.step === 'pagado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Tu pago en línea fue aprobado y ya estamos preparando tu pedido' + (recoge ? ' para que lo recojas en la tienda' : ' para llevarlo a tu casa en Quibdó') + '. Te escribimos por WhatsApp.';
+    else if (o.step === 'separado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. ' + (recoge ? 'Tu pedido queda separado a tu nombre. Pagas ' + money(saldo) + ' cuando lo recojas en la tienda.' : 'Tu pedido quedó registrado. Pagas ' + money(saldo) + ' al recibirlo.') + ' Te escribimos por WhatsApp cuando esté listo.';
     else $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos ' + (o.comprobante ? 'la foto del comprobante de tu pago' : 'tu pedido') + '. Cuando verifiquemos el pago, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
     $('doneReceipt').href = l.recibo;
     $('doneProof').hidden = !sentProof;
@@ -855,7 +917,7 @@
     renderInstall();
     if (!o || stack.indexOf($('coSheet')) > -1) { bar.hidden = true; bar.innerHTML = ''; return; }
     bar.hidden = false;
-    bar.innerHTML = '<div class="wrap"><span><b>Pedido ' + esc(o.numero) + '</b> · ' + (o.step === 'pago' ? 'pendiente de pago' : o.step === 'pagado' ? 'pago aprobado' : 'pago reportado') + '</span>' +
+    bar.innerHTML = '<div class="wrap"><span><b>Pedido ' + esc(o.numero) + '</b> · ' + (o.step === 'pago' ? 'pendiente de pago' : o.step === 'pagado' ? 'pago aprobado' : o.step === 'separado' ? (o.entrega === 'Recoger' ? 'separado' : 'registrado') : 'pago reportado') + '</span>' +
       '<button type="button" class="btn btn-lime" id="resumeBtn">' + (o.step === 'pago' ? 'Continuar con el pago' : 'Ver pedido') + '</button>' +
       '<button type="button" class="link-btn" id="resumeX">' + (o.step === 'pago' ? 'Ya no lo quiero' : 'Cerrar') + '</button></div>';
     $('resumeBtn').addEventListener('click', function () { resumeOrder(); });
@@ -875,8 +937,14 @@
   /* ---------------- datos de envío recordados (solo en este dispositivo) ---------------- */
   function prefillProfile() {
     var p = store.get(K_PERFIL); if (!p) return;
-    var map = { fNombre: 'nombre', fTel: 'telefono', fCed: 'cedula', fCorreo: 'correo', fDir: 'direccion', fBarrio: 'barrio' };
+    var map = { fNombre: 'nombre', fTel: 'telefono', fCed: 'cedula', fCorreo: 'correo', fDir: 'direccion' };
     Object.keys(map).forEach(function (id) { if (!$(id).value.trim() && p[map[id]]) $(id).value = p[map[id]]; });
+    if (p.barrio && !$('fBarrioSel').value) {
+      var listed = DOM.barrios.some(function (b) { return b.nombre === p.barrio; });
+      $('fBarrioSel').value = listed ? p.barrio : '__otro';
+      if (!listed) $('fBarrio').value = p.barrio;
+    }
+    if ((p.entrega === 'Recoger' || p.entrega === 'Domicilio') && !currentEntrega()) document.querySelector('input[name="entrega"][value="' + p.entrega + '"]').checked = true;
   }
 
   /* ---------------- favoritos ---------------- */
@@ -944,7 +1012,7 @@
   var TABS = [['todos', 'Todos'], ['pagar', 'Por pagar'], ['proceso', 'En proceso'], ['enviado', 'Enviados'], ['entregado', 'Entregados']];
   function stage(o) {
     if (o.status === 'Cancelado') return 'cancelado';
-    if (o.status === 'Recibido') return o.pagoReportado ? 'proceso' : 'pagar';
+    if (o.status === 'Recibido') return o.pagoReportado || o.pago === 'En tienda' || (o.pricing && o.pricing.pagarAhora === 0) ? 'proceso' : 'pagar';
     if (o.status === 'Enviado') return 'enviado';
     if (o.status === 'Entregado') return 'entregado';
     return 'proceso';
@@ -964,10 +1032,13 @@
     var done = (o.steps || []).filter(function (s) { return s.state === 'done' || s.state === 'current'; }).length;
     return Math.round(done / Math.max(1, (o.steps || []).length) * 100);
   }
+  var PAGO_TXT = { Wompi: 'En línea (Wompi)', Nequi: 'Nequi', Contraentrega: 'Contraentrega', 'En tienda': 'Al recoger en la tienda' };
   function stageHint(o) {
     var s = stage(o);
     if (s === 'pagar' && o.pago === 'Wompi') return 'Paga ' + money(o.pricing.pagarAhora) + ' en línea para confirmarlo.';
     if (s === 'pagar') return o.pago === 'Contraentrega' ? 'Paga ' + money(o.pricing.pagarAhora) + ' de anticipo por Nequi para confirmarlo.' : 'Paga ' + money(o.pricing.pagarAhora) + ' por Nequi para confirmarlo.';
+    if (s === 'proceso' && o.status === 'Recibido' && o.pago === 'En tienda') return 'Separado. Pagas ' + money(o.pricing.saldoContraentrega) + ' al recogerlo en la tienda.';
+    if (s === 'proceso' && o.status === 'Recibido' && !o.pagoReportado) return 'Recibimos tu pedido. Pagas ' + money(o.pricing.saldoContraentrega) + ' al recibirlo.';
     if (s === 'proceso' && o.status === 'Recibido') return 'Recibimos tu comprobante. Lo estamos verificando.';
     if (s === 'proceso') return o.statusLabel + '. Te avisamos cuando salga.';
     if (s === 'enviado') return o.guia ? 'Guía ' + o.guia + (o.transportadora ? ' · ' + o.transportadora : '') : 'Tu pedido va en camino.';
@@ -1060,7 +1131,7 @@
     $('ordDetail').innerHTML =
       '<div class="od-hero od-hero--' + s + '"><span class="st st--' + s + '">' + STAGE_TXT[s] + '</span><h3>' + esc(o.statusLabel) + '</h3><p>' + esc(stageHint(o)) + '</p>' +
       (s !== 'cancelado' ? '<div class="oc__bar"><i style="width:' + progress(o) + '%"></i></div>' : '') +
-      (s === 'pagar' ? '<button type="button" class="btn btn-lime btn-block" data-pay="' + esc(o.numero) + '">Pagar ' + money(p.pagarAhora) + ' por Nequi</button>' : '') + '</div>' +
+      (s === 'pagar' ? '<button type="button" class="btn btn-lime btn-block" data-pay="' + esc(o.numero) + '">Pagar ' + money(p.pagarAhora) + (o.pago === 'Wompi' ? ' en línea' : ' por Nequi') + '</button>' : '') + '</div>' +
       (s !== 'cancelado' ? '<section class="od-sec"><h4>Seguimiento</h4><ol class="tl" aria-label="Estados del pedido">' + steps + '</ol></section>' : '') +
       (o.guia ? '<div class="od-note"><b>Guía de envío:</b> ' + esc(o.guia) + (o.transportadora ? ' (' + esc(o.transportadora) + ')' : '') + '</div>' : '') +
       (o.nota ? '<div class="od-note"><b>Mensaje de la tienda:</b> ' + esc(o.nota) + '</div>' : '') +
@@ -1068,11 +1139,11 @@
       '<section class="od-sec"><h4>Productos</h4>' + items +
       '<div class="totals od-tot">' + (p.promoSavings ? '<div class="save"><span>Promociones</span><span>-' + money(p.promoSavings) + '</span></div>' : '') +
       (p.discount ? '<div class="save"><span>Cupón ' + esc(p.couponCode) + '</span><span>-' + money(p.discount) + '</span></div>' : '') +
-      (p.envio != null ? '<div><span>Envío</span><span>' + (p.envio ? money(p.envio) : 'Gratis') + '</span></div>' : '') +
+      (p.envio != null ? '<div><span>' + (o.entrega === 'Recoger' ? 'Recoger en tienda' : 'Domicilio') + '</span><span>' + (p.envio ? money(p.envio) : 'Gratis') + '</span></div>' : '') +
       '<div class="grand"><span>Total</span><span>' + money(p.totalConEnvio) + '</span></div>' +
-      (o.pago === 'Contraentrega' && p.saldoContraentrega ? '<div><span>Pagas al recibir</span><span>' + money(p.saldoContraentrega) + '</span></div>' : '') + '</div>' +
+      ((o.pago === 'Contraentrega' || o.pago === 'En tienda') && p.saldoContraentrega ? '<div><span>' + (o.pago === 'En tienda' ? 'Pagas al recoger' : 'Pagas al recibir') + '</span><span>' + money(p.saldoContraentrega) + '</span></div>' : '') + '</div>' +
       '<button type="button" class="btn btn-line btn-block" data-rebuy="' + esc(o.numero) + '"><svg aria-hidden="true"><use href="#i-repeat"/></svg>Comprar de nuevo</button></section>' +
-      '<section class="od-sec"><h4>Entrega</h4><dl class="od-dl"><div><dt>Recibe</dt><dd>' + esc(o.nombre) + '</dd></div><div><dt>Dirección</dt><dd>' + esc(o.direccion) + ', ' + esc(o.ciudad) + '</dd></div><div><dt>Pago</dt><dd>' + esc(o.pago) + '</dd></div><div><dt>Empaque</dt><dd>Sin caja</dd></div></dl></section>' +
+      '<section class="od-sec"><h4>Entrega</h4><dl class="od-dl"><div><dt>Recibe</dt><dd>' + esc(o.nombre) + '</dd></div><div><dt>' + (o.entrega === 'Recoger' ? 'Entrega' : 'Dirección') + '</dt><dd>' + (o.entrega === 'Recoger' ? 'Recoge en la tienda' : esc(o.direccion) + ', ' + esc(o.ciudad)) + '</dd></div><div><dt>Pago</dt><dd>' + esc(PAGO_TXT[o.pago] || o.pago) + '</dd></div><div><dt>Empaque</dt><dd>Sin caja</dd></div></dl></section>' +
       '<div class="od-actions"><a class="btn btn-primary" href="' + esc(l.recibo) + '">Ver y descargar recibo</a><a class="btn btn-wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Preguntar por WhatsApp</a></div>';
     if (!keepScroll) { $('ordDetail').scrollTop = 0; $('ordDetail').focus({ preventScroll: true }); }
     if (o.pagoReportado && o.pagoReportado.hasComprobante) loadProof(o);
@@ -1114,7 +1185,7 @@
   });
   function payOrder(num) {
     var o = MP.list.find(function (x) { return x.numero === num; }); if (!o) return;
-    S.order = { numero: o.numero, ultimos4: o.ultimos4, nombre: o.nombre, ciudad: o.ciudad, pago: o.pago, pricing: o.pricing, items: o.items, createdAt: o.createdAt, step: 'pago', at: Date.now() };
+    S.order = { numero: o.numero, ultimos4: o.ultimos4, nombre: o.nombre, ciudad: o.ciudad, pago: o.pago, entrega: o.entrega, pricing: o.pricing, items: o.items, createdAt: o.createdAt, step: 'pago', at: Date.now() };
     store.set(K_ORDER, S.order);
     closeLayer($('ordersSheet'), false, true);
     resumeOrder(true);
@@ -1157,7 +1228,7 @@
   function applySettings() {
     var s = S.settings || {};
     if (s.whatsapp && /^\d{10,13}$/.test(s.whatsapp)) WA = s.whatsapp;
-    if (s.anticipo) ENVIO = Number(s.anticipo) || ENVIO;
+    if (s.domicilios && Array.isArray(s.domicilios.barrios)) { DOM = s.domicilios; renderBarrios(); if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
     // Pago en línea: solo si Wompi está configurado en el servidor. Queda como opción por defecto.
     var wr = document.querySelector('input[name="pago"][value="Wompi"]');
     if (s.wompi && $('payWompiOpt').hidden) { $('payWompiOpt').hidden = false; wr.disabled = false; wr.checked = true; if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }

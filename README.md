@@ -21,6 +21,11 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
   - Si el pago se rechaza, el cliente puede intentarlo de nuevo desde la misma pantalla o desde Mis pedidos.
 - **Configurar** (comercios.wompi.co → Desarrolladores): pon `WOMPI_PUBLIC_KEY`, `WOMPI_INTEGRITY_SECRET`, `WOMPI_EVENTS_SECRET` y `SITE_URL` en Vercel, y en Wompi registra la URL de eventos `https://TU_DOMINIO/api/wompi`. Prueba primero con las llaves `pub_test_…` (sandbox) y luego cámbialas por las `pub_prod_…`.
 
+### Recoger en la tienda o domicilio por barrio
+- Al comprar, el cliente elige entre **Recoger en la tienda** (gratis) y **Domicilio en Quibdó** (precio según el barrio, **máximo $10.000**; el servidor nunca cobra más).
+- Si recoge, puede **separar y pagar al recoger**: el pedido queda registrado sin pago adelantado. Si pide domicilio, la contraentrega cobra el valor del domicilio por Nequi y el resto al recibir.
+- Los barrios y precios se editan en **Panel → Ajustes → Domicilios en Quibdó**. Antes ejecuta `lib/migracion-domicilios-2026-11.sql` en Supabase. Mientras no haya barrios, todo domicilio cuesta el precio de “otros barrios” ($10.000 por defecto).
+
 ## Instalación
 1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql` (también crea el bucket privado para las fotos de comprobantes).
 2. Copia `.env.example` a `.env` y llénalo. En Vercel pon las mismas variables.

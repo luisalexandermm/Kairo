@@ -4233,3 +4233,19 @@ mark.pendiente {
 #ordDetail:focus {
   outline: none;
 }
+
+/* Recoger en la tienda / domicilio: dos botones lado a lado */
+.pay--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.pay--2 label {
+  grid-template-columns: auto 1fr;
+  align-content: start;
+}
+
+@media (max-width: 360px) {
+  .pay--2 {
+    grid-template-columns: 1fr;
+  }
+}

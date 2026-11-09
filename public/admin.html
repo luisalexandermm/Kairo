@@ -128,9 +128,18 @@
       <div class="head"><div><h1 class="display" id="h-aj">Ajustes</h1><p>WhatsApp de pedidos, contraseña y datos de pago.</p></div></div>
       <form class="panel" style="padding:26px;max-width:720px" id="settingsForm" novalidate>
         <div class="field"><label for="sWa">WhatsApp de pedidos</label><input id="sWa" inputmode="numeric" placeholder="573145312045" aria-describedby="sWa-h"><small id="sWa-h">Indicativo + número, sin espacios.</small></div>
-        <div class="field"><label for="sShip">Nota de envíos</label><input id="sShip" placeholder="Envíos a toda Colombia"></div>
+        <div class="field"><label for="sShip">Nota de envíos</label><input id="sShip" placeholder="Entregas en Quibdó"></div>
         <div class="field"><label for="sPass">Nueva contraseña del panel</label><input id="sPass" type="password" autocomplete="new-password" aria-describedby="sPass-h"><small id="sPass-h">Mínimo 10 caracteres. Déjala vacía para no cambiarla.</small></div>
         <button class="btn btn-primary" type="submit">Guardar ajustes</button>
+      </form>
+      <form class="panel" style="padding:26px;max-width:720px;margin-top:18px" id="domForm" novalidate>
+        <h2 style="margin-bottom:6px">Domicilios en Quibdó</h2>
+        <p class="hint" style="margin-bottom:12px">Precio del domicilio por barrio (máximo $10.000). Si el cliente elige “Otro barrio”, se cobra el precio de abajo. Recoger en la tienda siempre es gratis.</p>
+        <p class="ref-box" id="domWarn" hidden>Para guardar los barrios, primero ejecuta <code>lib/migracion-domicilios-2026-11.sql</code> en el editor SQL de Supabase.</p>
+        <div id="domList"></div>
+        <button type="button" class="btn btn-line btn-sm" id="domAdd" style="margin:8px 0 14px">+ Agregar barrio</button>
+        <div class="field"><label for="domOtro">Precio para otros barrios</label><input id="domOtro" type="number" inputmode="numeric" min="0" max="10000" step="500"></div>
+        <button class="btn btn-primary" type="submit">Guardar precios de domicilio</button>
       </form>
       <div class="qr-mini">
         <img src="/img/nequi-qr.png" alt="QR de Nequi que ven los clientes" width="96" height="96">

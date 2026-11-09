@@ -312,28 +312,37 @@
     <div class="summary" id="coSummary"></div>
     <form id="orderForm" novalidate>
       <p class="hint" style="font-size:.84rem;color:var(--muted);margin-bottom:10px">Los campos con <span aria-hidden="true">*</span><span class="sr-only">asterisco</span> son obligatorios.</p>
-      <p class="notice-box" id="soloQuibdo"><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Por ahora solo entregamos en Quibdó.</b> Llevamos tu pedido a tu casa o trabajo dentro de la ciudad.</span></p>
+      <fieldset class="field" id="fEntrega" aria-describedby="fEntrega-e">
+        <legend>¿Cómo quieres recibirlo? *</legend>
+        <div class="pay pay--2" id="entregaOpts">
+          <label><input type="radio" name="entrega" value="Recoger"><b>Recoger en la tienda</b><small>Te lo separamos y pasas por él. Sin costo.</small></label>
+          <label><input type="radio" name="entrega" value="Domicilio"><b>Domicilio en Quibdó</b><small id="domDesde">Según tu barrio, máximo $10.000.</small></label>
+        </div>
+        <p class="err" id="fEntrega-e" hidden></p>
+      </fieldset>
+      <p class="notice-box" id="pickupNote" hidden><svg aria-hidden="true"><use href="#i-box"/></svg><span><b>Recoges en nuestra tienda</b> en <span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span>. Horario: <span data-negocio="horario"></span>. Te escribimos por WhatsApp cuando tu pedido esté listo.</span></p>
       <div class="field"><label for="fNombre">Nombre completo *</label><input id="fNombre" autocomplete="name" required maxlength="120" aria-describedby="fNombre-e"><p class="err" id="fNombre-e" hidden></p></div>
       <div class="row2">
         <div class="field"><label for="fTel">Celular *</label><input id="fTel" type="tel" inputmode="numeric" autocomplete="tel-national" required maxlength="14" placeholder="300 000 0000" aria-describedby="fTel-e"><p class="err" id="fTel-e" hidden></p></div>
         <div class="field"><label for="fCed">Cédula</label><input id="fCed" inputmode="numeric" maxlength="15" aria-describedby="fCed-h"><p class="hint" id="fCed-h">Opcional. La pide la transportadora.</p></div>
       </div>
       <div class="field"><label for="fCorreo">Correo</label><input id="fCorreo" type="email" autocomplete="email" maxlength="120" aria-describedby="fCorreo-e"><p class="err" id="fCorreo-e" hidden></p></div>
-      <div class="field"><label for="fDir">Dirección en Quibdó *</label><input id="fDir" autocomplete="street-address" required maxlength="200" placeholder="Calle, número, apartamento" aria-describedby="fDir-e"><p class="err" id="fDir-e" hidden></p></div>
-      <div class="row2">
-        <div class="field"><label for="fCiudad">Ciudad</label><input id="fCiudad" value="Quibdó" readonly aria-readonly="true"></div>
-        <div class="field"><label for="fDepto">Departamento</label><input id="fDepto" value="Chocó" readonly aria-readonly="true"></div>
+      <div id="domFields" hidden>
+        <p class="notice-box"><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Por ahora solo hacemos domicilios en Quibdó.</b> El valor depende de tu barrio (máximo $10.000).</span></p>
+        <div class="field"><label for="fBarrioSel">Barrio *</label><select id="fBarrioSel" aria-describedby="fBarrioSel-e fBarrioSel-h"><option value="">Elige tu barrio</option></select><p class="hint" id="fBarrioSel-h"></p><p class="err" id="fBarrioSel-e" hidden></p></div>
+        <div class="field" id="fBarrioOtroBox" hidden><label for="fBarrio">¿Cuál barrio? *</label><input id="fBarrio" maxlength="80" aria-describedby="fBarrio-e"><p class="err" id="fBarrio-e" hidden></p></div>
+        <div class="field"><label for="fDir">Dirección *</label><input id="fDir" autocomplete="street-address" maxlength="200" placeholder="Calle, número, casa o apartamento" aria-describedby="fDir-e"><p class="err" id="fDir-e" hidden></p></div>
       </div>
-      <div class="field"><label for="fBarrio">Barrio y referencias</label><input id="fBarrio" maxlength="80"></div>
       <fieldset class="field">
         <legend>Forma de pago *</legend>
         <div class="pay" id="payOpts">
           <label id="payWompiOpt" hidden><input type="radio" name="pago" value="Wompi" disabled><b>Pago en línea (Wompi)</b><small id="payWompiTxt">Tarjeta débito o crédito, PSE, Nequi o Bancolombia.</small></label>
           <label><input type="radio" name="pago" value="Nequi" checked><b>Nequi (QR o llave)</b><small id="payNequiTxt">Pagas todo ahora con el QR que te mostramos.</small></label>
-          <label><input type="radio" name="pago" value="Contraentrega"><b>Contraentrega</b><small id="payCodTxt">Pagas el anticipo del envío por Nequi y el resto al recibir.</small></label>
+          <label id="payCodOpt" hidden><input type="radio" name="pago" value="Contraentrega" disabled><b>Contraentrega</b><small id="payCodTxt">Pagas el domicilio por Nequi y el resto al recibir.</small></label>
+          <label id="payTiendaOpt" hidden><input type="radio" name="pago" value="En tienda" disabled><b>Separar y pagar al recoger</b><small id="payTiendaTxt">No pagas nada ahora: pagas en la tienda cuando lo recojas.</small></label>
         </div>
       </fieldset>
-      <div class="field"><label for="fNotas">Notas para la entrega</label><textarea id="fNotas" maxlength="500" placeholder="Horario, punto de referencia…"></textarea></div>
+      <div class="field"><label for="fNotas">Notas</label><textarea id="fNotas" maxlength="500" placeholder="Horario, punto de referencia, cuándo pasas a recoger…"></textarea></div>
       <div class="totals" id="coTotals"></div>
       <label class="consent"><input type="checkbox" id="cTerm" aria-describedby="consent-e"><span>Acepto los <a href="/terminos.html" target="_blank" rel="noopener">términos y condiciones</a> y entiendo que <b>los productos se entregan sin caja</b>. *</span></label>
       <label class="consent"><input type="checkbox" id="cDatos" aria-describedby="consent-e"><span>Autorizo el tratamiento de mis datos para gestionar y entregar este pedido, según la <a href="/privacidad.html" target="_blank" rel="noopener">política de datos personales</a>. *</span></label>

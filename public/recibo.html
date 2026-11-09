@@ -95,11 +95,13 @@
     var foot = '<tr><td colspan="3">Subtotal productos</td><td class="num">' + money(sub) + '</td></tr>';
     if (d.promoSavings) foot += '<tr><td colspan="3">Ahorro por promociones (ya incluido en los precios)</td><td class="num">-' + money(d.promoSavings) + '</td></tr>';
     if (d.discount) foot += '<tr><td colspan="3">Cupón ' + esc(d.couponCode) + '</td><td class="num">-' + money(d.discount) + '</td></tr>';
-    if (d.envio != null) foot += '<tr><td colspan="3">Envío</td><td class="num">' + (d.envio ? money(d.envio) : 'Gratis') + '</td></tr>';
+    if (d.envio != null) foot += '<tr><td colspan="3">' + (d.entrega === 'Recoger' ? 'Recoger en la tienda' : d.entrega === 'Domicilio' ? 'Domicilio' : 'Envío') + '</td><td class="num">' + (d.envio ? money(d.envio) : 'Gratis') + '</td></tr>';
     foot += '<tr class="grand"><td colspan="3">Total</td><td class="num">' + money(d.totalConEnvio) + '</td></tr>';
     var pagoTxt = d.pago === 'Contraentrega'
-      ? 'Contraentrega: anticipo de envío ' + money(d.pagarAhora) + ' por Nequi y ' + money(d.saldoContraentrega) + ' al recibir'
-      : 'Nequi: ' + money(d.pagarAhora || d.totalConEnvio) + ' antes del envío';
+      ? 'Contraentrega: ' + money(d.pagarAhora) + ' por Nequi y ' + money(d.saldoContraentrega) + ' al recibir'
+      : d.pago === 'En tienda' ? 'Separado: ' + money(d.saldoContraentrega) + ' al recoger en la tienda'
+      : d.pago === 'Wompi' ? 'En línea (Wompi): ' + money(d.pagarAhora || d.totalConEnvio)
+      : 'Nequi: ' + money(d.pagarAhora || d.totalConEnvio) + ' antes de la entrega';
     $('out').innerHTML =
       '<div class="tools"><button class="btn" type="button" id="print">Descargar o imprimir (PDF)</button><a class="btn btn--line" href="/?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent(c) + '#pedidos">Ver en Mis pedidos</a></div>' +
       '<article class="rc" aria-labelledby="rcTitle">' +
@@ -107,7 +109,7 @@
       '<div class="rc-biz"><span data-negocio="responsable"></span> · NIT <span data-negocio="nit"></span><br><span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span><br>WhatsApp <span data-negocio="telefonoVisible"></span> · <span data-negocio="correo"></span></div></div>' +
       '<div class="rc-no"><small id="rcTitle">Recibo de pedido</small><b>' + esc(d.numero) + '</b><br><span class="rc-st">' + esc(d.statusLabel) + '</span></div></div>' +
       '<dl class="rc-grid"><div><dt>Fecha</dt><dd>' + esc(fecha) + '</dd></div><div><dt>Cliente</dt><dd>' + esc(d.nombre) + '</dd></div>' +
-      '<div><dt>Entrega</dt><dd>' + esc(d.direccion) + ', ' + esc(d.ciudad) + '</dd></div><div><dt>Forma de pago</dt><dd>' + esc(pagoTxt) + '</dd></div>' +
+      '<div><dt>Entrega</dt><dd>' + esc(d.direccion) + (d.entrega === 'Recoger' ? '' : ', ' + esc(d.ciudad)) + '</dd></div><div><dt>Forma de pago</dt><dd>' + esc(pagoTxt) + '</dd></div>' +
       (d.guia ? '<div><dt>Guía de envío</dt><dd>' + esc(d.guia) + (d.transportadora ? ' (' + esc(d.transportadora) + ')' : '') + '</dd></div>' : '') + '</dl>' +
       '<div class="table-wrap"><table><caption class="sr-only">Productos del pedido</caption><thead><tr><th scope="col">Producto</th><th scope="col" class="num">Cant.</th><th scope="col" class="num">Precio</th><th scope="col" class="num">Valor</th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
       '<p class="rc-legal"><b>Todos los productos se entregan sin caja.</b> Precios en pesos colombianos con impuestos incluidos. Tienes derecho de retracto dentro de los 5 días hábiles siguientes a la entrega y garantía legal de 1 año; consulta <a href="/cambios-y-devoluciones.html">cambios, garantía y retracto</a>. ' +

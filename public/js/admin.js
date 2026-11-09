@@ -143,10 +143,12 @@
     }).join('') || '<tr><td colspan="4" class="empty">Todavía no hay pedidos.</td></tr>';
   }
   var WOMPI_TXT = { APPROVED: 'pago aprobado', DECLINED: 'pago rechazado', VOIDED: 'pago anulado', ERROR: 'error en el pago', PENDING: 'pago en proceso', REVISAR: 'aprobado con valor distinto, revisar en Wompi' };
+  var ENTREGA_TXT = { Recoger: 'Recoge en la tienda', Domicilio: 'Domicilio en Quibdó', Local: 'Local · Quibdó', Nacional: 'Nacional' };
   function statusPill(o) {
     var s = o.status, rep = o.customer && o.customer.pagoReportado;
     var cls = s === 'Cancelado' ? 'bad' : s === 'Recibido' ? (rep ? 'lime' : 'warn') : s === 'Entregado' ? 'on' : 'off';
-    var label = s === 'Recibido' ? (rep ? 'Pago reportado' : 'Esperando pago') : s;
+    var sep = o.customer && o.customer.pago === 'En tienda';
+    var label = s === 'Recibido' ? (rep ? 'Pago reportado' : sep ? 'Separado: confirmar' : 'Esperando pago') : s;
     return '<span class="pill ' + cls + '">' + esc(label) + '</span>';
   }
 
@@ -164,7 +166,12 @@
     var idx = STEPS.indexOf(o.status), h = (o.tracking && o.tracking.history) || [];
     var at = function (k) { for (var i = h.length - 1; i >= 0; i--) if (h[i].status === k) return h[i].at; return k === 'Recibido' ? o.created_at : null; };
     return STEPS.map(function (k, i) {
-      var label = k === 'Pago confirmado' && o.customer && o.customer.pago === 'Contraentrega' ? 'Anticipo confirmado' : k;
+      var c = o.customer || {};
+      var label = k === 'Pago confirmado' && c.pago === 'Contraentrega' ? 'Anticipo confirmado'
+        : k === 'Pago confirmado' && c.pago === 'En tienda' ? 'Pedido separado'
+        : k === 'Enviado' && c.entrega === 'Recoger' ? 'Listo para recoger'
+        : k === 'Enviado' && c.entrega === 'Domicilio' ? 'Domicilio en camino'
+        : k === 'Entregado' && c.entrega === 'Recoger' ? 'Recogido' : k;
       return { label: label, state: o.status === 'Cancelado' ? 'todo' : i < idx ? 'done' : i === idx ? (i === STEPS.length - 1 ? 'done' : 'current') : 'todo', at: i <= idx ? at(k) : null };
     });
   }
@@ -189,9 +196,10 @@
         lines = '<div class="money-lines">' +
           (pr.promoSavings ? '<div><span>Ahorro por promociones</span><span>-' + money(pr.promoSavings) + '</span></div>' : '') +
           (pr.coupon && pr.coupon.discount ? '<div><span>Cupón ' + esc(pr.coupon.code) + '</span><span>-' + money(pr.coupon.discount) + '</span></div>' : '') +
-          '<div><span>Envío</span><span>' + (pr.envio ? money(pr.envio) : 'Gratis') + '</span></div>' +
+          '<div><span>' + (c.entrega === 'Recoger' ? 'Recoge en la tienda' : c.entrega === 'Domicilio' ? 'Domicilio' + (c.barrio ? ' (' + esc(c.barrio) + ')' : '') : 'Envío') + '</span><span>' + (pr.envio ? money(pr.envio) : 'Gratis') + '</span></div>' +
           '<div><b>Total</b><b>' + money(pr.totalConEnvio != null ? pr.totalConEnvio : o.total) + '</b></div>' +
-          (c.pago === 'Contraentrega' ? '<div><span>Anticipo por Nequi</span><span>' + money(pr.pagarAhora) + '</span></div><div><span>Cobrar al entregar</span><span>' + money(pr.saldoContraentrega) + '</span></div>' : '<div><span>' + (c.pago === 'Wompi' ? 'Pago en línea (Wompi)' : 'Debe llegar a tu Nequi') + '</span><span>' + money(pr.pagarAhora) + '</span></div>') +
+          (c.pago === 'En tienda' ? '<div><span>Cobrar al recoger</span><span>' + money(pr.saldoContraentrega) + '</span></div>' :
+          c.pago === 'Contraentrega' ? '<div><span>Domicilio por Nequi</span><span>' + money(pr.pagarAhora) + '</span></div><div><span>Cobrar al entregar</span><span>' + money(pr.saldoContraentrega) + '</span></div>' : '<div><span>' + (c.pago === 'Wompi' ? 'Pago en línea (Wompi)' : 'Debe llegar a tu Nequi') + '</span><span>' + money(pr.pagarAhora) + '</span></div>') +
           '</div>';
       }
       var waText = 'Hola ' + (c.nombre || '').split(' ')[0] + ', te escribimos de kAIRO sobre tu pedido ' + o.id + '. Puedes ver el estado aquí: ' + trackLink(o);
@@ -200,7 +208,7 @@
         '<div class="order-meta">' + statusPill(o) + '<span class="pill off">' + esc(c.pago || 'Sin método') + '</span>' + (pr.coupon ? '<span class="pill off">Cupón ' + esc(pr.coupon.code) + '</span>' : '') + '<span class="pill warn">Sin caja</span></div>' +
         (c.wompi ? '<p class="ref-box"><b>Wompi: ' + esc(WOMPI_TXT[c.wompi.status] || c.wompi.status) + '</b>' + (c.wompi.metodo ? ' · ' + esc(c.wompi.metodo) : '') + ' · ' + money(c.wompi.valor) + ' <small>(' + fdate(c.wompi.at) + ')</small><br>Transacción ' + esc(c.wompi.transactionId) + ' · Ref. ' + esc(c.wompi.reference) + '</p>' : '') +
         (c.pagoReportado ? '<p class="ref-box"><b>El cliente reportó su pago</b>' + (c.pagoReportado.ref ? ' · Referencia: ' + esc(c.pagoReportado.ref) : '') + ' <small>(' + fdate(c.pagoReportado.at) + ')</small><br>Revisa que el pago esté en tu Nequi antes de confirmar.' + (c.pagoReportado.hasComprobante ? ' <button class="btn btn-line btn-sm" type="button" data-proof="' + esc(o.id) + '">Ver foto del comprobante</button>' : '') + '</p>' : '') +
-        '<p><b>' + esc(c.nombre || 'Sin nombre') + '</b> · ' + esc(tel) + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + (c.correo ? ' · ' + esc(c.correo) : '') + '<br><small>' + (c.entrega ? '<b>' + esc(c.entrega === 'Local' ? 'Local · Quibdó' : 'Nacional') + '</b> · ' : '') + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</small>' + (c.notas ? '<br><small>Notas: ' + esc(c.notas) + '</small>' : '') + '</p>' +
+        '<p><b>' + esc(c.nombre || 'Sin nombre') + '</b> · ' + esc(tel) + (c.cedula ? ' · CC ' + esc(c.cedula) : '') + (c.correo ? ' · ' + esc(c.correo) : '') + '<br><small>' + (c.entrega ? '<b>' + esc(ENTREGA_TXT[c.entrega] || c.entrega) + '</b> · ' : '') + esc([c.direccion, c.barrio, c.ciudad, c.departamento].filter(Boolean).join(', ')) + '</small>' + (c.notas ? '<br><small>Notas: ' + esc(c.notas) + '</small>' : '') + '</p>' +
         '<ul class="order-items">' + items + '</ul>' + lines +
         '<ol class="timeline" aria-label="Seguimiento del pedido">' + steps.map(function (s) { return '<li class="' + s.state + '">' + esc(s.label) + (s.at ? '<small>' + fdate(s.at) + '</small>' : '') + '</li>'; }).join('') + '</ol>' +
         '<form class="tl-form" data-track="' + esc(o.id) + '">' +
@@ -225,6 +233,7 @@
     var body = { status: f.status.value, guia: f.guia.value.trim(), transportadora: f.transportadora.value.trim(), nota: f.nota.value.trim() };
     if (o && o.status === 'Recibido' && body.status !== 'Recibido' && body.status !== 'Cancelado' &&
       !(o.customer && o.customer.wompi && o.customer.wompi.status === 'APPROVED') &&
+      !(o.customer && o.customer.pago === 'En tienda') &&
       !confirm('¿Ya verificaste en tu Nequi que llegó el pago de ' + money((o.pricing || {}).pagarAhora || o.total) + ' para el pedido ' + id + '?')) return;
     var btn = f.querySelector('[type=submit]'); btn.disabled = true;
     try {
@@ -600,7 +609,39 @@
   });
 
   /* ---------------- ajustes ---------------- */
-  function fillSettings() { var s = D.settings || {}; $('sWa').value = s.whatsapp || ''; $('sShip').value = s.shippingNote || ''; if (N.pintar) N.pintar(); }
+  function fillSettings() { var s = D.settings || {}; $('sWa').value = s.whatsapp || ''; $('sShip').value = s.shippingNote || ''; fillDomicilios(); if (N.pintar) N.pintar(); }
+
+  /* ---------------- domicilios en Quibdó (precio por barrio, máximo $10.000) ---------------- */
+  var DOM_MAX = 10000;
+  function domRow(b) {
+    return '<div class="dom-row"><input aria-label="Barrio" maxlength="60" value="' + esc(b.nombre || '') + '" placeholder="Nombre del barrio">' +
+      '<input aria-label="Precio del domicilio" type="number" inputmode="numeric" min="0" max="' + DOM_MAX + '" step="500" value="' + esc(b.precio != null ? b.precio : '') + '" placeholder="Precio">' +
+      '<button type="button" class="btn-danger" data-domrm aria-label="Quitar barrio">Quitar</button></div>';
+  }
+  function fillDomicilios() {
+    var d = (D.settings && D.settings.domicilios) || { barrios: [], otro: DOM_MAX };
+    $('domList').innerHTML = d.barrios.map(domRow).join('');
+    $('domOtro').value = d.otro != null ? d.otro : DOM_MAX;
+    $('domWarn').hidden = !!(D.settings && D.settings.domiciliosListo);
+  }
+  $('domAdd').addEventListener('click', function () { $('domList').insertAdjacentHTML('beforeend', domRow({})); $('domList').lastElementChild.querySelector('input').focus(); });
+  $('domList').addEventListener('click', function (e) { var b = e.target.closest('[data-domrm]'); if (b) b.closest('.dom-row').remove(); });
+  $('domForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var barrios = [], bad = '';
+    $('domList').querySelectorAll('.dom-row').forEach(function (r) {
+      var ins = r.querySelectorAll('input'), nombre = ins[0].value.trim(), precio = Number(ins[1].value);
+      if (!nombre && !ins[1].value) return;
+      if (!nombre) bad = bad || 'A una fila le falta el nombre del barrio.';
+      else if (ins[1].value === '' || !(precio >= 0) || precio > DOM_MAX) bad = bad || 'El precio de ' + nombre + ' debe estar entre $0 y ' + money(DOM_MAX) + '.';
+      barrios.push({ nombre: nombre, precio: precio });
+    });
+    var otro = Number($('domOtro').value);
+    if ($('domOtro').value === '' || !(otro >= 0) || otro > DOM_MAX) bad = bad || 'El precio para otros barrios debe estar entre $0 y ' + money(DOM_MAX) + '.';
+    if (bad) { toast(bad, 4500); return; }
+    try { await api('/admin/settings', { method: 'PUT', body: { domicilios: { barrios: barrios, otro: otro } } }); await loadAll(); toast('Precios de domicilio guardados'); }
+    catch (err) { toast(err.message, 6000); }
+  });
   $('settingsForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     var body = { whatsapp: $('sWa').value.replace(/\D/g, ''), shippingNote: $('sShip').value.trim() };

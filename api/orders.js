@@ -5,13 +5,19 @@
    - Guarda la prueba de la aceptación de términos y de la autorización de datos (Ley 1581). */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
-const { priceCart, ENVIO } = require('../lib/pricing');
+const { priceCart } = require('../lib/pricing');
+const { loadDomicilios, precioBarrio } = require('../lib/domicilios');
 const { makeOrderNumber, clienteHash } = require('../lib/pedidos');
 const { wompiReady, checkoutUrl } = require('../lib/wompi');
 const { sendWhatsApp, adminWhatsApp } = require('../lib/whatsapp');
 
-/* Wompi (tarjeta, PSE, Nequi, Bancolombia) solo aparece si sus llaves están configuradas */
-const pagosDisponibles = () => (wompiReady() ? ['Wompi', 'Nequi', 'Contraentrega'] : ['Nequi', 'Contraentrega']);
+/* Cómo recibe el cliente: lo recoge (o lo separa) en la tienda, o domicilio en Quibdó.
+   Formas de pago por tipo de entrega. Wompi solo aparece si sus llaves están configuradas. */
+const ENTREGAS = ['Recoger', 'Domicilio'];
+function pagosDisponibles(entrega) {
+  const base = entrega === 'Recoger' ? ['Nequi', 'En tienda'] : ['Nequi', 'Contraentrega'];
+  return wompiReady() ? ['Wompi', ...base] : base;
+}
 /* Por ahora solo se hacen pedidos para entregar en Quibdó */
 const CIUDAD = 'Quibdó', DEPARTAMENTO = 'Chocó';
 const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
@@ -28,14 +34,21 @@ function receiptText(numero, items, customer, pricing) {
   const extra = [];
   if (pricing.promoSavings) extra.push(`Ahorro por promociones: -${money(pricing.promoSavings)}`);
   if (pricing.coupon) extra.push(`Cupón ${pricing.coupon.code}: -${money(pricing.coupon.discount)}`);
-  extra.push(`Envío: ${pricing.freeShipping ? 'gratis' : money(pricing.envio)}`);
-  const pago = customer.pago === 'Wompi'
+  if (customer.entrega === 'Domicilio') extra.push(`Domicilio (${customer.barrio}): ${pricing.envio ? money(pricing.envio) : 'gratis'}`);
+  const pago = !pricing.pagarAhora && customer.pago !== 'En tienda'
+    ? 'No hay nada que pagar por adelantado.'
+    : customer.pago === 'En tienda'
+    ? `Separado: pagas ${money(pricing.saldoContraentrega)} al recogerlo en la tienda.`
+    : customer.pago === 'Wompi'
     ? `Pago en línea con Wompi: ${money(pricing.pagarAhora)}.`
     : customer.pago === 'Nequi'
     ? `Pago por Nequi: ${money(pricing.pagarAhora)} (QR o llave). Envíanos el comprobante.`
-    : `Contraentrega: anticipo de envío ${money(pricing.pagarAhora)} por Nequi y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
+    : `Contraentrega: anticipo del domicilio ${money(pricing.pagarAhora)} por Nequi y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
+  const entrega = customer.entrega === 'Recoger'
+    ? 'Entrega: recoge en la tienda (Quibdó). Te avisamos por WhatsApp cuando esté listo.'
+    : `Entrega: domicilio en ${customer.direccion}, barrio ${customer.barrio}, ${customer.ciudad}`;
   return `kAIRO Sneakers — Pedido ${numero}\n\n${lines}\n\n${extra.join('\n')}\nTotal: ${money(pricing.totalConEnvio)}\n${pago}\n` +
-    `Entrega${customer.entrega ? ' ' + customer.entrega.toLowerCase() : ''}: ${customer.direccion}, ${customer.ciudad}\nTodos los productos se entregan sin caja.\n\n` +
+    `${entrega}\nTodos los productos se entregan sin caja.\n\n` +
     `Sigue tu pedido en la sección "Mis pedidos" de la tienda (número ${numero}).`;
 }
 
@@ -51,18 +64,21 @@ module.exports = async (req, res) => {
   if (consent.datos !== true) return err(res, 'Debes autorizar el tratamiento de tus datos para poder enviar el pedido', 400);
 
   /* 2. Solo guardamos los datos necesarios para entregar el pedido */
+  const entrega = ENTREGAS.includes(c.entrega) ? c.entrega : null;
+  if (!entrega) return err(res, 'Elige si recoges en la tienda o quieres domicilio', 400);
+  const recoge = entrega === 'Recoger';
   const customer = {
     nombre: cleanText(c.nombre, 120),
     telefono: celularColombia(c.telefono),
     cedula: cleanText(c.cedula, 20).replace(/[^\dA-Za-z]/g, ''),
     correo: cleanText(c.correo, 120),
-    direccion: cleanText(c.direccion, 200),
-    barrio: cleanText(c.barrio, 80),
+    direccion: recoge ? 'Recoge en la tienda' : cleanText(c.direccion, 200),
+    barrio: recoge ? '' : cleanText(c.barrio, 80),
     ciudad: CIUDAD,
     departamento: DEPARTAMENTO,
     notas: cleanText(c.notas, 500),
-    pago: pagosDisponibles().includes(c.pago) ? c.pago : null,
-    entrega: 'Local',
+    pago: pagosDisponibles(entrega).includes(c.pago) ? c.pago : null,
+    entrega,
     empaque: 'Sin caja'
   };
   // Liga el pedido al dispositivo del cliente para "Mis pedidos" (solo se guarda el hash)
@@ -72,6 +88,7 @@ module.exports = async (req, res) => {
   if (!customer.telefono) return err(res, 'Escribe un celular colombiano válido (10 dígitos, empieza por 3)', 400);
   if (c.ciudad && !/^quibd[oó]$/i.test(cleanText(c.ciudad, 80))) return err(res, 'Por ahora solo hacemos entregas en Quibdó.', 400);
   if (!customer.direccion) return err(res, 'Escribe la dirección de entrega en Quibdó', 400);
+  if (!recoge && !customer.barrio) return err(res, 'Elige tu barrio para calcular el domicilio', 400);
   if (customer.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.correo)) return err(res, 'El correo no es válido', 400);
   if (!customer.pago) return err(res, 'Elige un método de pago', 400);
 
@@ -79,15 +96,21 @@ module.exports = async (req, res) => {
   const r = await priceCart(supabase, items, coupon);
   if (r.error) return err(res, r.error, r.status || 400);
 
-  const envio = r.freeShipping ? 0 : ENVIO;
+  /* Domicilio según el barrio (máximo $10.000); recoger en la tienda no tiene costo */
+  const domicilio = recoge ? 0 : precioBarrio(await loadDomicilios(supabase), customer.barrio);
+  const envio = r.freeShipping ? 0 : domicilio;
   const totalConEnvio = r.total + envio;
-  // Wompi y Nequi: se paga todo antes del envío. Contraentrega: se paga el anticipo del envío por Nequi y el resto al recibir.
-  const pagarAhora = customer.pago === 'Contraentrega' ? ENVIO : totalConEnvio;
-  const saldoContraentrega = customer.pago === 'Contraentrega' ? Math.max(0, totalConEnvio - ENVIO) : 0;
+  /* Wompi y Nequi: se paga todo antes de la entrega.
+     Contraentrega: se paga el valor del domicilio por Nequi como anticipo y el resto al recibir.
+     En tienda (separar): no se paga nada ahora; todo al recoger. */
+  let pagarAhora = totalConEnvio, saldoContraentrega = 0;
+  if (customer.pago === 'Contraentrega') { pagarAhora = Math.min(domicilio, totalConEnvio); saldoContraentrega = totalConEnvio - pagarAhora; }
+  if (customer.pago === 'En tienda') { pagarAhora = 0; saldoContraentrega = totalConEnvio; }
   const pricing = {
     listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, subtotal: r.subtotal,
     coupon: r.coupon ? { code: r.coupon.code, description: r.coupon.description, discount: r.coupon.discount, freeShipping: r.coupon.freeShipping } : null,
     freeShipping: r.freeShipping, shippingPromo: r.shippingPromo,
+    entrega, barrio: customer.barrio, domicilio,
     envio, total: r.total, totalConEnvio, pagarAhora, saldoContraentrega
   };
   customer.consent = {
@@ -130,7 +153,7 @@ module.exports = async (req, res) => {
   ]).catch(() => [false, false]);
 
   /* 7. Pago en línea: link firmado al checkout de Wompi */
-  const wompi = customer.pago === 'Wompi' ? checkoutUrl(req, { numero, amount: pagarAhora, customer }) : null;
+  const wompi = customer.pago === 'Wompi' && pagarAhora > 0 ? checkoutUrl(req, { numero, amount: pagarAhora, customer }) : null;
 
   ok(res, {
     ok: true, id: numero, numero, createdAt: now,

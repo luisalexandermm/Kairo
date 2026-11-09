@@ -1623,3 +1623,8 @@ mark.pendiente {
     padding-top: 30px;
   }
 }
+
+/* Domicilios por barrio */
+.dom-row { display: grid; grid-template-columns: 1fr 120px auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.dom-row input { width: 100%; min-width: 0; padding: 10px 12px; border: 1.5px solid var(--line, #ddd); border-radius: 12px; font: inherit; }
+@media (max-width: 420px) { .dom-row { grid-template-columns: 1fr 96px; } .dom-row .btn-danger { grid-column: 1 / -1; justify-self: end; } }
