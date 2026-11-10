@@ -105,23 +105,83 @@
     var errors = [];
     res.forEach(function (r, i) { var k = keys[i]; if (r.status === 'fulfilled') D[k] = r.value; else { errors.push(r.reason.message); if (k !== 'stats' && k !== 'settings') D[k + 'Error'] = r.reason.message; } });
     res.forEach(function (r, i) { if (r.status === 'fulfilled') delete D[keys[i] + 'Error']; });
-    notifyNewOrders();
-    renderStats(); renderOrders(); renderProducts(); Object.keys(FORMS).forEach(renderForm); renderPqr(); fillSettings();
+    notifyNewOrders(D.orders);
+    renderStats(); renderSales(); renderOrders(); renderProducts(); Object.keys(FORMS).forEach(renderForm); renderPqr(); fillSettings();
     if (errors.length) toast(errors[0], 5000);
   }
-  setInterval(function () { if (TOKEN && document.visibilityState === 'visible' && !document.querySelector('.drawer.on')) loadAll(); }, 30000);
-  function notifyNewOrders() {
-    var ids = new Set(D.orders.map(function (o) { return o.id; }));
+  /* Cada 20 s: con el panel a la vista se recarga todo; en segundo plano (u otra pestaña)
+     solo se revisan los pedidos para sonar la alarma sin tocar lo que estés editando. */
+  setInterval(function () {
+    if (!TOKEN) return;
+    if (document.visibilityState === 'visible' && !document.querySelector('.drawer.on')) loadAll();
+    else api('/admin/orders').then(notifyNewOrders, function () { });
+  }, 20000);
+  function notifyNewOrders(list) {
+    list = list || [];
+    var ids = new Set(list.map(function (o) { return o.id; }));
     if (knownOrderIds) {
-      var fresh = D.orders.filter(function (o) { return !knownOrderIds.has(o.id); });
+      var fresh = list.filter(function (o) { return !knownOrderIds.has(o.id); });
       if (fresh.length) {
         var o = fresh[0], msg = o.id + ' · ' + ((o.customer || {}).nombre || 'Cliente') + ' · ' + money(o.total);
-        toast('Nuevo pedido: ' + msg, 5000);
-        if ('Notification' in window && Notification.permission === 'granted') new Notification('Nuevo pedido kAIRO', { body: msg, icon: '/img/icon-192.png' });
+        toast((fresh.length > 1 ? fresh.length + ' pedidos nuevos. Último: ' : 'Nuevo pedido: ') + msg, 8000);
+        ring();
+        flashTitle(fresh.length);
+        if (navigator.vibrate) { try { navigator.vibrate([400, 150, 400, 150, 400]); } catch (e) { } }
+        if ('Notification' in window && Notification.permission === 'granted') new Notification('Nuevo pedido kAIRO', { body: msg, icon: '/img/icon-192.png', requireInteraction: true });
       }
     } else if ('Notification' in window && Notification.permission === 'default') { try { Notification.requestPermission(); } catch (e) { } }
     knownOrderIds = ids;
   }
+
+  /* ---------------- alarma de pedido nuevo ---------------- */
+  var soundOn = true, actx = null, baseTitle = document.title, pendingTitle = 0;
+  try { soundOn = localStorage.getItem('kairo_sonido') !== 'off'; } catch (e) { }
+  function audio() {
+    if (!actx) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; try { actx = new C(); } catch (e) { return null; } }
+    if (actx.state === 'suspended') actx.resume().then(soundUi, soundUi);
+    return actx;
+  }
+  // El navegador solo deja sonar audio después de que la persona toca la página
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, function () { audio(); soundUi(); }, true); });
+  /* Alarma fuerte: 3 rondas de timbre agudo de dos tonos (unos 4 segundos) */
+  function ring(force) {
+    if (!soundOn && !force) return;
+    var c = audio(); if (!c) return;
+    var t0 = c.currentTime + 0.05, out = c.createDynamicsCompressor();
+    out.connect(c.destination);
+    for (var r = 0; r < 3; r++) {
+      [1175, 1568, 1175, 1568, 1175].forEach(function (f, i) {
+        var o = c.createOscillator(), g = c.createGain(), s = t0 + r * 1.35 + i * 0.17;
+        o.type = 'square'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, s);
+        g.gain.exponentialRampToValueAtTime(0.9, s + 0.01);
+        g.gain.setValueAtTime(0.9, s + 0.13);
+        g.gain.exponentialRampToValueAtTime(0.0001, s + 0.16);
+        o.connect(g); g.connect(out); o.start(s); o.stop(s + 0.17);
+      });
+    }
+  }
+  function flashTitle(n) {
+    pendingTitle += n;
+    if (document.visibilityState === 'visible' && document.hasFocus()) return;
+    document.title = '🔔 (' + pendingTitle + ') Nuevo pedido · kAIRO';
+  }
+  function clearTitle() { pendingTitle = 0; document.title = baseTitle; }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') clearTitle(); });
+  window.addEventListener('focus', clearTitle);
+  function soundUi() {
+    var b = $('soundToggle'); if (!b) return;
+    b.setAttribute('aria-pressed', String(soundOn));
+    b.textContent = soundOn ? '🔔 Sonido de pedidos: activado' : '🔕 Sonido de pedidos: apagado';
+    $('soundHint').hidden = !(soundOn && (!actx || actx.state !== 'running'));
+  }
+  $('soundToggle').addEventListener('click', function () {
+    soundOn = !soundOn;
+    try { localStorage.setItem('kairo_sonido', soundOn ? 'on' : 'off'); } catch (e) { }
+    soundUi(); toast(soundOn ? 'Sonará una alarma con cada pedido nuevo' : 'Alarma de pedidos apagada');
+  });
+  $('soundTest').addEventListener('click', function () { ring(true); soundUi(); });
+  soundUi();
 
   /* ---------------- resumen ---------------- */
   function renderStats() {
@@ -144,6 +204,143 @@
       return '<tr><td><b class="order-no">' + esc(o.id) + '</b><br><small>' + fdate(o.created_at) + '</small></td><td>' + esc((o.customer || {}).nombre || '—') + '<br><small>' + esc((o.customer || {}).entrega === 'Recoger' ? 'Recoge en la tienda' : (o.customer || {}).entrega === 'Domicilio' ? 'Domicilio' + ((o.customer || {}).barrio ? ' · ' + (o.customer || {}).barrio : '') : '') + '</small></td><td>' + money(o.total) + '</td><td>' + statusPill(o) + '</td></tr>';
     }).join('') || '<tr><td colspan="4" class="empty">Todavía no hay pedidos.</td></tr>';
   }
+
+  /* ---------------- estadísticas de ventas ---------------- */
+  var salesPeriod = 'hoy';
+  try { salesPeriod = localStorage.getItem('kairo_periodo') || 'hoy'; } catch (e) { }
+  var PERIODS = [['hoy', 'Hoy', 'ayer'], ['semana', 'Últimos 7 días', 'los 7 días anteriores'], ['mes', 'Este mes', 'el mes pasado'], ['anio', 'Este año', 'el año pasado']];
+  var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  var DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+  if (!PERIODS.some(function (p) { return p[0] === salesPeriod; })) salesPeriod = 'hoy';
+
+  /* Inicio y fin del periodo (back = 1 es el periodo anterior) y sus columnas de la gráfica */
+  function periodo(p, back) {
+    var n = new Date(), y = n.getFullYear(), m = n.getMonth(), d = n.getDate(), s, e, cols = [];
+    if (p === 'hoy') {
+      s = new Date(y, m, d - back); e = new Date(y, m, d - back + 1);
+      for (var h = 0; h < 24; h++) cols.push({ s: new Date(y, m, d - back, h), e: new Date(y, m, d - back, h + 1), l: (h % 12 || 12) + (h < 12 ? ' a. m.' : ' p. m.'), x: h % 3 === 0 ? (h % 12 || 12) + (h < 12 ? 'a' : 'p') : '' });
+    } else if (p === 'semana') {
+      s = new Date(y, m, d - 6 - 7 * back); e = new Date(y, m, d + 1 - 7 * back);
+      for (var i = 0; i < 7; i++) {
+        var a = new Date(y, m, d - 6 - 7 * back + i);
+        cols.push({ s: a, e: new Date(y, m, d - 5 - 7 * back + i), l: DIAS[a.getDay()] + ' ' + a.getDate() + ' ' + MESES[a.getMonth()], x: DIAS[a.getDay()] + ' ' + a.getDate() });
+      }
+    } else if (p === 'mes') {
+      s = new Date(y, m - back, 1); e = new Date(y, m - back + 1, 1);
+      for (var dd = 1; dd <= new Date(y, m - back + 1, 0).getDate(); dd++) cols.push({ s: new Date(y, m - back, dd), e: new Date(y, m - back, dd + 1), l: dd + ' ' + MESES[s.getMonth()], x: dd === 1 || dd % 5 === 0 ? String(dd) : '' });
+    } else {
+      s = new Date(y - back, 0, 1); e = new Date(y - back + 1, 0, 1);
+      for (var mm = 0; mm < 12; mm++) cols.push({ s: new Date(y - back, mm, 1), e: new Date(y - back, mm + 1, 1), l: MESES[mm] + ' ' + (y - back), x: MESES[mm] });
+    }
+    return { s: s, e: e, cols: cols };
+  }
+  function vendidos() { return D.orders.filter(function (o) { return o.status !== 'Cancelado'; }); }
+  function enRango(o, s, e) { var t = new Date(o.created_at); return t >= s && t < e; }
+  function resumenDe(list) {
+    var r = { ventas: 0, pedidos: list.length, pares: 0, prods: {}, tallas: {} };
+    list.forEach(function (o) {
+      r.ventas += Number(o.total) || 0;
+      (o.items || []).forEach(function (it) {
+        var q = Number(it.qty) || 1, k = it.id || (it.brand + ' ' + it.name);
+        r.pares += q;
+        var p = r.prods[k] || (r.prods[k] = { name: it.name || 'Producto', brand: it.brand || '', pares: 0, ventas: 0 });
+        p.pares += q; p.ventas += (Number(it.price) || 0) * q;
+        if (it.size) r.tallas[it.size] = (r.tallas[it.size] || 0) + q;
+      });
+    });
+    return r;
+  }
+  function moneyCorto(n) {
+    if (n >= 1e6) return '$' + (n / 1e6).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' M';
+    if (n >= 1e3) return '$' + Math.round(n / 1e3).toLocaleString('es-CO') + ' mil';
+    return money(n);
+  }
+  function topeBonito(v) {
+    if (v <= 0) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(v)));
+    return [1, 2, 2.5, 5, 10].map(function (k) { return k * p; }).filter(function (k) { return k >= v; })[0];
+  }
+  function cambio(act, prev, txt) {
+    if (!prev) return act ? '<em>Sin ventas ' + txt + '</em>' : '<em>Igual que ' + txt + '</em>';
+    var pc = Math.round((act - prev) / prev * 100);
+    if (pc === 0) return '<em>Igual que ' + txt + '</em>';
+    return '<em class="' + (pc > 0 ? 'up' : 'down') + '">' + (pc > 0 ? '▲ ' : '▼ ') + Math.abs(pc) + '% frente a ' + txt + '</em>';
+  }
+  function hbars(rows, unidad) {
+    if (!rows.length) return '<p class="empty">Sin ventas en este periodo.</p>';
+    var max = rows[0].v || 1;
+    return '<ol class="hbars">' + rows.map(function (r) {
+      return '<li><span class="nm">' + esc(r.n) + (r.sub ? '<small>' + esc(r.sub) + '</small>' : '') + '</span>' +
+        '<span class="tr" aria-hidden="true"><i style="--w:' + Math.max(2, r.v / max * 100) + '%"></i></span>' +
+        '<span class="vl"><b>' + r.v + '</b> ' + unidad + (r.extra ? '<small>' + esc(r.extra) + '</small>' : '') + '</span></li>';
+    }).join('') + '</ol>';
+  }
+  function renderSales() {
+    if (!$('salesTabs')) return;
+    var P = PERIODS.filter(function (p) { return p[0] === salesPeriod; })[0];
+    $('salesTabs').innerHTML = PERIODS.map(function (p) { return '<button type="button" data-period="' + p[0] + '" aria-pressed="' + (p[0] === salesPeriod) + '">' + p[1] + '</button>'; }).join('');
+    var act = periodo(salesPeriod, 0), ant = periodo(salesPeriod, 1), now = new Date();
+    // Para comparar justo: el periodo anterior hasta el mismo punto (p. ej. ayer hasta esta hora)
+    var antFin = new Date(Math.min(ant.e.getTime(), ant.s.getTime() + (Math.min(now, act.e) - act.s)));
+    var base = vendidos();
+    var lista = base.filter(function (o) { return enRango(o, act.s, act.e); });
+    var R = resumenDe(lista), A = resumenDe(base.filter(function (o) { return enRango(o, ant.s, antFin); }));
+
+    $('salesKpis').innerHTML = [
+      { v: money(R.ventas), l: 'Ventas', c: cambio(R.ventas, A.ventas, P[2]) },
+      { v: R.pedidos, l: 'Pedidos', c: cambio(R.pedidos, A.pedidos, P[2]) },
+      { v: money(R.pedidos ? R.ventas / R.pedidos : 0), l: 'Promedio por pedido', c: '' },
+      { v: R.pares, l: 'Pares vendidos', c: cambio(R.pares, A.pares, P[2]) }
+    ].map(function (x) { return '<div class="stat"><b>' + esc(x.v) + '</b><span>' + x.l + '</span>' + x.c + '</div>'; }).join('');
+
+    // Gráfica de ventas en el tiempo (una sola serie: columnas)
+    var cols = act.cols.map(function (c) {
+      var os = lista.filter(function (o) { return enRango(o, c.s, c.e); });
+      return { l: c.l, x: c.x, v: os.reduce(function (s, o) { return s + (Number(o.total) || 0); }, 0), n: os.length };
+    });
+    var porQue = { hoy: 'por hora', semana: 'por día', mes: 'por día', anio: 'por mes' }[salesPeriod];
+    $('salesChartTitle').textContent = 'Ventas ' + porQue;
+    $('salesChartSub').textContent = R.pedidos ? P[1] + ': ' + money(R.ventas) + ' en ' + R.pedidos + (R.pedidos === 1 ? ' pedido' : ' pedidos') + '. Pasa el dedo o el mouse por las barras.' : P[1] + ': todavía no hay ventas.';
+    var tope = topeBonito(Math.max.apply(null, cols.map(function (c) { return c.v; })));
+    $('salesChart').innerHTML = '<div class="vchart"><div class="vchart__plot">' +
+      '<div class="vchart__grid" aria-hidden="true">' + [0, 0.5, 1].map(function (k) { return '<span style="bottom:' + k * 100 + '%"><i>' + (k ? moneyCorto(tope * k) : '$0') + '</i></span>'; }).join('') + '</div>' +
+      '<div class="vchart__bars">' + cols.map(function (c) {
+        var tip = c.l + ': ' + money(c.v) + ' · ' + c.n + (c.n === 1 ? ' pedido' : ' pedidos');
+        return '<div class="vbar' + (c.v ? '' : ' zero') + '" tabindex="0" role="img" aria-label="' + esc(tip) + '" data-tip="' + esc(tip) + '"><span style="--h:' + (c.v / tope * 100) + '%"></span></div>';
+      }).join('') + '</div><div class="chart-tip" hidden></div></div>' +
+      '<div class="vchart__x" aria-hidden="true">' + cols.map(function (c) { return '<span>' + esc(c.x) + '</span>'; }).join('') + '</div></div>';
+    $('salesTable').innerHTML = '<table><thead><tr><th scope="col">' + ({ hoy: 'Hora', anio: 'Mes' }[salesPeriod] || 'Día') + '</th><th scope="col">Pedidos</th><th scope="col">Ventas</th></tr></thead><tbody>' +
+      cols.map(function (c) { return '<tr><td>' + esc(c.l) + '</td><td>' + c.n + '</td><td>' + money(c.v) + '</td></tr>'; }).join('') + '</tbody></table>';
+
+    var top = Object.keys(R.prods).map(function (k) { return R.prods[k]; })
+      .sort(function (a, b) { return b.pares - a.pares || b.ventas - a.ventas; }).slice(0, 8)
+      .map(function (p) { return { n: p.name, sub: p.brand, v: p.pares, extra: money(p.ventas) }; });
+    $('salesTop').innerHTML = hbars(top, 'pares');
+    var tallas = Object.keys(R.tallas).map(function (t) { return { n: 'Talla ' + t, v: R.tallas[t] }; })
+      .sort(function (a, b) { return b.v - a.v; }).slice(0, 8);
+    $('salesSizes').innerHTML = hbars(tallas, 'pares');
+  }
+  $('salesTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-period]'); if (!b) return;
+    salesPeriod = b.dataset.period; try { localStorage.setItem('kairo_periodo', salesPeriod); } catch (x) { }
+    renderSales();
+  });
+  // Globo con el valor de cada barra (mouse, dedo o teclado)
+  function showTip(e) {
+    var bar = e.target.closest && e.target.closest('.vbar'); if (!bar) return;
+    var plot = bar.closest('.vchart__plot'), tip = plot.querySelector('.chart-tip');
+    var pr = plot.getBoundingClientRect(), br = bar.getBoundingClientRect(), col = bar.firstChild.getBoundingClientRect();
+    tip.textContent = bar.dataset.tip; tip.hidden = false;
+    var x = br.left + br.width / 2 - pr.left, w = tip.offsetWidth;
+    tip.style.left = Math.max(w / 2, Math.min(pr.width - w / 2, x)) + 'px';
+    tip.style.top = Math.min(col.top, br.bottom - 2) - pr.top + 'px';
+  }
+  function hideTip(e) { var p = e.target.closest && e.target.closest('.vchart__plot'); if (p) p.querySelector('.chart-tip').hidden = true; }
+  $('salesChart').addEventListener('pointerover', showTip);
+  $('salesChart').addEventListener('focusin', showTip);
+  $('salesChart').addEventListener('pointerleave', function () { var t = $('salesChart').querySelector('.chart-tip'); if (t) t.hidden = true; });
+  $('salesChart').addEventListener('focusout', hideTip);
+
   var WOMPI_TXT = { APPROVED: 'pago aprobado', DECLINED: 'pago rechazado', VOIDED: 'pago anulado', ERROR: 'error en el pago', PENDING: 'pago en proceso', REVISAR: 'aprobado con valor distinto, revisar en Wompi' };
   var ENTREGA_TXT = { Recoger: 'Recoge en la tienda', Domicilio: 'Domicilio', Local: 'Local · Quibdó', Nacional: 'Nacional' };
   var PAGO_TXT = { Wompi: 'En línea (Wompi)', Nequi: 'Transferencia o QR', Contraentrega: 'Contraentrega', 'En tienda': 'Paga al recoger' };

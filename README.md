@@ -28,6 +28,11 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 - Si recoge, puede **separar y pagar al recoger**: el pedido queda registrado sin pago adelantado. Si pide domicilio, la contraentrega cobra el valor del domicilio por Nequi y el resto al recibir.
 - Los barrios y precios se editan en **Panel → Ajustes → Domicilios en Quibdó**. Antes ejecuta `lib/migracion-domicilios-2026-11.sql` en Supabase. Mientras no haya barrios guardados, se usa la lista de barrios de Quibdó de `lib/barrios-quibdo.js` (≈130 barrios por comuna: Comuna 3 cerca, Comunas 1, 2, 4 y 5 distancia media, Comuna 6 lejos), que puedes ajustar y guardar desde el panel.
 
+### Panel: alarma de pedidos y estadísticas
+- **Alarma:** cuando entra un pedido nuevo suena una alarma fuerte (unos 4 segundos), aparece un aviso, el título de la pestaña muestra 🔔 y llega una notificación del navegador. El panel revisa pedidos cada 20 segundos aunque esté en otra pestaña. Se apaga o se prueba en **Resumen → Sonido de pedidos / Probar sonido**. El navegador solo deja sonar después de tocar el panel una vez.
+- **Estadísticas:** ventas de hoy, últimos 7 días, este mes y este año, comparadas con el periodo anterior; gráfica de ventas por hora/día/mes, productos más vendidos y tallas más pedidas. Cuenta todos los pedidos menos los cancelados.
+- **PQR:** si aparece “Could not find the table 'public.pqrs'”, ejecuta `lib/migracion-legal-2026-09.sql` en el editor SQL de Supabase.
+
 ## Instalación
 1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql` (también crea el bucket privado para las fotos de comprobantes).
 2. Copia `.env.example` a `.env` y llénalo. En Vercel pon las mismas variables.

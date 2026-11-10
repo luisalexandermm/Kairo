@@ -228,7 +228,7 @@ module.exports = async (req, res) => {
     if (method === 'GET') {
       const q = supabase.from(cfg.table).select('*');
       const { data, error } = await (cfg.key === 'id' ? q.order('position') : q.order('created_at', { ascending: false }));
-      if (error) return err(res, /does not exist|relation/i.test(error.message) ? 'Falta ejecutar la migración lib/migracion-promos-2026-10.sql en Supabase' : error.message, 500);
+      if (error) return err(res, /does not exist|relation|schema cache|could not find the table/i.test(error.message) ? 'Falta ejecutar la migración lib/migracion-promos-2026-10.sql en Supabase' : error.message, 500);
       return ok(res, data || []);
     }
     if (method === 'POST') {
@@ -265,7 +265,7 @@ module.exports = async (req, res) => {
   if (section === 'pqrs') {
     if (method === 'GET') {
       const { data, error } = await supabase.from('pqrs').select('*').order('created_at', { ascending: false });
-      if (error) return err(res, /does not exist|relation/i.test(error.message) ? 'Falta ejecutar la migración lib/migracion-legal-2026-09.sql en Supabase' : error.message, 500);
+      if (error) return err(res, /does not exist|relation|schema cache|could not find the table/i.test(error.message) ? 'Falta crear la tabla de PQR: ejecuta lib/migracion-legal-2026-09.sql en el editor SQL de Supabase.' : error.message, 500);
       return ok(res, data || []);
     }
     if (method === 'PUT' && id) {

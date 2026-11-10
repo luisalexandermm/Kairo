@@ -1659,3 +1659,229 @@ mark.pendiente {
   .acct-qr { margin: 0 auto; }
   .acct-fields { grid-template-columns: 1fr; }
 }
+
+/* Alarma de pedidos */
+.sound-ctl {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#soundHint {
+  margin-bottom: 18px;
+}
+
+/* Estadísticas de ventas */
+.stat em {
+  display: block;
+  font-style: normal;
+  font-size: .76rem;
+  font-weight: 700;
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.stat em.up { color: var(--ok); }
+.stat em.down { color: var(--danger); }
+
+.chart-panel {
+  padding: 22px;
+  margin-bottom: 22px;
+  overflow: visible;
+}
+
+.chart-panel h2 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.chart-panel .sub {
+  color: var(--muted);
+  font-size: .84rem;
+  margin-bottom: 14px;
+}
+
+.vchart {
+  padding-top: 46px;
+}
+
+.vchart__plot {
+  position: relative;
+  height: 220px;
+  margin-left: 58px;
+  border-bottom: 1px solid #b9c7bf;
+}
+
+.vchart__grid span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--line);
+}
+
+.vchart__grid span i {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: -.65em;
+  font-style: normal;
+  font-size: .72rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.vchart__bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.vbar {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.vbar span {
+  display: block;
+  width: 100%;
+  max-width: 42px;
+  height: var(--h);
+  background: var(--ember);
+  border-radius: 4px 4px 0 0;
+  transition: background .15s;
+}
+
+.vbar:hover span,
+.vbar:focus-visible span {
+  background: var(--ember-dark);
+}
+
+.vbar:hover,
+.vbar:focus-visible {
+  background: rgba(20, 107, 77, .07);
+}
+
+.vbar:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.vchart__x {
+  display: flex;
+  gap: 2px;
+  margin-left: 58px;
+  margin-top: 6px;
+}
+
+.vchart__x span {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: .7rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.chart-tip {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 8px));
+  background: var(--ink);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 700;
+  padding: 7px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.chart-table {
+  margin-top: 16px;
+  font-size: .86rem;
+}
+
+.chart-table summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--ember-dark);
+}
+
+.chart-table table {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.stats-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.hbars {
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.hbars li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) auto;
+  gap: 12px;
+  align-items: center;
+  font-size: .86rem;
+}
+
+.hbars .nm {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hbars .nm small {
+  display: block;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: .76rem;
+}
+
+.hbars .tr {
+  height: 14px;
+}
+
+.hbars .tr i {
+  display: block;
+  height: 100%;
+  width: var(--w);
+  background: var(--ember);
+  border-radius: 0 4px 4px 0;
+}
+
+.hbars .vl {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.hbars .vl small {
+  display: block;
+  color: var(--muted);
+  font-size: .76rem;
+}
+
+@media (max-width: 900px) {
+  .stats-cols { grid-template-columns: 1fr; gap: 0; }
+  div.panel.chart-panel { background: #fff; border: 1px solid var(--line); }
+  .chart-panel { padding: 16px; }
+  .vchart__plot { height: 180px; margin-left: 48px; }
+  .vchart__x { margin-left: 48px; }
+  .vchart__x span { font-size: .62rem; }
+  .vchart__bars, .vchart__x { gap: 1px; }
+}

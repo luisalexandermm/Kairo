@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <meta name="theme-color" content="#0e0e0e">
 <link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/admin.css?v=9">
+<link rel="stylesheet" href="/css/admin.css?v=10">
 <script src="/js/negocio.js"></script>
 </head>
 <body>
@@ -48,6 +48,7 @@
     <button type="button" class="sheet-close" id="adminMenuClose" aria-label="Cerrar menú">✕</button>
     <nav>
       <button class="nav-item" data-view="resumen" aria-current="page">Resumen</button>
+      <button class="nav-item" data-view="estadisticas">Estadísticas</button>
       <button class="nav-item" data-view="pedidos">Pedidos <span class="count" id="navNew" hidden></span></button>
       <button class="nav-item" data-view="productos">Productos</button>
       <button class="nav-item" data-view="promos">Promociones</button>
@@ -73,11 +74,43 @@
 
     <!-- Resumen -->
     <section class="view on" id="view-resumen" aria-labelledby="h-res">
-      <div class="head"><div><h1 class="display" id="h-res">Resumen</h1><p>Estado de la tienda.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
+      <div class="head"><div><h1 class="display" id="h-res">Resumen</h1><p>Estado de la tienda.</p></div>
+        <div class="sound-ctl">
+          <button class="btn btn-line btn-sm" type="button" id="soundToggle" aria-pressed="true">🔔 Sonido de pedidos: activado</button>
+          <button class="btn btn-line btn-sm" type="button" id="soundTest">Probar sonido</button>
+          <button class="btn btn-line btn-sm" data-reload>Actualizar</button>
+        </div>
+      </div>
+      <p class="ref-box" id="soundHint" hidden>Toca cualquier parte del panel para activar el sonido de pedidos nuevos (el navegador lo pide).</p>
       <div class="stats" id="statsGrid"></div>
       <div class="panel">
         <table><caption class="sr-only">Últimos pedidos</caption><thead><tr><th scope="col">Últimos pedidos</th><th scope="col">Cliente</th><th scope="col">Total</th><th scope="col">Estado</th></tr></thead>
         <tbody id="recentOrders"></tbody></table>
+      </div>
+    </section>
+
+    <!-- Estadísticas de ventas -->
+    <section class="view" id="view-estadisticas" aria-labelledby="h-est">
+      <div class="head"><div><h1 class="display" id="h-est">Estadísticas</h1><p>Ventas de la tienda. Cuenta todos los pedidos menos los cancelados.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
+      <div class="tabs" id="salesTabs" role="group" aria-label="Periodo"></div>
+      <div class="stats" id="salesKpis"></div>
+      <div class="panel chart-panel">
+        <h2 id="salesChartTitle">Ventas</h2>
+        <p class="sub" id="salesChartSub"></p>
+        <div id="salesChart"></div>
+        <details class="chart-table"><summary>Ver como tabla</summary><div id="salesTable"></div></details>
+      </div>
+      <div class="stats-cols">
+        <div class="panel chart-panel">
+          <h2>Lo más vendido</h2>
+          <p class="sub">Productos por pares vendidos en el periodo.</p>
+          <div id="salesTop"></div>
+        </div>
+        <div class="panel chart-panel">
+          <h2>Tallas más pedidas</h2>
+          <p class="sub">Pares vendidos por talla.</p>
+          <div id="salesSizes"></div>
+        </div>
       </div>
     </section>
 
@@ -233,6 +266,6 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/js/admin.js?v=10"></script>
+<script src="/js/admin.js?v=11"></script>
 </body>
 </html>
