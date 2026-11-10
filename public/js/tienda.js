@@ -529,13 +529,13 @@
     if (c.disc) h += '<div class="save"><span>Cupón ' + esc(S.coupon.code) + '</span><span>-' + money(c.disc) + '</span></div>';
     var promoTxt = c.shipPromo && !(S.coupon && S.coupon.freeShipping) ? ' (' + esc(c.shipPromo.title) + ')' : '';
     if (c.modo === 'Recoger') h += '<div><span>Recoger en la tienda</span><span>Gratis</span></div>';
-    else if (c.envio == null) h += '<div><span>Domicilio</span><span>' + (c.modo === 'Domicilio' ? 'Elige tu barrio' : 'Gratis si recoges · hasta ' + money(DOM.max)) + '</span></div>';
+    else if (c.envio == null) h += '<div><span>Domicilio</span><span>' + (c.modo === 'Domicilio' ? 'Elige tu barrio' : 'Gratis si recoges · desde ' + money(DOM.min)) + '</span></div>';
     else h += '<div><span>Domicilio' + promoTxt + '</span><span>' + (c.envio ? money(c.envio) : 'Gratis') + '</span></div>';
     h += '<div class="grand"><span>Total</span><span>' + money(c.totalConEnvio) + '</span></div>';
     if (pago === 'Wompi') h += '<div><span>Pagas ahora en línea</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    else if (pago === 'Contraentrega' && c.dom != null) h += '<div><span>Pagas ahora por Nequi (domicilio)</span><span>' + money(Math.min(c.dom, c.totalConEnvio)) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - c.dom)) + '</span></div>';
+    else if (pago === 'Contraentrega' && c.dom != null) h += '<div><span>Pagas ahora por transferencia (domicilio)</span><span>' + money(Math.min(c.dom, c.totalConEnvio)) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - c.dom)) + '</span></div>';
     else if (pago === 'En tienda') h += '<div><span>Pagas al recoger en la tienda</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    else if (pago === 'Nequi') h += '<div><span>Pagas ahora por Nequi</span><span>' + money(c.totalConEnvio) + '</span></div>';
+    else if (pago === 'Nequi') h += '<div><span>Pagas ahora por transferencia o QR</span><span>' + money(c.totalConEnvio) + '</span></div>';
     return h;
   }
   function renderCart() {
@@ -603,8 +603,8 @@
       '<div><span>Empaque</span><span>Sin caja</span></div>';
     $('coTotals').innerHTML = totalsHTML(c, currentPago());
     $('payWompiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' con tarjeta, PSE, Nequi o Bancolombia.';
-    $('payNequiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' ahora con el QR que te mostramos.';
-    $('payCodTxt').textContent = c.dom == null ? 'Pagas el domicilio por Nequi y el resto al recibir.' : 'Pagas ' + money(Math.min(c.dom, c.totalConEnvio)) + ' del domicilio por Nequi y ' + money(Math.max(0, c.totalConEnvio - c.dom)) + ' al recibir.';
+    $('payNequiTxt').textContent = 'Nequi, Bancolombia, Daviplata… Pagas ' + money(c.totalConEnvio) + ' ahora.';
+    $('payCodTxt').textContent = c.dom == null ? 'Pagas el domicilio por transferencia y el resto al recibir.' : 'Pagas ' + money(Math.min(c.dom, c.totalConEnvio)) + ' del domicilio por transferencia y ' + money(Math.max(0, c.totalConEnvio - c.dom)) + ' al recibir.';
     $('payTiendaTxt').textContent = 'No pagas nada ahora: pagas ' + money(c.totalConEnvio) + ' cuando lo recojas.';
   }
   document.querySelectorAll('input[name="pago"]').forEach(function (r) { r.addEventListener('change', renderCheckoutSummary); });
@@ -621,7 +621,7 @@
   $('toCheckout').addEventListener('click', function () { openCheckout(); });
   /* ---------------- cómo recibe: recoger en la tienda o domicilio en Quibdó ---------------- */
   // Barrios y precios del domicilio (se configuran en el panel; máximo $10.000)
-  var DOM = { barrios: [], otro: 10000, max: 10000 };
+  var DOM = { barrios: [], otro: 10000, min: 4000, max: 10000 };
   function currentEntrega() { var r = document.querySelector('input[name="entrega"]:checked'); return r ? r.value : ''; }
   function barrioActual() { var sel = $('fBarrioSel').value; return sel === '__otro' ? $('fBarrio').value.trim() : sel; }
   function domicilioPrecio() {
@@ -633,13 +633,13 @@
   function renderBarrios() {
     var cur = $('fBarrioSel').value;
     $('fBarrioSel').innerHTML = '<option value="">Elige tu barrio</option>' +
-      DOM.barrios.map(function (b) { return '<option value="' + esc(b.nombre) + '">' + esc(b.nombre) + ' · ' + (b.precio ? money(b.precio) : 'Gratis') + '</option>'; }).join('') +
-      '<option value="__otro">' + (DOM.barrios.length ? 'Otro barrio' : 'Mi barrio') + ' · ' + (DOM.otro ? money(DOM.otro) : 'Gratis') + '</option>';
+      DOM.barrios.map(function (b) { return '<option value="' + esc(b.nombre) + '">' + esc(b.nombre) + ' · ' + money(b.precio) + '</option>'; }).join('') +
+      '<option value="__otro">' + (DOM.barrios.length ? 'Otro barrio' : 'Mi barrio') + ' · ' + money(DOM.otro) + '</option>';
     if (cur && [].some.call($('fBarrioSel').options, function (o) { return o.value === cur; })) $('fBarrioSel').value = cur;
     var precios = DOM.barrios.map(function (b) { return b.precio; }).concat([DOM.otro]);
     var min = Math.min.apply(null, precios), max = Math.max.apply(null, precios);
-    $('domDesde').textContent = min === max ? (max ? 'Domicilio ' + money(max) + '.' : 'Domicilio gratis.') : 'Según tu barrio: de ' + money(min) + ' a ' + money(max) + '.';
-    $('fBarrioSel-h').textContent = 'El domicilio cuesta máximo ' + money(DOM.max) + '.';
+    $('domDesde').textContent = min === max ? 'Domicilio ' + money(max) + '.' : 'Según qué tan lejos queda tu barrio: de ' + money(min) + ' a ' + money(max) + '.';
+    $('fBarrioSel-h').textContent = 'El valor depende de la distancia: de ' + money(DOM.min) + ' a ' + money(DOM.max) + '.';
   }
   function syncEntrega() {
     var m = currentEntrega();
@@ -728,7 +728,8 @@
     $('payNo').textContent = o.numero;
     var online = o.pago === 'Wompi';
     $('payWompi').hidden = !online; $('payNequi').hidden = online;
-    $('payTitle').textContent = online ? 'Paga en línea' : o.pago === 'Contraentrega' ? 'Paga el domicilio' : 'Paga con Nequi';
+    $('payTitle').textContent = online ? 'Paga en línea' : o.pago === 'Contraentrega' ? 'Paga el domicilio' : 'Paga por transferencia o QR';
+    if (!online) renderAccounts();
     if (online) renderWompiState(o.wompiEstado || '');
     $('payAmount').innerHTML = money(val) + '<small>' + (o.pago === 'Contraentrega' ? 'Valor del domicilio. El resto (' + money(o.pricing.saldoContraentrega) + ') lo pagas al recibir.' : o.entrega === 'Recoger' ? 'Total de tu pedido (lo recoges en la tienda)' : 'Total de tu pedido con domicilio') + '</small>';
     $('payVal').textContent = money(val);
@@ -795,6 +796,34 @@
   }
   $('wompiCheck').addEventListener('click', checkWompi);
 
+  /* ---------------- cuentas para pagar (Nequi, Bancolombia, Daviplata…) ---------------- */
+  // Si el panel no tiene cuentas, se usa la cuenta Nequi de negocio.js con el QR de /img/nequi-qr.png
+  var CUENTAS = [{ banco: 'Nequi', titular: N.nequiTitular || '', tipo: 'Llave Bre-B', numero: N.nequiLlave || '', qr: '/img/nequi-qr.png' }];
+  function acctName(a) { return a.banco === 'Otro' ? (a.nombre || 'Otra cuenta') : a.banco; }
+  function renderAccounts() {
+    var i = Math.min(S.acct || 0, CUENTAS.length - 1), a = CUENTAS[i];
+    S.acct = i;
+    $('acctTabs').innerHTML = CUENTAS.map(function (c, k) {
+      return '<button type="button" role="radio" aria-checked="' + (k === i) + '" data-acct="' + k + '">' + esc(acctName(c)) + '</button>';
+    }).join('');
+    $('acctTabs').hidden = $('acctQ').hidden = CUENTAS.length < 2;
+    var qr = safeUrl(a.qr);
+    $('acctQrBox').hidden = $('qrSave').hidden = !qr;
+    if (qr) {
+      $('acctQr').src = qr; $('acctQr').alt = 'Código QR de ' + acctName(a) + ' a nombre de ' + (a.titular || 'kAIRO');
+      $('qrSave').href = qr; $('qrSave').download = 'QR-' + acctName(a).replace(/[^\w-]+/g, '') + '-kAIRO.png';
+    }
+    $('acctTitular').textContent = $('acctTitular2').textContent = a.titular || 'kAIRO';
+    $('acctNumRow').hidden = !a.numero;
+    $('acctTipo').textContent = a.tipo || 'Número';
+    $('payKey').textContent = a.numero || '';
+  }
+  $('acctTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-acct]'); if (!b) return;
+    S.acct = Number(b.dataset.acct); renderAccounts();
+    var nb = $('acctTabs').querySelector('[data-acct="' + S.acct + '"]'); if (nb) nb.focus();
+  });
+
   function receiptData(file) {
     if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return Promise.reject(new Error('Elige una imagen JPG, PNG o WEBP.'));
     if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error('La foto original debe pesar menos de 12 MB.'));
@@ -847,7 +876,7 @@
   });
   /* La foto enviada solo se guarda en memoria (no en localStorage, por su tamaño) */
   var sentProof = '';
-  var COPY = { key: function () { return N.nequiLlave || ''; }, val: function () { return String(Math.round(payValue())); }, msg: function () { return S.order ? S.order.numero : ''; } };
+  var COPY = { key: function () { var a = CUENTAS[S.acct || 0]; return a ? a.numero : ''; }, val: function () { return String(Math.round(payValue())); }, msg: function () { return S.order ? S.order.numero : ''; } };
   $('coStep2').addEventListener('click', async function (e) {
     var b = e.target.closest('[data-copy]'); if (!b) return;
     var txt = COPY[b.dataset.copy]();
@@ -860,7 +889,7 @@
   $('refForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     var file = $('fReceipt').files && $('fReceipt').files[0];
-    if (!fieldErr('fReceipt', file ? '' : 'Sube la foto o captura del comprobante de Nequi.')) { $('fReceipt').focus(); return; }
+    if (!fieldErr('fReceipt', file ? '' : 'Sube la foto o captura del comprobante de pago.')) { $('fReceipt').focus(); return; }
     $('refBtn').disabled = true;
     try {
       $('fReceipt-status').textContent = 'Preparando y enviando la foto…';
@@ -1032,11 +1061,11 @@
     var done = (o.steps || []).filter(function (s) { return s.state === 'done' || s.state === 'current'; }).length;
     return Math.round(done / Math.max(1, (o.steps || []).length) * 100);
   }
-  var PAGO_TXT = { Wompi: 'En línea (Wompi)', Nequi: 'Nequi', Contraentrega: 'Contraentrega', 'En tienda': 'Al recoger en la tienda' };
+  var PAGO_TXT = { Wompi: 'En línea (Wompi)', Nequi: 'Transferencia o QR', Contraentrega: 'Contraentrega', 'En tienda': 'Al recoger en la tienda' };
   function stageHint(o) {
     var s = stage(o);
     if (s === 'pagar' && o.pago === 'Wompi') return 'Paga ' + money(o.pricing.pagarAhora) + ' en línea para confirmarlo.';
-    if (s === 'pagar') return o.pago === 'Contraentrega' ? 'Paga ' + money(o.pricing.pagarAhora) + ' de anticipo por Nequi para confirmarlo.' : 'Paga ' + money(o.pricing.pagarAhora) + ' por Nequi para confirmarlo.';
+    if (s === 'pagar') return o.pago === 'Contraentrega' ? 'Paga ' + money(o.pricing.pagarAhora) + ' del domicilio por transferencia o QR para confirmarlo.' : 'Paga ' + money(o.pricing.pagarAhora) + ' por transferencia o QR para confirmarlo.';
     if (s === 'proceso' && o.status === 'Recibido' && o.pago === 'En tienda') return 'Separado. Pagas ' + money(o.pricing.saldoContraentrega) + ' al recogerlo en la tienda.';
     if (s === 'proceso' && o.status === 'Recibido' && !o.pagoReportado) return 'Recibimos tu pedido. Pagas ' + money(o.pricing.saldoContraentrega) + ' al recibirlo.';
     if (s === 'proceso' && o.status === 'Recibido') return 'Recibimos tu comprobante. Lo estamos verificando.';
@@ -1131,7 +1160,7 @@
     $('ordDetail').innerHTML =
       '<div class="od-hero od-hero--' + s + '"><span class="st st--' + s + '">' + STAGE_TXT[s] + '</span><h3>' + esc(o.statusLabel) + '</h3><p>' + esc(stageHint(o)) + '</p>' +
       (s !== 'cancelado' ? '<div class="oc__bar"><i style="width:' + progress(o) + '%"></i></div>' : '') +
-      (s === 'pagar' ? '<button type="button" class="btn btn-lime btn-block" data-pay="' + esc(o.numero) + '">Pagar ' + money(p.pagarAhora) + (o.pago === 'Wompi' ? ' en línea' : ' por Nequi') + '</button>' : '') + '</div>' +
+      (s === 'pagar' ? '<button type="button" class="btn btn-lime btn-block" data-pay="' + esc(o.numero) + '">Pagar ' + money(p.pagarAhora) + (o.pago === 'Wompi' ? ' en línea' : '') + '</button>' : '') + '</div>' +
       (s !== 'cancelado' ? '<section class="od-sec"><h4>Seguimiento</h4><ol class="tl" aria-label="Estados del pedido">' + steps + '</ol></section>' : '') +
       (o.guia ? '<div class="od-note"><b>Guía de envío:</b> ' + esc(o.guia) + (o.transportadora ? ' (' + esc(o.transportadora) + ')' : '') + '</div>' : '') +
       (o.nota ? '<div class="od-note"><b>Mensaje de la tienda:</b> ' + esc(o.nota) + '</div>' : '') +
@@ -1228,6 +1257,7 @@
   function applySettings() {
     var s = S.settings || {};
     if (s.whatsapp && /^\d{10,13}$/.test(s.whatsapp)) WA = s.whatsapp;
+    if (s.pagos && Array.isArray(s.pagos.cuentas) && s.pagos.cuentas.length) { CUENTAS = s.pagos.cuentas; if (S.order && !$('coStep2').hidden) renderAccounts(); }
     if (s.domicilios && Array.isArray(s.domicilios.barrios)) { DOM = s.domicilios; renderBarrios(); if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
     // Pago en línea: solo si Wompi está configurado en el servidor. Queda como opción por defecto.
     var wr = document.querySelector('input[name="pago"][value="Wompi"]');

@@ -15,6 +15,8 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 
 ## Pasarela de pago Wompi y entregas solo en Quibdó (9 de noviembre de 2026)
 - **Por ahora los pedidos son solo para Quibdó**: el formulario ya no pregunta local/nacional; ciudad (Quibdó) y departamento (Chocó) vienen fijos y el servidor rechaza cualquier otra ciudad.
+- **Pago por transferencia o QR en varias cuentas** (Nequi, Bancolombia, Daviplata…): se agregan en **Panel → Ajustes → Cuentas para recibir pagos**, cada una con titular, número y foto del QR. Al pagar, el cliente elige desde qué app paga y ve ese QR. Sin cuentas guardadas se usa la de `public/js/negocio.js`.
+- **Por ahora NO se usa Wompi.** Sin sus llaves la opción no aparece en la tienda ni en el panel; los clientes pagan por Nequi (QR), contraentrega (domicilio) o al recoger (separar). El código queda listo por si algún día se activa:
 - **Pago en línea con Wompi** (tarjeta, PSE, Nequi, Bancolombia). Es la opción por defecto cuando está configurada; Nequi con QR y contraentrega siguen disponibles.
   - El link de pago se firma en el servidor (`lib/wompi.js`), así el cliente no puede cambiar el valor.
   - El pedido pasa solo a **Pago confirmado** cuando Wompi responde `APPROVED` y el valor coincide (se consulta la API de Wompi; no se confía en la URL de regreso).

@@ -70,7 +70,8 @@ module.exports = async (req, res) => {
       heroHeadline: settings.hero_headline, shippingNote: settings.shipping_note,
       anticipo: ENVIO,
       wompi: require('../lib/wompi').wompiReady(),
-      domicilios: require('../lib/domicilios').sanitize(settings.domicilios)
+      domicilios: require('../lib/domicilios').sanitize(settings.domicilios),
+      pagos: require('../lib/cuentas').sanitize(settings.pagos)
     },
     products: (products || []).map(mapProduct),
     promos: livePromos.map(pubPromo),

@@ -42,8 +42,8 @@ function receiptText(numero, items, customer, pricing) {
     : customer.pago === 'Wompi'
     ? `Pago en línea con Wompi: ${money(pricing.pagarAhora)}.`
     : customer.pago === 'Nequi'
-    ? `Pago por Nequi: ${money(pricing.pagarAhora)} (QR o llave). Envíanos el comprobante.`
-    : `Contraentrega: anticipo del domicilio ${money(pricing.pagarAhora)} por Nequi y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
+    ? `Pago por transferencia o QR (Nequi, Bancolombia…): ${money(pricing.pagarAhora)}. Envíanos el comprobante.`
+    : `Contraentrega: domicilio ${money(pricing.pagarAhora)} por transferencia y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
   const entrega = customer.entrega === 'Recoger'
     ? 'Entrega: recoge en la tienda (Quibdó). Te avisamos por WhatsApp cuando esté listo.'
     : `Entrega: domicilio en ${customer.direccion}, barrio ${customer.barrio}, ${customer.ciudad}`;

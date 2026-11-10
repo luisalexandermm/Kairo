@@ -5,10 +5,10 @@
    - No recarga la página por su cuenta: una actualización nunca interrumpe un pago.
    - El panel (/admin) no pasa por aquí: se usa desde el navegador, por fuera de la app.
    ⚠️ Al subir un ?v= en index.html o en las páginas, cámbialo también aquí y sube CACHE. */
-const CACHE = 'kairo-v18';
+const CACHE = 'kairo-v20';
 const APP_SHELL = [
-  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=16', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
-  '/js/tienda.js?v=14', '/js/pwa.js', '/manifest.webmanifest', '/img/kairo-logo-negro.png', '/img/kairo-logo-blanco.png', '/img/nequi-qr.png',
+  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=17', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
+  '/js/tienda.js?v=16', '/js/pwa.js', '/manifest.webmanifest', '/img/kairo-logo-negro.png', '/img/kairo-logo-blanco.png', '/img/nequi-qr.png',
   '/img/icon-180.png', '/img/icon-192.png', '/img/icon-512.png', '/img/icon-maskable-512.png',
   '/img/favicon-96.png', '/seguimiento.html', '/recibo.html'
 ];

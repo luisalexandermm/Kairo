@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>kAIRO Sneakers — Tenis, sandalias y chanclas para hombre y mujer</title>
-<meta name="description" content="Tenis, sandalias, chanclas y botas para hombre y mujer. Entregas en Quibdó. Paga en línea, por Nequi o contraentrega y sigue tu pedido en línea.">
+<meta name="description" content="Tenis, sandalias, chanclas y botas para hombre y mujer. Entregas en Quibdó. Recoge en la tienda o pide domicilio. Paga con QR de Nequi o Bancolombia, contraentrega o al recoger.">
 <meta name="theme-color" content="#0e0e0e">
 <meta name="color-scheme" content="only light">
 <link rel="icon" href="img/favicon.ico" sizes="any">
@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="kAIRO">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=16">
+<link rel="stylesheet" href="css/store.css?v=17">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -152,7 +152,7 @@
 
     <ul class="perks" aria-label="Por qué comprar en kAIRO">
       <li><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Entregas en Quibdó</b>Directo a tu puerta</span></li>
-      <li><svg aria-hidden="true"><use href="#i-bolt"/></svg><span><b>Pago en línea, Nequi o contraentrega</b>Paga como prefieras</span></li>
+      <li><svg aria-hidden="true"><use href="#i-bolt"/></svg><span><b>QR de Nequi, Bancolombia y más</b>También contraentrega o al recoger</span></li>
       <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Tus pedidos, guardados</b>Síguelos desde la app</span></li>
       <li><svg aria-hidden="true"><use href="#i-spark"/></svg><span><b>Retracto en 5 días</b>Compra con tranquilidad</span></li>
     </ul>
@@ -316,7 +316,7 @@
         <legend>¿Cómo quieres recibirlo? *</legend>
         <div class="pay pay--2" id="entregaOpts">
           <label><input type="radio" name="entrega" value="Recoger"><b>Recoger en la tienda</b><small>Te lo separamos y pasas por él. Sin costo.</small></label>
-          <label><input type="radio" name="entrega" value="Domicilio"><b>Domicilio en Quibdó</b><small id="domDesde">Según tu barrio, máximo $10.000.</small></label>
+          <label><input type="radio" name="entrega" value="Domicilio"><b>Domicilio en Quibdó</b><small id="domDesde">Según tu barrio: de $4.000 a $10.000.</small></label>
         </div>
         <p class="err" id="fEntrega-e" hidden></p>
       </fieldset>
@@ -328,7 +328,7 @@
       </div>
       <div class="field"><label for="fCorreo">Correo</label><input id="fCorreo" type="email" autocomplete="email" maxlength="120" aria-describedby="fCorreo-e"><p class="err" id="fCorreo-e" hidden></p></div>
       <div id="domFields" hidden>
-        <p class="notice-box"><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Por ahora solo hacemos domicilios en Quibdó.</b> El valor depende de tu barrio (máximo $10.000).</span></p>
+        <p class="notice-box"><svg aria-hidden="true"><use href="#i-truck"/></svg><span><b>Por ahora solo hacemos domicilios en Quibdó.</b> El valor depende de qué tan lejos queda tu barrio: de $4.000 a $10.000.</span></p>
         <div class="field"><label for="fBarrioSel">Barrio *</label><select id="fBarrioSel" aria-describedby="fBarrioSel-e fBarrioSel-h"><option value="">Elige tu barrio</option></select><p class="hint" id="fBarrioSel-h"></p><p class="err" id="fBarrioSel-e" hidden></p></div>
         <div class="field" id="fBarrioOtroBox" hidden><label for="fBarrio">¿Cuál barrio? *</label><input id="fBarrio" maxlength="80" aria-describedby="fBarrio-e"><p class="err" id="fBarrio-e" hidden></p></div>
         <div class="field"><label for="fDir">Dirección *</label><input id="fDir" autocomplete="street-address" maxlength="200" placeholder="Calle, número, casa o apartamento" aria-describedby="fDir-e"><p class="err" id="fDir-e" hidden></p></div>
@@ -337,8 +337,8 @@
         <legend>Forma de pago *</legend>
         <div class="pay" id="payOpts">
           <label id="payWompiOpt" hidden><input type="radio" name="pago" value="Wompi" disabled><b>Pago en línea (Wompi)</b><small id="payWompiTxt">Tarjeta débito o crédito, PSE, Nequi o Bancolombia.</small></label>
-          <label><input type="radio" name="pago" value="Nequi" checked><b>Nequi (QR o llave)</b><small id="payNequiTxt">Pagas todo ahora con el QR que te mostramos.</small></label>
-          <label id="payCodOpt" hidden><input type="radio" name="pago" value="Contraentrega" disabled><b>Contraentrega</b><small id="payCodTxt">Pagas el domicilio por Nequi y el resto al recibir.</small></label>
+          <label><input type="radio" name="pago" value="Nequi" checked><b>Transferencia o QR</b><small id="payNequiTxt">Nequi, Bancolombia, Daviplata… Pagas todo ahora.</small></label>
+          <label id="payCodOpt" hidden><input type="radio" name="pago" value="Contraentrega" disabled><b>Contraentrega</b><small id="payCodTxt">Pagas el domicilio por transferencia y el resto al recibir.</small></label>
           <label id="payTiendaOpt" hidden><input type="radio" name="pago" value="En tienda" disabled><b>Separar y pagar al recoger</b><small id="payTiendaTxt">No pagas nada ahora: pagas en la tienda cuando lo recojas.</small></label>
         </div>
       </fieldset>
@@ -358,7 +358,7 @@
   <div class="sheet__body" id="coStep2" hidden>
     <div class="pay-box">
       <p class="lock-note"><svg aria-hidden="true"><use href="#i-lock"/></svg><span>Tu pedido <b id="payNo"></b> ya está guardado</span></p>
-      <h3 id="payTitle">Paga con Nequi</h3>
+      <h3 id="payTitle">Paga por transferencia o QR</h3>
       <p class="pay-amount" id="payAmount"></p>
       <div id="payWompi" hidden>
         <p id="wompiMsg">Te llevamos a la página segura de Wompi para pagar con tarjeta, PSE, Nequi o Bancolombia.</p>
@@ -367,22 +367,24 @@
         <p class="mini-note">Pago procesado por Wompi (Bancolombia). kAIRO no ve ni guarda los datos de tu tarjeta.</p>
       </div>
       <div id="payNequi">
-      <div class="qr"><img src="img/nequi-qr.png" width="720" height="720" alt="Código QR de pago Bre-B por Nequi a nombre de Luis Moreno"></div>
-      <a class="btn btn-line" href="img/nequi-qr.png" download="QR-Nequi-kAIRO.png" id="qrSave">Guardar QR en el celular</a>
+      <p class="acct-q" id="acctQ">¿Desde qué app vas a pagar?</p>
+      <div class="acct-tabs" id="acctTabs" role="radiogroup" aria-labelledby="acctQ"></div>
+      <div class="qr" id="acctQrBox"><img id="acctQr" src="img/nequi-qr.png" width="720" height="720" alt="Código QR para pagar"></div>
+      <a class="btn btn-line" href="img/nequi-qr.png" download="QR-kAIRO.png" id="qrSave">Guardar QR en el celular</a>
       <ul class="kv" aria-label="Datos para pagar">
-        <li><span><small>Titular</small><b data-negocio="nequiTitular"></b></span></li>
-        <li><span><small>Llave Bre-B</small><b id="payKey" data-negocio="nequiLlave"></b></span><button type="button" class="copy" data-copy="key" aria-label="Copiar la llave">Copiar</button></li>
+        <li><span><small>Titular</small><b id="acctTitular"></b></span></li>
+        <li id="acctNumRow"><span><small id="acctTipo">Llave Bre-B</small><b id="payKey"></b></span><button type="button" class="copy" data-copy="key" aria-label="Copiar el número de la cuenta">Copiar</button></li>
         <li><span><small>Valor exacto</small><b id="payVal"></b></span><button type="button" class="copy" data-copy="val" aria-label="Copiar el valor">Copiar</button></li>
         <li><span><small>Mensaje del pago</small><b id="payMsg"></b></span><button type="button" class="copy" data-copy="msg" aria-label="Copiar el número de pedido">Copiar</button></li>
       </ul>
       <ol class="howto">
-        <li>Abre Nequi (o la app de tu banco) y elige pagar con QR o enviar a una llave.</li>
-        <li>Escanea el QR o escribe la llave. Si estás en este mismo celular, guarda el QR y súbelo desde tu galería.</li>
-        <li><b>Revisa que el nombre que aparece sea <span data-negocio="nequiTitular"></span></b> y escribe el valor exacto.</li>
+        <li>Abre la app de tu banco (Nequi, Bancolombia, Daviplata…) y elige pagar con QR o transferir.</li>
+        <li>Escanea el QR o escribe el número. Si estás en este mismo celular, guarda el QR y súbelo desde tu galería.</li>
+        <li><b>Revisa que el nombre que aparece sea <span id="acctTitular2"></span></b> y escribe el valor exacto.</li>
         <li>En el mensaje del pago escribe tu número de pedido.</li>
       </ol>
       <p class="warn" id="payCodNote" hidden></p>
-      <p class="warn"><b>Tranquilo si cambias a la app de Nequi:</b> tu pedido no se pierde. Si la página se cierra o se recarga, al volver la verás aquí mismo.</p>
+      <p class="warn"><b>Tranquilo si cambias a la app de tu banco:</b> tu pedido no se pierde. Si la página se cierra o se recarga, al volver la verás aquí mismo.</p>
       <form id="refForm" novalidate style="text-align:left">
         <div class="field"><label for="fReceipt">Foto o captura del comprobante de pago *</label><input id="fReceipt" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="fReceipt-h fReceipt-e fReceipt-status"><p class="hint" id="fReceipt-h">JPG, PNG o WEBP. La foto se reduce antes de enviarse y solo la ven tú y la tienda.</p><p class="err" id="fReceipt-e" hidden></p><p class="hint" id="fReceipt-status" role="status" aria-live="polite"></p></div>
         <img class="proof-img" id="fReceiptPreview" alt="Vista previa del comprobante que vas a enviar" hidden>
@@ -435,7 +437,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/tienda.js?v=14"></script>
+<script src="js/tienda.js?v=16"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>

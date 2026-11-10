@@ -98,10 +98,10 @@
     if (d.envio != null) foot += '<tr><td colspan="3">' + (d.entrega === 'Recoger' ? 'Recoger en la tienda' : d.entrega === 'Domicilio' ? 'Domicilio' : 'Envío') + '</td><td class="num">' + (d.envio ? money(d.envio) : 'Gratis') + '</td></tr>';
     foot += '<tr class="grand"><td colspan="3">Total</td><td class="num">' + money(d.totalConEnvio) + '</td></tr>';
     var pagoTxt = d.pago === 'Contraentrega'
-      ? 'Contraentrega: ' + money(d.pagarAhora) + ' por Nequi y ' + money(d.saldoContraentrega) + ' al recibir'
+      ? 'Contraentrega: ' + money(d.pagarAhora) + ' por transferencia y ' + money(d.saldoContraentrega) + ' al recibir'
       : d.pago === 'En tienda' ? 'Separado: ' + money(d.saldoContraentrega) + ' al recoger en la tienda'
       : d.pago === 'Wompi' ? 'En línea (Wompi): ' + money(d.pagarAhora || d.totalConEnvio)
-      : 'Nequi: ' + money(d.pagarAhora || d.totalConEnvio) + ' antes de la entrega';
+      : 'Transferencia o QR: ' + money(d.pagarAhora || d.totalConEnvio) + ' antes de la entrega';
     $('out').innerHTML =
       '<div class="tools"><button class="btn" type="button" id="print">Descargar o imprimir (PDF)</button><a class="btn btn--line" href="/?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent(c) + '#pedidos">Ver en Mis pedidos</a></div>' +
       '<article class="rc" aria-labelledby="rcTitle">' +

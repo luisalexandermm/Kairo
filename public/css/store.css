@@ -4249,3 +4249,34 @@ mark.pendiente {
     grid-template-columns: 1fr;
   }
 }
+
+/* Elegir la cuenta para pagar: Nequi, Bancolombia, Daviplata… */
+.acct-q {
+  font-weight: 800;
+  font-size: .92rem;
+}
+
+.acct-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.acct-tabs button {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+.acct-tabs button[aria-checked="true"] {
+  border-color: var(--green);
+  background: var(--green);
+  color: #fff;
+}

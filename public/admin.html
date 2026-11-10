@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/img/icon-180.png">
 <meta name="theme-color" content="#0e0e0e">
 <link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/admin.css?v=7">
+<link rel="stylesheet" href="/css/admin.css?v=9">
 <script src="/js/negocio.js"></script>
 </head>
 <body>
@@ -83,7 +83,7 @@
 
     <!-- Pedidos -->
     <section class="view" id="view-pedidos" aria-labelledby="h-ped">
-      <div class="head"><div><h1 class="display" id="h-ped">Pedidos</h1><p>Cada pedido tiene su número, su recibo y su seguimiento. Confirma el pago revisando tu Nequi antes de marcar “Pago confirmado”.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
+      <div class="head"><div><h1 class="display" id="h-ped">Pedidos</h1><p>Cada pedido dice si se <b>recoge en la tienda</b> o va a <b>domicilio</b> (con su barrio). Los pagos por transferencia o QR confírmalos revisando que el dinero llegó a tu cuenta (Nequi, Bancolombia…) antes de marcar “Pago confirmado”. Los separados se cobran al recoger y la contraentrega al entregar.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
       <div class="toolbar">
         <label class="sr-only" for="ordSearch">Buscar pedido</label>
         <input type="search" id="ordSearch" placeholder="Buscar por número, nombre o celular">
@@ -125,27 +125,35 @@
 
     <!-- Ajustes -->
     <section class="view" id="view-ajustes" aria-labelledby="h-aj">
-      <div class="head"><div><h1 class="display" id="h-aj">Ajustes</h1><p>WhatsApp de pedidos, contraseña y datos de pago.</p></div></div>
+      <div class="head"><div><h1 class="display" id="h-aj">Ajustes</h1><p>WhatsApp de pedidos, domicilios por barrio, pagos y contraseña.</p></div></div>
       <form class="panel" style="padding:26px;max-width:720px" id="settingsForm" novalidate>
         <div class="field"><label for="sWa">WhatsApp de pedidos</label><input id="sWa" inputmode="numeric" placeholder="573145312045" aria-describedby="sWa-h"><small id="sWa-h">Indicativo + número, sin espacios.</small></div>
-        <div class="field"><label for="sShip">Nota de envíos</label><input id="sShip" placeholder="Entregas en Quibdó"></div>
+        <div class="field"><label for="sShip">Nota de entregas</label><input id="sShip" placeholder="Entregas en Quibdó"></div>
         <div class="field"><label for="sPass">Nueva contraseña del panel</label><input id="sPass" type="password" autocomplete="new-password" aria-describedby="sPass-h"><small id="sPass-h">Mínimo 10 caracteres. Déjala vacía para no cambiarla.</small></div>
         <button class="btn btn-primary" type="submit">Guardar ajustes</button>
       </form>
-      <form class="panel" style="padding:26px;max-width:720px;margin-top:18px" id="domForm" novalidate>
-        <h2 style="margin-bottom:6px">Domicilios en Quibdó</h2>
-        <p class="hint" style="margin-bottom:12px">Precio del domicilio por barrio (máximo $10.000). Si el cliente elige “Otro barrio”, se cobra el precio de abajo. Recoger en la tienda siempre es gratis.</p>
-        <p class="ref-box" id="domWarn" hidden>Para guardar los barrios, primero ejecuta <code>lib/migracion-domicilios-2026-11.sql</code> en el editor SQL de Supabase.</p>
+      <form class="panel dom-panel" id="domForm" novalidate>
+        <h2>Domicilios en Quibdó</h2>
+        <p class="hint">El valor del domicilio depende de qué tan lejos queda el barrio. Pon el precio de cada distancia (entre $4.000 y $10.000) y asigna cada barrio a una. Recoger en la tienda siempre es gratis.</p>
+        <p class="ref-box" id="domWarn" hidden>Para guardar, primero ejecuta <code>lib/migracion-domicilios-2026-11.sql</code> en el editor SQL de Supabase. Mientras tanto, todo domicilio cuesta $10.000.</p>
+        <h3>Precio por distancia</h3>
+        <div class="dom-zonas" id="domZonas"></div>
+        <h3>Barrios <small id="domCount"></small></h3>
+        <div class="dom-head" aria-hidden="true"><span>Barrio</span><span>Distancia</span><span></span></div>
         <div id="domList"></div>
-        <button type="button" class="btn btn-line btn-sm" id="domAdd" style="margin:8px 0 14px">+ Agregar barrio</button>
-        <div class="field"><label for="domOtro">Precio para otros barrios</label><input id="domOtro" type="number" inputmode="numeric" min="0" max="10000" step="500"></div>
-        <button class="btn btn-primary" type="submit">Guardar precios de domicilio</button>
+        <button type="button" class="btn btn-line btn-sm" id="domAdd">+ Agregar barrio</button>
+        <div class="field dom-otro"><label for="domOtro">Barrios que no están en la lista</label><select id="domOtro"></select><small>Si el cliente elige “Otro barrio”, se cobra esta distancia.</small></div>
+        <button class="btn btn-primary" type="submit">Guardar domicilios</button>
       </form>
-      <div class="qr-mini">
-        <img src="/img/nequi-qr.png" alt="QR de Nequi que ven los clientes" width="96" height="96">
-        <div><b>Pago por Nequi (Bre-B)</b><br>Titular: <span data-negocio="nequiTitular"></span> · Llave: <span data-negocio="nequiLlave"></span><br>
-        <small>Para cambiar el QR reemplaza <code>public/img/nequi-qr.png</code>. El titular, la llave, el valor del envío y los datos legales se cambian en <code>public/js/negocio.js</code>.</small></div>
-      </div>
+      <div class="panel pay-status" id="payStatus" hidden></div>
+      <form class="panel dom-panel" id="acctForm" novalidate>
+        <h2>Cuentas para recibir pagos</h2>
+        <p class="hint">Las cuentas que ven tus clientes al pagar por transferencia o QR (Nequi, Bancolombia, Daviplata…). El cliente elige desde qué app paga y ve ese QR, el titular y el número. Puedes tener hasta 6.</p>
+        <p class="ref-box" id="acctWarn" hidden>Para guardar, primero ejecuta <code>lib/migracion-domicilios-2026-11.sql</code> en el editor SQL de Supabase. Mientras tanto, la tienda muestra la cuenta Nequi de <code>public/js/negocio.js</code>.</p>
+        <div id="acctList"></div>
+        <button type="button" class="btn btn-line btn-sm" id="acctAdd">+ Agregar cuenta</button>
+        <button class="btn btn-primary" type="submit" style="margin-left:8px">Guardar cuentas</button>
+      </form>
     </section>
   </main>
 

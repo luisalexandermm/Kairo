@@ -3,7 +3,9 @@
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, checkToken, slug, hashPassword, cleanText } = require('../lib/helpers');
 const { STATUSES, normalizeStatus, trackingOf } = require('../lib/pedidos');
-const { sanitize: sanitizeDomicilios } = require('../lib/domicilios');
+const { sanitize: sanitizeDomicilios, paraGuardar } = require('../lib/domicilios');
+const { wompiReady } = require('../lib/wompi');
+const { sanitize: sanitizeCuentas } = require('../lib/cuentas');
 
 /* ------------------------------------------------------------------ */
 /*  Productos: camelCase (panel) ↔ snake_case (base de datos)          */
@@ -148,20 +150,23 @@ module.exports = async (req, res) => {
         storeName: data.store_name, tagline: data.tagline, whatsapp: data.whatsapp,
         heroWord: data.hero_word, heroTheme: data.hero_theme, heroLogo: data.hero_logo,
         heroHeadline: data.hero_headline, shippingNote: data.shipping_note,
-        domicilios: sanitizeDomicilios(data.domicilios), domiciliosListo: Object.prototype.hasOwnProperty.call(data, 'domicilios')
+        domicilios: sanitizeDomicilios(data.domicilios), domiciliosListo: Object.prototype.hasOwnProperty.call(data, 'domicilios'),
+        pagos: sanitizeCuentas(data.pagos), pagosListo: Object.prototype.hasOwnProperty.call(data, 'pagos'),
+        wompi: { activo: wompiReady(), pruebas: /^pub_test_/.test(process.env.WOMPI_PUBLIC_KEY || ''), eventos: !!process.env.WOMPI_EVENTS_SECRET }
       });
     }
     if (method === 'PUT') {
       const update = { updated_at: nowIso() };
       const map = { storeName: 'store_name', tagline: 'tagline', whatsapp: 'whatsapp', heroWord: 'hero_word', heroTheme: 'hero_theme', heroLogo: 'hero_logo', heroHeadline: 'hero_headline', shippingNote: 'shipping_note' };
       for (const [k, col] of Object.entries(map)) if (body[k] != null) update[col] = cleanText(body[k], 300);
-      if (body.domicilios != null) update.domicilios = sanitizeDomicilios(body.domicilios);
+      if (body.pagos != null) update.pagos = sanitizeCuentas(body.pagos);
+      if (body.domicilios != null) update.domicilios = paraGuardar(sanitizeDomicilios(body.domicilios));
       if (body.adminPassword) {
         if (String(body.adminPassword).length < 10) return err(res, 'La contraseña debe tener al menos 10 caracteres', 400);
         update.admin_password = hashPassword(body.adminPassword);
       }
       const { error } = await supabase.from('settings').update(update).eq('id', 'app');
-      if (error && /domicilios/i.test(error.message)) return err(res, 'Falta preparar la base para los domicilios: ejecuta lib/migracion-domicilios-2026-11.sql en Supabase.', 500);
+      if (error && /domicilios|pagos/i.test(error.message)) return err(res, 'Falta preparar la base: ejecuta lib/migracion-domicilios-2026-11.sql en Supabase.', 500);
       if (error) return err(res, error.message, 500);
       return ok(res, { ok: true });
     }
