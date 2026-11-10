@@ -26,7 +26,7 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 ### Recoger en la tienda o domicilio por barrio
 - Al comprar, el cliente elige entre **Recoger en la tienda** (gratis) y **Domicilio en Quibdó** (precio según el barrio, **máximo $10.000**; el servidor nunca cobra más).
 - Si recoge, puede **separar y pagar al recoger**: el pedido queda registrado sin pago adelantado. Si pide domicilio, la contraentrega cobra el valor del domicilio por Nequi y el resto al recibir.
-- Los barrios y precios se editan en **Panel → Ajustes → Domicilios en Quibdó**. Antes ejecuta `lib/migracion-domicilios-2026-11.sql` en Supabase. Mientras no haya barrios, todo domicilio cuesta el precio de “otros barrios” ($10.000 por defecto).
+- Los barrios y precios se editan en **Panel → Ajustes → Domicilios en Quibdó**. Antes ejecuta `lib/migracion-domicilios-2026-11.sql` en Supabase. Mientras no haya barrios guardados, se usa la lista de barrios de Quibdó de `lib/barrios-quibdo.js` (≈130 barrios por comuna: Comuna 3 cerca, Comunas 1, 2, 4 y 5 distancia media, Comuna 6 lejos), que puedes ajustar y guardar desde el panel.
 
 ## Instalación
 1. En Supabase → SQL Editor ejecuta, en orden: `lib/schema.sql` (solo si es una base nueva), `lib/migracion-legal-2026-09.sql`, `lib/migracion-promos-2026-10.sql`, `lib/migracion-pedidos-2026-10b.sql` (también crea el bucket privado para las fotos de comprobantes).
