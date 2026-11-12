@@ -59,7 +59,7 @@
       $('loginErr').textContent = err instanceof TypeError ? 'No se pudo conectar con el servidor.' : err.message;
     } finally { $('loginBtn').disabled = false; $('loginBtn').textContent = 'Entrar'; }
   });
-  function enter() { $('loginScreen').style.display = 'none'; $('app').classList.add('on'); loadAll(); $('main').focus(); }
+  function enter() { $('loginScreen').style.display = 'none'; $('app').classList.add('on'); loadAll(); loadPushStatus(); $('main').focus(); }
   function logout() {
     TOKEN = null; try { sessionStorage.removeItem('kairo_token'); } catch (e) { }
     $('app').classList.remove('on'); $('loginScreen').style.display = 'flex'; $('passInput').value = ''; $('passInput').focus();
@@ -124,7 +124,7 @@
       if (fresh.length) {
         var o = fresh[0], msg = o.id + ' · ' + ((o.customer || {}).nombre || 'Cliente') + ' · ' + money(o.total);
         toast((fresh.length > 1 ? fresh.length + ' pedidos nuevos. Último: ' : 'Nuevo pedido: ') + msg, 8000);
-        ring();
+        startAlarm();
         flashTitle(fresh.length);
         if (navigator.vibrate) { try { navigator.vibrate(200); } catch (e) { } }
         if ('Notification' in window && Notification.permission === 'granted') new Notification('Nuevo pedido Punto Club', { body: msg, icon: '/img/pc-icon-192.png', requireInteraction: true });
@@ -141,9 +141,17 @@
     if (actx.state === 'suspended') actx.resume().then(soundUi, soundUi);
     return actx;
   }
-  // El navegador solo deja sonar audio después de que la persona toca la página
-  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, function () { audio(); soundUi(); }, true); });
-  /* Aviso suave: un "ding-dong" de campanita (dos notas), suena una sola vez */
+  // El navegador solo deja sonar audio después de que la persona toca la página.
+  // Tocar el panel también apaga la alarma de un pedido nuevo.
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, function () { audio(); soundUi(); stopAlarm(); }, true); });
+  /* Alarma de pedido nuevo: el "ding-dong" se repite cada 5 s hasta que toques el panel (máximo 12 veces) */
+  var alarmT = null, alarmN = 0;
+  function startAlarm() {
+    stopAlarm(); alarmN = 0;
+    (function loop() { ring(); alarmN++; if (alarmN < 12) alarmT = setTimeout(loop, 5000); })();
+  }
+  function stopAlarm() { if (alarmT) { clearTimeout(alarmT); alarmT = null; } }
+  /* "Ding-dong" de campanita (dos notas) */
   function ring(force) {
     if (!soundOn && !force) return;
     var c = audio(); if (!c) return;
@@ -151,7 +159,7 @@
     [[880, 0], [1318.5, 0.18]].forEach(function (n) {
       var s = t0 + n[1];
       // Nota principal + un armónico suave para que suene a campana
-      [[n[0], 0.32], [n[0] * 2, 0.06]].forEach(function (h) {
+      [[n[0], 0.6], [n[0] * 2, 0.12]].forEach(function (h) {
         var o = c.createOscillator(), g = c.createGain();
         o.type = 'sine'; o.frequency.value = h[0];
         g.gain.setValueAtTime(0.0001, s);
@@ -175,6 +183,55 @@
     b.textContent = soundOn ? '🔔 Sonido de pedidos: activado' : '🔕 Sonido de pedidos: apagado';
     $('soundHint').hidden = !(soundOn && (!actx || actx.state !== 'running'));
   }
+
+  /* ---------------- avisos de pedidos nuevos en este celular/computador (web push) ----------------
+     Llegan como notificación del sistema, con su sonido, aunque el panel esté cerrado o la pantalla bloqueada. */
+  var K_PUSH_ADMIN = 'kairo_push_admin', PUSH = { activo: false, publicKey: '', tabla: false };
+  if ('serviceWorker' in navigator) { try { navigator.serviceWorker.register('/sw.js').catch(function () { }); } catch (e) { } }
+  function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function b64ToBytes(k) { var s = atob((k + '==='.slice((k.length + 3) % 4)).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); return a; }
+  function pushOn() { try { return localStorage.getItem(K_PUSH_ADMIN) === 'on' && Notification.permission === 'granted'; } catch (e) { return false; } }
+  function swReady() { return Promise.race([navigator.serviceWorker.ready, new Promise(function (_, no) { setTimeout(function () { no(new Error('El navegador no terminó de preparar los avisos. Recarga la página e intenta de nuevo.')); }, 8000); })]); }
+  function pushAdminUi() {
+    var b = $('pushAdmin'), info = $('pushAdminInfo');
+    var msg = !PUSH.activo ? '⚠️ Los avisos al celular están apagados: faltan las llaves <code>VAPID_PUBLIC_KEY</code>, <code>VAPID_PRIVATE_KEY</code> y <code>VAPID_SUBJECT</code> en Vercel. Sin ellas ni tú ni tus clientes reciben notificaciones.'
+      : !PUSH.tabla ? '⚠️ Los avisos al celular no funcionan todavía: ejecuta <code>lib/migracion-avisos-2026-11.sql</code> en el editor SQL de Supabase.'
+      : !pushSupported() ? 'Este navegador no admite avisos. En iPhone, abre el panel desde la app instalada en la pantalla de inicio.'
+      : Notification.permission === 'denied' ? 'Bloqueaste las notificaciones de este sitio. Actívalas en los ajustes del navegador para recibir los pedidos nuevos.'
+      : '';
+    info.innerHTML = msg; info.hidden = !msg;
+    b.hidden = !(PUSH.activo && PUSH.tabla && pushSupported() && Notification.permission !== 'denied');
+    b.textContent = pushOn() ? '📲 Avisos en este celular: activados' : '📲 Activar avisos en este celular';
+    b.setAttribute('aria-pressed', String(pushOn()));
+  }
+  async function loadPushStatus() {
+    try { PUSH = await api('/admin/push'); } catch (e) { PUSH = { activo: false, tabla: false }; }
+    pushAdminUi();
+    if (pushOn()) subscribeAdmin(true); // renueva la suscripción en silencio
+  }
+  async function subscribeAdmin(quiet) {
+    try {
+      var perm = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+      if (perm !== 'granted') { if (!quiet) toast('Sin permiso de notificaciones no te podemos avisar.'); pushAdminUi(); return; }
+      var reg = await swReady();
+      var sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(PUSH.publicKey) });
+      await api('/admin/push', { method: 'POST', body: { accion: 'suscribir', sub: sub.toJSON() } });
+      try { localStorage.setItem(K_PUSH_ADMIN, 'on'); } catch (e) { }
+      if (!quiet) toast('Listo: este dispositivo recibirá una notificación con sonido por cada pedido nuevo', 6000);
+    } catch (e) { if (!quiet) toast(e.message || 'No se pudieron activar los avisos', 6000); }
+    pushAdminUi();
+  }
+  async function unsubscribeAdmin() {
+    try {
+      var reg = await swReady(), sub = await reg.pushManager.getSubscription();
+      if (sub) await api('/admin/push', { method: 'POST', body: { accion: 'quitar', endpoint: sub.endpoint } });
+    } catch (e) { }
+    try { localStorage.removeItem(K_PUSH_ADMIN); } catch (e) { }
+    toast('Avisos desactivados en este dispositivo'); pushAdminUi();
+  }
+  $('pushAdmin').addEventListener('click', function () { if (pushOn()) { if (confirm('¿Dejar de recibir avisos de pedidos nuevos en este dispositivo?')) unsubscribeAdmin(); } else subscribeAdmin(false); });
+  // Con el panel abierto, un aviso que llega por push actualiza los pedidos de una vez (y suena la alarma)
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.tipo === 'push' && e.data.admin && TOKEN) api('/admin/orders').then(notifyNewOrders, function () { }); });
   $('soundToggle').addEventListener('click', function () {
     soundOn = !soundOn;
     try { localStorage.setItem('kairo_sonido', soundOn ? 'on' : 'off'); } catch (e) { }

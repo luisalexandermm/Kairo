@@ -5,10 +5,10 @@
    - No recarga la página por su cuenta: una actualización nunca interrumpe un pago.
    - El panel (/admin) no pasa por aquí: se usa desde el navegador, por fuera de la app.
    ⚠️ Al subir un ?v= en index.html o en las páginas, cámbialo también aquí y sube CACHE. */
-const CACHE = 'puntoclub-v24';
+const CACHE = 'puntoclub-v25';
 const APP_SHELL = [
   '/', '/index.html', '/css/fonts.css', '/css/store.css?v=19', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
-  '/js/tienda.js?v=18', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
+  '/js/tienda.js?v=19', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
   '/img/pc-icon-180.png', '/img/pc-icon-192.png', '/img/pc-icon-512.png', '/img/pc-icon-maskable-512.png',
   '/img/pc-favicon-96.png', '/favicon.ico', '/seguimiento.html', '/recibo.html'
 ];
@@ -48,23 +48,32 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data && event.data.text() }; }
-  event.waitUntil(self.registration.showNotification(d.title || 'Punto Club', {
-    body: d.body || 'Tu pedido tiene novedades.',
-    icon: '/img/pc-icon-192.png',
-    badge: '/img/pc-favicon-96.png',
-    tag: d.tag || 'pedido',
-    renotify: true,
-    vibrate: [120, 60, 120],
-    data: { url: d.url || '/#pedidos' }
-  }));
+  const admin = d.tipo === 'admin';
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(d.title || 'Punto Club', {
+      body: d.body || 'Tu pedido tiene novedades.',
+      icon: '/img/pc-icon-192.png',
+      badge: '/img/pc-favicon-96.png',
+      tag: d.tag || 'pedido',
+      renotify: true,
+      silent: false,                       // que suene con el sonido de notificaciones del celular
+      requireInteraction: admin,           // el aviso de pedido nuevo se queda hasta que lo toques
+      vibrate: admin ? [300, 120, 300, 120, 300] : [200, 80, 200],
+      data: { url: d.url || '/#pedidos' }
+    }),
+    // Si la tienda o el panel están abiertos, se les avisa para que suenen y se actualicen al instante
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => list.forEach(c => c.postMessage({ tipo: 'push', admin, data: d })))
+  ]));
 });
 
 self.addEventListener('notificationclick', event => {
   event.notification.close();
-  const url = new URL((event.notification.data && event.notification.data.url) || '/#pedidos', self.location.origin).href;
+  const url = new URL((event.notification.data && event.notification.data.url) || '/#pedidos', self.location.origin);
+  const quiereAdmin = url.pathname.startsWith('/admin');
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-    const open = list.find(c => new URL(c.url).origin === self.location.origin);
-    if (open) return open.navigate(url).then(c => (c || open).focus()).catch(() => open.focus());
-    return self.clients.openWindow(url);
+    // Reusa una ventana del mismo tipo (panel o tienda); si no hay, abre una nueva
+    const open = list.find(c => { const u = new URL(c.url); return u.origin === self.location.origin && u.pathname.startsWith('/admin') === quiereAdmin; });
+    if (open) return quiereAdmin ? open.focus() : open.navigate(url.href).then(c => (c || open).focus()).catch(() => open.focus());
+    return self.clients.openWindow(url.href);
   }));
 });

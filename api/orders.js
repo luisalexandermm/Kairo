@@ -9,6 +9,7 @@ const { priceCart } = require('../lib/pricing');
 const { loadEnvio, departamento } = require('../lib/envios');
 const { makeOrderNumber, clienteHash } = require('../lib/pedidos');
 const { sendWhatsApp, adminWhatsApp } = require('../lib/whatsapp');
+const { notifyAdmins } = require('../lib/push');
 
 /* Por ahora Punto Club solo hace envíos nacionales por transportadora y solo recibe
    pagos por transferencia o QR (a Nequi o llave Bre-B). Wompi queda en pausa: su código
@@ -131,6 +132,9 @@ module.exports = async (req, res) => {
     sendWhatsApp(adminNumber, `Nuevo pedido Punto Club\n\n${receipt}`),
     sendWhatsApp('+57' + customer.telefono, receipt)
   ]).catch(() => [false, false]);
+
+  /* 7. Aviso al celular de la tienda (notificación del sistema, suena aunque el panel esté cerrado) */
+  await notifyAdmins(supabase, { id: numero, customer, total: totalConEnvio }).catch(e => console.error('[push] aviso a la tienda:', e.message));
 
   ok(res, {
     ok: true, id: numero, numero, createdAt: now,

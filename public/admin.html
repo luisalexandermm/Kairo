@@ -78,10 +78,12 @@
         <div class="sound-ctl">
           <button class="btn btn-line btn-sm" type="button" id="soundToggle" aria-pressed="true">🔔 Sonido de pedidos: activado</button>
           <button class="btn btn-line btn-sm" type="button" id="soundTest">Probar sonido</button>
+          <button class="btn btn-line btn-sm" type="button" id="pushAdmin" hidden>📲 Avisos en este celular</button>
           <button class="btn btn-line btn-sm" data-reload>Actualizar</button>
         </div>
       </div>
       <p class="ref-box" id="soundHint" hidden>Toca cualquier parte del panel para activar el sonido de pedidos nuevos (el navegador lo pide).</p>
+      <p class="ref-box" id="pushAdminInfo" hidden></p>
       <div class="stats" id="statsGrid"></div>
       <div class="panel">
         <table><caption class="sr-only">Últimos pedidos</caption><thead><tr><th scope="col">Últimos pedidos</th><th scope="col">Cliente</th><th scope="col">Total</th><th scope="col">Estado</th></tr></thead>
@@ -259,6 +261,6 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/js/admin.js?v=14"></script>
+<script src="/js/admin.js?v=15"></script>
 </body>
 </html>

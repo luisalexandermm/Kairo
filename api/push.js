@@ -7,7 +7,7 @@
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors } = require('../lib/helpers');
 const { ORDER_RE, clienteHash } = require('../lib/pedidos');
-const { PUBLIC_KEY, pushReady, endpointOk } = require('../lib/push');
+const { PUBLIC_KEY, ADMIN, pushReady, endpointOk } = require('../lib/push');
 
 const hits = new Map();
 function tooMany(ip) {
@@ -31,7 +31,8 @@ module.exports = async (req, res) => {
   const b = req.body || {};
   if (b.accion === 'quitar') {
     if (!endpointOk(b.endpoint)) return err(res, 'Suscripción no válida', 400);
-    await supabase.from('push_subs').delete().eq('endpoint', b.endpoint).then(() => {}, () => {});
+    // Nunca quita desde la tienda pública un dispositivo del panel
+    await supabase.from('push_subs').delete().eq('endpoint', b.endpoint).or('cliente.is.null,cliente.neq.' + ADMIN).then(() => {}, () => {});
     return ok(res, { ok: true });
   }
   if (b.accion !== 'suscribir') return err(res, 'Acción no válida', 400);
@@ -56,8 +57,14 @@ module.exports = async (req, res) => {
   }
   if (!cliente && !pedidos.length) return err(res, 'No hay pedidos para avisarte todavía.', 400);
 
+  // Si este celular es también el de la tienda (recibe avisos de pedidos nuevos), no se le quita ese rol
+  const { data: prev } = await supabase.from('push_subs').select('cliente,pedidos').eq('endpoint', s.endpoint).maybeSingle().then(r => r, () => ({ data: null }));
+  const esTienda = prev && prev.cliente === ADMIN;
   const { error } = await supabase.from('push_subs').upsert({
-    endpoint: s.endpoint, p256dh: keys.p256dh, auth: keys.auth, cliente, pedidos, updated_at: new Date().toISOString()
+    endpoint: s.endpoint, p256dh: keys.p256dh, auth: keys.auth,
+    cliente: esTienda ? ADMIN : cliente,
+    pedidos: esTienda ? [...new Set([...(prev.pedidos || []), ...pedidos])].slice(0, 50) : pedidos,
+    updated_at: new Date().toISOString()
   }, { onConflict: 'endpoint' });
   if (error) {
     console.error('[push] no se pudo guardar la suscripción:', error.message);

@@ -1030,6 +1030,32 @@
     } catch (e) { }
     store.del(K_AVISOS); toast('Avisos desactivados en este celular'); renderPushSlots();
   }
+  /* Con la tienda abierta, el aviso que llega por push suena con una campanita y actualiza "Mis pedidos".
+     (Con la app cerrada, suena el sonido normal de notificaciones del celular.) */
+  var chimeCtx = null;
+  ['pointerdown', 'keydown'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      var C = window.AudioContext || window.webkitAudioContext;
+      if (!chimeCtx && C) { try { chimeCtx = new C(); } catch (e) { } }
+      if (chimeCtx && chimeCtx.state === 'suspended') chimeCtx.resume().catch(function () { });
+    }, { capture: true, passive: true });
+  });
+  function chime() {
+    var c = chimeCtx; if (!c || c.state !== 'running') return;
+    var t0 = c.currentTime + 0.03;
+    [[988, 0], [1319, 0.14], [1568, 0.28]].forEach(function (n) {
+      var o = c.createOscillator(), g = c.createGain(), s = t0 + n[1];
+      o.type = 'sine'; o.frequency.value = n[0];
+      g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.35, s + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.7);
+      o.connect(g); g.connect(c.destination); o.start(s); o.stop(s + 0.75);
+    });
+  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', function (e) {
+    if (!e.data || e.data.tipo !== 'push' || e.data.admin) return;
+    chime();
+    if (navigator.vibrate) { try { navigator.vibrate([150, 60, 150]); } catch (x) { } }
+    fetchOrders();
+  });
   // Si ya estaban activos y el cliente agregó pedidos nuevos, se actualiza la suscripción en silencio
   function syncPush() { var a = store.get(K_AVISOS); if (pushState() === 'on' && (!a || a.sig !== pushSig())) enablePush(true); }
   function pushCardHTML(compact) {

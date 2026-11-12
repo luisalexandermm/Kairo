@@ -3,7 +3,7 @@
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, checkToken, slug, hashPassword, cleanText } = require('../lib/helpers');
 const { STATUSES, normalizeStatus, trackingOf, linkOk } = require('../lib/pedidos');
-const { notifyOrder, pushReady } = require('../lib/push');
+const { notifyOrder, pushReady, endpointOk, tablaLista, ADMIN, PUBLIC_KEY } = require('../lib/push');
 const { precioEnvio } = require('../lib/envios');
 const { wompiReady } = require('../lib/wompi');
 const { sanitize: sanitizeCuentas } = require('../lib/cuentas');
@@ -140,6 +140,24 @@ module.exports = async (req, res) => {
     const revenue = list.filter(r => r.status !== 'Cancelado').reduce((s, r) => s + (r.total || 0), 0);
     const newOrders = list.filter(r => normalizeStatus(r.status) === 'Recibido').length;
     return ok(res, { products: totalP, activeProducts: activeP, promos, orders, newOrders, revenue, pqrPending: pq.count || 0, storage: 'supabase' });
+  }
+
+  /* -------- AVISOS DE PEDIDOS NUEVOS EN LOS DISPOSITIVOS DE LA TIENDA -------- */
+  if (section === 'push') {
+    if (method === 'GET') return ok(res, { activo: pushReady(), publicKey: pushReady() ? PUBLIC_KEY : '', tabla: await tablaLista(supabase) });
+    if (method !== 'POST') return err(res, 'Método no permitido', 405);
+    if (!pushReady()) return err(res, 'Faltan las llaves VAPID en Vercel (VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT).', 503);
+    const s = body.sub || {}, k = s.keys || {};
+    const b64 = (v, min, max) => typeof v === 'string' && v.length >= min && v.length <= max && /^[A-Za-z0-9_-]+=*$/.test(v);
+    if (body.accion === 'quitar') {
+      if (!endpointOk(body.endpoint)) return err(res, 'Suscripción no válida', 400);
+      await supabase.from('push_subs').delete().eq('endpoint', body.endpoint).eq('cliente', ADMIN);
+      return ok(res, { ok: true });
+    }
+    if (!endpointOk(s.endpoint) || !b64(k.p256dh, 80, 120) || !b64(k.auth, 16, 40)) return err(res, 'Suscripción no válida', 400);
+    const { error } = await supabase.from('push_subs').upsert({ endpoint: s.endpoint, p256dh: k.p256dh, auth: k.auth, cliente: ADMIN, pedidos: [], updated_at: nowIso() }, { onConflict: 'endpoint' });
+    if (error) return err(res, /push_subs/.test(error.message) ? 'Falta preparar la base: ejecuta lib/migracion-avisos-2026-11.sql en Supabase.' : error.message, 500);
+    return ok(res, { ok: true });
   }
 
   /* -------- AJUSTES -------- */
