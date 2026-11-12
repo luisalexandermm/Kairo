@@ -1,5 +1,5 @@
 /* =====================================================================
-   DATOS DEL NEGOCIO — kAIRO
+   DATOS DEL NEGOCIO — Punto Club
    ---------------------------------------------------------------------
    Este es el ÚNICO lugar donde se escriben los datos legales del negocio.
    La tienda, el pie de página y todas las páginas legales los leen de aquí.
@@ -10,11 +10,11 @@
    ===================================================================== */
 window.NEGOCIO = {
   /* Identificación (Ley 1480 de 2011, art. 50, y Ley 1581 de 2012) */
-  nombreComercial: 'kAIRO',
+  nombreComercial: 'Punto Club',
   responsable: 'Luis Alexander',
   nit: '',                  // NIT con dígito de verificación, ej. 1234567890-1
   matriculaMercantil: '',   // Opcional: número de matrícula en Cámara de Comercio (déjalo vacío si no aplica)
-  direccion: 'Quibdó',
+  direccion: 'Quibdó',      // Domicilio del negocio (no es un punto de venta: por ahora solo hay envíos nacionales)
   ciudad: 'Chocó',
   correo: 'contacto.maturanainnovate@gmail.com',
   whatsapp: '573145312045', // Solo números, con indicativo 57
@@ -29,12 +29,12 @@ window.NEGOCIO = {
 
   /* Condiciones comerciales que SOLO tú puedes definir */
   plazoEntrega: '',         // ej. 2 a 5 días hábiles en ciudades principales. Máximo legal si no se informa: 30 días calendario
-  anticipoEnvioContraentrega: 25000, // Valor que la tienda cobra hoy como anticipo de envío en contraentrega
+  envioNacional: 25000,     // Valor del envío a toda Colombia. Debe coincidir con Panel → Ajustes → Envío nacional
   plazoCambioTallaDias: '', // Días para cambios de talla por gusto (voluntario). Vacío = [COMPLETAR]
 
   /* Versión de las políticas. Si cambias los textos legales, cambia esta fecha:
      queda guardada junto a cada pedido como prueba de lo que aceptó el cliente. */
-  versionPoliticas: '2026-10-29'
+  versionPoliticas: '2026-11-11'
 };
 
 (function () {
@@ -47,12 +47,12 @@ window.NEGOCIO = {
   var faltantes = Object.keys(etiquetas).filter(function (k) { return !String(N[k] || '').trim(); });
   N.faltantes = faltantes;
   if (faltantes.length && window.console) {
-    console.warn('[kAIRO] Faltan datos del negocio en /js/negocio.js:', faltantes.join(', '));
+    console.warn('[Punto Club] Faltan datos del negocio en /js/negocio.js:', faltantes.join(', '));
   }
 
   function valor(k) {
     if (k === 'whatsappLink') return 'https://wa.me/' + N.whatsapp;
-    if (k === 'anticipoEnvioContraentrega') return '$' + Number(N[k] || 0).toLocaleString('es-CO');
+    if (k === 'envioNacional') return '$' + Number(N[k] || 0).toLocaleString('es-CO');
     if (k === 'fechaPoliticas') {
       var p = String(N.versionPoliticas).split('-');
       var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];

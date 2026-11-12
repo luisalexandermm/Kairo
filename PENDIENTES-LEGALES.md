@@ -1,4 +1,4 @@
-# Pendientes legales de kAIRO (revisar antes de publicar)
+# Pendientes legales de Punto Club (revisar antes de publicar)
 
 1. **Datos del negocio** en `public/js/negocio.js`: nombre o razón social del RUT, NIT, dirección física, ciudad, correo, horario, plazo de entrega y días para cambio de talla (Ley 1480, art. 50).
 2. **Factura electrónica**: el recibo del pedido no reemplaza la factura de la DIAN. Si estás obligado a facturar, emítela por tu proveedor.

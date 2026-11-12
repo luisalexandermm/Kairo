@@ -1,5 +1,5 @@
 /* =====================================================================
-   kAIRO Sneakers — lógica de la tienda
+   Punto Club — lógica de la tienda
    - Catálogo, filtros por género / categoría / marca / búsqueda
    - Carrito y cupón (guardados en este navegador)
    - Compra → número de pedido → pago por Nequi (QR) → listo
@@ -12,6 +12,7 @@
   var CATS = ['Tenis', 'Sandalias', 'Chanclas', 'Botas'];
   var CAT_ICON = { Todo: 'i-bolt', Nuevo: 'i-spark', Tenis: 'i-sneaker', Sandalias: 'i-sandal', Chanclas: 'i-flip', Botas: 'i-boot' };
   var BRANDS_DEFAULT = ['Nike', 'Jordan', 'Adidas', 'Puma', 'New Balance', 'Converse', 'Vans'];
+  // Las claves internas conservan el prefijo "kairo." a propósito: así nadie pierde su carrito, favoritos ni "Mis pedidos" con el cambio de nombre.
   var K_CART = 'kairo.carrito.v1', K_ORDER = 'kairo.pedido.v1';
   var K_CLIENTE = 'kairo.cliente.v1', K_MIS = 'kairo.mispedidos.v1', K_FAV = 'kairo.favoritos.v1', K_PERFIL = 'kairo.perfil.v1';
 
@@ -353,7 +354,7 @@
     var bg = s.color || '#0e4d38', dark = luminance(bg) > 0.2;
     var grad = dark ? 'linear-gradient(135deg,' + bg + ' 0%,' + shade(bg, 0.35) + ' 100%)' : 'linear-gradient(135deg,' + shade(bg, -0.25) + ' 0%,' + bg + ' 60%,' + shade(bg, 0.12) + ' 130%)';
     return '<div class="slide' + (dark ? ' ink-dark' : '') + (i === 0 ? ' is-active' : '') + '" role="group" aria-roledescription="diapositiva" aria-label="' + (i + 1) + ' de ' + n + '" style="--slide-bg:' + grad + '">' +
-      '<span class="slide__ghost" aria-hidden="true">kAIRO</span>' +
+      '<span class="slide__ghost" aria-hidden="true">PUNTO</span>' +
       '<div class="slide__txt">' + (s.eyebrow ? '<span class="slide__eyebrow">' + esc(s.eyebrow) + '</span>' : '') + '<h2>' + esc(s.title) + '</h2>' + (s.subtitle ? '<p>' + esc(s.subtitle) + '</p>' : '') +
       (s.button ? '<button type="button" class="btn ' + (dark ? 'btn-primary' : 'btn-light') + '" data-slide="' + i + '">' + esc(s.button) + '</button>' : '') + '</div>' +
       '<div class="slide__art" aria-hidden="true">' + (s.photo ? '<img class="photo-banner" src="' + esc(s.photo) + '" alt="">' : s.product ? art(s.product, '') : '') + '</div></div>';
@@ -367,7 +368,7 @@
     });
     var feats = S.products.filter(function (p) { return p.featured; }).slice(0, 3);
     if (!SLIDES.length) {
-      SLIDES.push({ eyebrow: 'kAIRO Sneakers', title: 'Arma tu estilo.', subtitle: 'Tenis, sandalias y chanclas para hombre y mujer, con envío a toda Colombia.', button: 'Ver catálogo', color: '#0e4d38', product: feats[0] || S.products[0], link: { type: 'ninguno' } });
+      SLIDES.push({ eyebrow: 'Punto Club', title: 'Arma tu estilo.', subtitle: 'Tenis, sandalias y chanclas para hombre y mujer, con envío a toda Colombia.', button: 'Ver catálogo', color: '#0e4d38', product: feats[0] || S.products[0], link: { type: 'ninguno' } });
       feats.slice(1).forEach(function (p) { SLIDES.push({ eyebrow: p.brand, title: p.name, subtitle: (p.salePrice ? 'Ahora ' + money(p.salePrice) + ' · ' : 'Desde ' + money(p.price) + ' · ') + 'Se entrega sin caja', button: 'Elegir talla', color: p.gender === 'Mujer' ? '#1f8a62' : '#0a2a20', product: p, link: { type: 'producto', value: p.id } }); });
     }
     car.n = SLIDES.length; car.i = 0;
@@ -517,25 +518,19 @@
     var disc = S.coupon ? Math.min(S.coupon.discount || 0, sub) : 0;
     var shipPromo = S.promos.filter(function (p) { return p.kind === 'envio' && sub >= (p.minSubtotal || 0); })[0];
     var free = !!(S.coupon && S.coupon.freeShipping) || !!shipPromo;
-    var modo = currentEntrega(), dom = domicilioPrecio();
-    // envio = null mientras no se sepa (todavía no elige cómo recibir o no elige barrio)
-    var envio = modo === 'Recoger' ? 0 : dom == null ? null : free ? 0 : dom;
+    // Envío nacional: tarifa fija (se configura en el panel)
+    var envio = free ? 0 : ENVIO;
     var total = Math.max(0, sub - disc);
-    return { lines: lines, list: list, sub: sub, save: list - sub, disc: disc, free: free, shipPromo: shipPromo, modo: modo, dom: dom, envio: envio, total: total, totalConEnvio: total + (envio || 0), count: lines.reduce(function (s, l) { return s + l.qty; }, 0) };
+    return { lines: lines, list: list, sub: sub, save: list - sub, disc: disc, free: free, shipPromo: shipPromo, envio: envio, total: total, totalConEnvio: total + envio, count: lines.reduce(function (s, l) { return s + l.qty; }, 0) };
   }
   function totalsHTML(c, pago) {
     var h = '<div><span>Productos</span><span>' + money(c.list) + '</span></div>';
     if (c.save) h += '<div class="save"><span>Promociones</span><span>-' + money(c.save) + '</span></div>';
     if (c.disc) h += '<div class="save"><span>Cupón ' + esc(S.coupon.code) + '</span><span>-' + money(c.disc) + '</span></div>';
     var promoTxt = c.shipPromo && !(S.coupon && S.coupon.freeShipping) ? ' (' + esc(c.shipPromo.title) + ')' : '';
-    if (c.modo === 'Recoger') h += '<div><span>Recoger en la tienda</span><span>Gratis</span></div>';
-    else if (c.envio == null) h += '<div><span>Domicilio</span><span>' + (c.modo === 'Domicilio' ? 'Elige tu barrio' : 'Gratis si recoges · desde ' + money(DOM.min)) + '</span></div>';
-    else h += '<div><span>Domicilio' + promoTxt + '</span><span>' + (c.envio ? money(c.envio) : 'Gratis') + '</span></div>';
+    h += '<div><span>Envío nacional' + promoTxt + '</span><span>' + (c.envio ? money(c.envio) : 'Gratis') + '</span></div>';
     h += '<div class="grand"><span>Total</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    if (pago === 'Wompi') h += '<div><span>Pagas ahora en línea</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    else if (pago === 'Contraentrega' && c.dom != null) h += '<div><span>Pagas ahora por transferencia (domicilio)</span><span>' + money(Math.min(c.dom, c.totalConEnvio)) + '</span></div><div><span>Pagas al recibir</span><span>' + money(Math.max(0, c.totalConEnvio - c.dom)) + '</span></div>';
-    else if (pago === 'En tienda') h += '<div><span>Pagas al recoger en la tienda</span><span>' + money(c.totalConEnvio) + '</span></div>';
-    else if (pago === 'Nequi') h += '<div><span>Pagas ahora por transferencia o QR</span><span>' + money(c.totalConEnvio) + '</span></div>';
+    if (pago) h += '<div><span>Pagas ahora por transferencia o QR</span><span>' + money(c.totalConEnvio) + '</span></div>';
     return h;
   }
   function renderCart() {
@@ -602,10 +597,8 @@
     $('coSummary').innerHTML = c.lines.map(function (l) { return '<div><span>' + esc(l.p.brand + ' ' + l.p.name) + ' · T' + esc(l.size) + (l.color ? ' · ' + esc(l.color) : '') + ' ×' + l.qty + '</span><span>' + money(l.price * l.qty) + '</span></div>'; }).join('') +
       '<div><span>Empaque</span><span>Sin caja</span></div>';
     $('coTotals').innerHTML = totalsHTML(c, currentPago());
-    $('payWompiTxt').textContent = 'Pagas ' + money(c.totalConEnvio) + ' con tarjeta, PSE, Nequi o Bancolombia.';
-    $('payNequiTxt').textContent = 'Nequi, Bancolombia, Daviplata… Pagas ' + money(c.totalConEnvio) + ' ahora.';
-    $('payCodTxt').textContent = c.dom == null ? 'Pagas el domicilio por transferencia y el resto al recibir.' : 'Pagas ' + money(Math.min(c.dom, c.totalConEnvio)) + ' del domicilio por transferencia y ' + money(Math.max(0, c.totalConEnvio - c.dom)) + ' al recibir.';
-    $('payTiendaTxt').textContent = 'No pagas nada ahora: pagas ' + money(c.totalConEnvio) + ' cuando lo recojas.';
+    $('payNequiTxt').textContent = 'Desde la app de cualquier banco (Nequi, Bancolombia, Daviplata…). Pagas ' + money(c.totalConEnvio) + ' ahora.';
+    $('envioTxt').textContent = c.free ? 'gratis en este pedido' : money(ENVIO);
   }
   document.querySelectorAll('input[name="pago"]').forEach(function (r) { r.addEventListener('change', renderCheckoutSummary); });
   function openCheckout(replace) {
@@ -615,52 +608,20 @@
     prefillProfile();
     renderCheckoutSummary(); showStep(1);
     $('orderErr').hidden = true;
-    syncEntrega();
-    openLayer($('coSheet'), document.querySelector('input[name="entrega"]'), replace === true);
+    openLayer($('coSheet'), $('fNombre'), replace === true);
   }
   $('toCheckout').addEventListener('click', function () { openCheckout(); });
-  /* ---------------- cómo recibe: recoger en la tienda o domicilio en Quibdó ---------------- */
-  // Barrios y precios del domicilio (se configuran en el panel; máximo $10.000)
-  var DOM = { barrios: [], otro: 10000, min: 4000, max: 10000 };
-  function currentEntrega() { var r = document.querySelector('input[name="entrega"]:checked'); return r ? r.value : ''; }
-  function barrioActual() { var sel = $('fBarrioSel').value; return sel === '__otro' ? $('fBarrio').value.trim() : sel; }
-  function domicilioPrecio() {
-    if (currentEntrega() !== 'Domicilio') return null;
-    var sel = $('fBarrioSel').value; if (!sel) return null;
-    var b = DOM.barrios.find(function (x) { return x.nombre === sel; });
-    return b ? b.precio : DOM.otro;
+  /* ---------------- envío nacional: tarifa fija para toda Colombia ---------------- */
+  // El valor real llega del servidor (/api/catalog → settings.envio); se configura en el panel.
+  var ENVIO = 25000;
+  var DEPTOS = ['Amazonas', 'Antioquia', 'Arauca', 'Atlántico', 'Bogotá D.C.', 'Bolívar', 'Boyacá', 'Caldas', 'Caquetá', 'Casanare', 'Cauca', 'Cesar', 'Chocó', 'Córdoba', 'Cundinamarca', 'Guainía', 'Guaviare', 'Huila', 'La Guajira', 'Magdalena', 'Meta', 'Nariño', 'Norte de Santander', 'Putumayo', 'Quindío', 'Risaralda', 'San Andrés y Providencia', 'Santander', 'Sucre', 'Tolima', 'Valle del Cauca', 'Vaupés', 'Vichada'];
+  function renderDeptos() {
+    var cur = $('fDepto').value;
+    $('fDepto').innerHTML = '<option value="">Elige uno</option>' + DEPTOS.map(function (d) { return '<option>' + esc(d) + '</option>'; }).join('');
+    if (cur) $('fDepto').value = cur;
   }
-  function renderBarrios() {
-    var cur = $('fBarrioSel').value;
-    $('fBarrioSel').innerHTML = '<option value="">Elige tu barrio</option>' +
-      DOM.barrios.map(function (b) { return '<option value="' + esc(b.nombre) + '">' + esc(b.nombre) + ' · ' + money(b.precio) + '</option>'; }).join('') +
-      '<option value="__otro">' + (DOM.barrios.length ? 'Otro barrio' : 'Mi barrio') + ' · ' + money(DOM.otro) + '</option>';
-    if (cur && [].some.call($('fBarrioSel').options, function (o) { return o.value === cur; })) $('fBarrioSel').value = cur;
-    var precios = DOM.barrios.map(function (b) { return b.precio; }).concat([DOM.otro]);
-    var min = Math.min.apply(null, precios), max = Math.max.apply(null, precios);
-    $('domDesde').textContent = min === max ? 'Domicilio ' + money(max) + '.' : 'Según qué tan lejos queda tu barrio: de ' + money(min) + ' a ' + money(max) + '.';
-    $('fBarrioSel-h').textContent = 'El valor depende de la distancia: de ' + money(DOM.min) + ' a ' + money(DOM.max) + '.';
-  }
-  function syncEntrega() {
-    var m = currentEntrega();
-    $('pickupNote').hidden = m !== 'Recoger';
-    $('domFields').hidden = m !== 'Domicilio';
-    $('fBarrioOtroBox').hidden = $('fBarrioSel').value !== '__otro';
-    // Contraentrega solo con domicilio; "separar y pagar al recoger" solo si recoge
-    [['payCodOpt', m === 'Domicilio'], ['payTiendaOpt', m === 'Recoger']].forEach(function (x) {
-      var lbl = $(x[0]), inp = lbl.querySelector('input');
-      lbl.hidden = !x[1]; inp.disabled = !x[1]; if (!x[1]) inp.checked = false;
-    });
-    if (!document.querySelector('input[name="pago"]:checked')) {
-      var first = [].find.call(document.querySelectorAll('input[name="pago"]'), function (i) { return !i.disabled; });
-      if (first) first.checked = true;
-    }
-    if (N.pintar && m === 'Recoger') N.pintar();
-    renderCheckoutSummary();
-  }
-  document.querySelectorAll('input[name="entrega"]').forEach(function (r) { r.addEventListener('change', function () { fieldErr('fEntrega', ''); syncEntrega(); }); });
-  $('fBarrioSel').addEventListener('change', function () { fieldErr('fBarrioSel', ''); syncEntrega(); if (this.value === '__otro') $('fBarrio').focus(); });
-  renderBarrios();
+  $('fDepto').addEventListener('change', function () { fieldErr('fDepto', ''); });
+  renderDeptos();
 
   function fieldErr(id, msg) { var i = $(id), e = $(id + '-e'); i.setAttribute('aria-invalid', msg ? 'true' : 'false'); if (e) { e.textContent = msg || ''; e.hidden = !msg; } return !msg; }
   function telDigits(v) { var d = String(v || '').replace(/\D/g, ''); if (d.length === 12 && d.indexOf('57') === 0) d = d.slice(2); return d; }
@@ -668,18 +629,17 @@
   $('orderForm').addEventListener('submit', async function (e) {
     e.preventDefault(); if (sending) return;
     var v = function (id) { return $(id).value.trim(); };
-    var dom = currentEntrega() === 'Domicilio', otro = $('fBarrioSel').value === '__otro';
     var checks = [
-      ['fEntrega', currentEntrega() ? '' : 'Elige si recoges en la tienda o quieres domicilio.'],
       ['fNombre', v('fNombre').length >= 3 ? '' : 'Escribe tu nombre y apellido.'],
       ['fTel', /^3\d{9}$/.test(telDigits(v('fTel'))) ? '' : 'Escribe un celular de 10 dígitos que empiece por 3.'],
+      ['fCed', v('fCed').replace(/[^\dA-Za-z]/g, '').length >= 5 ? '' : 'Escribe tu cédula: la transportadora la pide para entregar.'],
       ['fCorreo', !v('fCorreo') || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('fCorreo')) ? '' : 'Revisa el correo (ejemplo: nombre@correo.com).'],
-      ['fBarrioSel', !dom || $('fBarrioSel').value ? '' : 'Elige tu barrio para calcular el domicilio.'],
-      ['fBarrio', !dom || !otro || v('fBarrio').length >= 3 ? '' : 'Escribe el nombre de tu barrio.'],
-      ['fDir', !dom || v('fDir').length >= 5 ? '' : 'Escribe la dirección de entrega.']
+      ['fDepto', v('fDepto') ? '' : 'Elige el departamento de entrega.'],
+      ['fCiudad', v('fCiudad').length >= 3 ? '' : 'Escribe la ciudad o municipio.'],
+      ['fDir', v('fDir').length >= 5 ? '' : 'Escribe la dirección de entrega.']
     ];
     var firstBad = null;
-    checks.forEach(function (c) { if (!fieldErr(c[0], c[1]) && !firstBad) firstBad = c[0] === 'fEntrega' ? document.querySelector('input[name="entrega"]') : $(c[0]); });
+    checks.forEach(function (c) { if (!fieldErr(c[0], c[1]) && !firstBad) firstBad = $(c[0]); });
     var cErr = !$('cTerm').checked ? 'Para continuar acepta los términos y condiciones.' : !$('cDatos').checked ? 'Para continuar autoriza el tratamiento de tus datos para gestionar el pedido.' : '';
     $('consent-e').textContent = cErr; $('consent-e').hidden = !cErr;
     if (cErr && !firstBad) firstBad = !$('cTerm').checked ? $('cTerm') : $('cDatos');
@@ -687,12 +647,12 @@
 
     sending = true; $('orderBtn').disabled = true; $('orderBtn').textContent = 'Guardando tu pedido…'; $('orderErr').hidden = true;
     var pago = currentPago();
-    var customer = { nombre: v('fNombre'), telefono: telDigits(v('fTel')), cedula: v('fCed'), correo: v('fCorreo'), direccion: dom ? v('fDir') : '', barrio: dom ? barrioActual() : '', ciudad: 'Quibdó', departamento: 'Chocó', notas: v('fNotas'), pago: pago, entrega: currentEntrega() };
+    var customer = { nombre: v('fNombre'), telefono: telDigits(v('fTel')), cedula: v('fCed'), correo: v('fCorreo'), direccion: v('fDir'), barrio: v('fBarrio'), ciudad: v('fCiudad'), departamento: v('fDepto'), notas: v('fNotas'), pago: pago, entrega: 'Nacional' };
     try {
       var d = await api('/api/orders', { items: itemsPayload(), coupon: S.coupon ? S.coupon.code : '', customer: customer, cliente: clienteId(), consent: { terminos: true, datos: true, version: N.versionPoliticas || '' } });
       if ($('cRecordar').checked) {
         var prev = store.get(K_PERFIL) || {};
-        store.set(K_PERFIL, { nombre: customer.nombre, telefono: customer.telefono, cedula: customer.cedula, correo: customer.correo, direccion: customer.direccion || prev.direccion || '', barrio: customer.barrio || prev.barrio || '', entrega: customer.entrega });
+        store.set(K_PERFIL, { nombre: customer.nombre, telefono: customer.telefono, cedula: customer.cedula, correo: customer.correo, direccion: customer.direccion || prev.direccion || '', barrio: customer.barrio || prev.barrio || '', ciudad: customer.ciudad, departamento: customer.departamento, entrega: customer.entrega });
       }
       else store.del(K_PERFIL);
       rememberOrder(d.numero, customer.telefono.slice(-4));
@@ -704,7 +664,7 @@
       store.set(K_ORDER, S.order);
       if (d.checkoutUrl) wompiUrl = d.checkoutUrl;
       S.cart = []; S.coupon = null; saveCart(); renderCart(); $('couponIn').value = ''; $('couponMsg').textContent = '';
-      $('orderForm').reset(); syncEntrega();
+      $('orderForm').reset(); renderCheckoutSummary();
       // Separado (pagar al recoger) o sin nada que pagar ahora: directo a "listo"
       if (!d.pricing.pagarAhora) {
         S.order.step = 'separado'; store.set(K_ORDER, S.order); MP.stale = true;
@@ -731,12 +691,12 @@
     $('payTitle').textContent = online ? 'Paga en línea' : o.pago === 'Contraentrega' ? 'Paga el domicilio' : 'Paga por transferencia o QR';
     if (!online) renderAccounts();
     if (online) renderWompiState(o.wompiEstado || '');
-    $('payAmount').innerHTML = money(val) + '<small>' + (o.pago === 'Contraentrega' ? 'Valor del domicilio. El resto (' + money(o.pricing.saldoContraentrega) + ') lo pagas al recibir.' : o.entrega === 'Recoger' ? 'Total de tu pedido (lo recoges en la tienda)' : 'Total de tu pedido con domicilio') + '</small>';
+    $('payAmount').innerHTML = money(val) + '<small>' + (o.pago === 'Contraentrega' ? 'Valor del domicilio. El resto (' + money(o.pricing.saldoContraentrega) + ') lo pagas al recibir.' : o.entrega === 'Recoger' ? 'Total de tu pedido (lo recoges en la tienda)' : o.entrega === 'Domicilio' ? 'Total de tu pedido con domicilio' : 'Total de tu pedido con envío') + '</small>';
     $('payVal').textContent = money(val);
     $('payMsg').textContent = o.numero;
     $('payCodNote').hidden = o.pago !== 'Contraentrega';
     $('payCodNote').textContent = o.pricing.freeShipping ? 'Tu pedido tiene domicilio gratis: este valor se descuenta de lo que pagas al recibir.' : 'Este pago cubre el domicilio y confirma tu pedido contraentrega.';
-    $('payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, pagué mi pedido ' + o.numero + ' por ' + money(val) + '. Te envío el comprobante.');
+    $('payWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola Punto Club, pagué mi pedido ' + o.numero + ' por ' + money(val) + '. Te envío el comprobante.');
     $('fReceipt').value = ''; fieldErr('fReceipt', ''); $('fReceipt-status').textContent = '';
     showReceiptPreview(null);
     if (N.pintar) N.pintar();
@@ -810,10 +770,10 @@
     var qr = safeUrl(a.qr);
     $('acctQrBox').hidden = $('qrSave').hidden = !qr;
     if (qr) {
-      $('acctQr').src = qr; $('acctQr').alt = 'Código QR de ' + acctName(a) + ' a nombre de ' + (a.titular || 'kAIRO');
-      $('qrSave').href = qr; $('qrSave').download = 'QR-' + acctName(a).replace(/[^\w-]+/g, '') + '-kAIRO.png';
+      $('acctQr').src = qr; $('acctQr').alt = 'Código QR de ' + acctName(a) + ' a nombre de ' + (a.titular || 'Punto Club');
+      $('qrSave').href = qr; $('qrSave').download = 'QR-' + acctName(a).replace(/[^\w-]+/g, '') + '-PuntoClub.png';
     }
-    $('acctTitular').textContent = $('acctTitular2').textContent = a.titular || 'kAIRO';
+    $('acctTitular').textContent = $('acctTitular2').textContent = a.titular || 'Punto Club';
     $('acctNumRow').hidden = !a.numero;
     $('acctTipo').textContent = a.tipo || 'Número';
     $('payKey').textContent = a.numero || '';
@@ -911,13 +871,13 @@
     $('doneNo').textContent = o.numero;
     var recoge = o.entrega === 'Recoger', saldo = o.pricing && o.pricing.saldoContraentrega != null ? o.pricing.saldoContraentrega : 0;
     $('doneTitle').textContent = o.step === 'pagado' ? '¡Pago aprobado!' : o.step === 'separado' && recoge ? '¡Te lo separamos!' : '¡Recibimos tu pedido!';
-    if (o.step === 'pagado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Tu pago en línea fue aprobado y ya estamos preparando tu pedido' + (recoge ? ' para que lo recojas en la tienda' : ' para llevarlo a tu casa en Quibdó') + '. Te escribimos por WhatsApp.';
+    if (o.step === 'pagado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Tu pago en línea fue aprobado y ya estamos preparando tu pedido' + (recoge ? ' para que lo recojas en la tienda' : ' para enviarlo') + '. Te escribimos por WhatsApp.';
     else if (o.step === 'separado') $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. ' + (recoge ? 'Tu pedido queda separado a tu nombre. Pagas ' + money(saldo) + ' cuando lo recojas en la tienda.' : 'Tu pedido quedó registrado. Pagas ' + money(saldo) + ' al recibirlo.') + ' Te escribimos por WhatsApp cuando esté listo.';
     else $('doneTxt').textContent = 'Gracias, ' + o.nombre + '. Recibimos ' + (o.comprobante ? 'la foto del comprobante de tu pago' : 'tu pedido') + '. Cuando verifiquemos el pago, tu pedido pasa a “Pago confirmado” y te escribimos por WhatsApp.';
     $('doneReceipt').href = l.recibo;
     $('doneProof').hidden = !sentProof;
     if (sentProof) { $('doneProofImg').src = sentProof; $('doneProofDl').href = sentProof; $('doneProofDl').download = 'Comprobante-' + o.numero + '.jpg'; }
-    $('doneWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, tengo una pregunta sobre mi pedido ' + o.numero);
+    $('doneWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola Punto Club, tengo una pregunta sobre mi pedido ' + o.numero);
   }
   $('doneClose').addEventListener('click', function () { finishOrder(); closeLayer($('coSheet')); });
   $('doneTrack').addEventListener('click', function () {
@@ -966,14 +926,11 @@
   /* ---------------- datos de envío recordados (solo en este dispositivo) ---------------- */
   function prefillProfile() {
     var p = store.get(K_PERFIL); if (!p) return;
-    var map = { fNombre: 'nombre', fTel: 'telefono', fCed: 'cedula', fCorreo: 'correo', fDir: 'direccion' };
+    // Los datos guardados antes del envío nacional eran de Quibdó: solo se reusa la dirección si ya trae ciudad
+    var map = { fNombre: 'nombre', fTel: 'telefono', fCed: 'cedula', fCorreo: 'correo' };
+    if (p.ciudad) { map.fDir = 'direccion'; map.fBarrio = 'barrio'; map.fCiudad = 'ciudad'; }
     Object.keys(map).forEach(function (id) { if (!$(id).value.trim() && p[map[id]]) $(id).value = p[map[id]]; });
-    if (p.barrio && !$('fBarrioSel').value) {
-      var listed = DOM.barrios.some(function (b) { return b.nombre === p.barrio; });
-      $('fBarrioSel').value = listed ? p.barrio : '__otro';
-      if (!listed) $('fBarrio').value = p.barrio;
-    }
-    if ((p.entrega === 'Recoger' || p.entrega === 'Domicilio') && !currentEntrega()) document.querySelector('input[name="entrega"][value="' + p.entrega + '"]').checked = true;
+    if (p.departamento && !$('fDepto').value && DEPTOS.indexOf(p.departamento) > -1) $('fDepto').value = p.departamento;
   }
 
   /* ---------------- favoritos ---------------- */
@@ -1137,7 +1094,7 @@
     else if (!list.length) h += '<p class="ord-empty">No tienes pedidos en “' + esc(TABS.filter(function (t) { return t[0] === MP.tab; })[0][1]) + '”.</p>';
     else h += list.map(orderCardHTML).join('');
     h += '<details class="ord-add"' + (MP.err && /4 dígitos/.test(MP.err) ? ' open' : '') + '><summary>¿Compraste desde otro celular? Agrega tu pedido</summary>' +
-      '<form id="ordAddForm" novalidate><div class="row2"><div class="field"><label for="oaNum">Número de pedido</label><input id="oaNum" autocapitalize="characters" autocomplete="off" maxlength="20" placeholder="KS-20261029-4821"></div>' +
+      '<form id="ordAddForm" novalidate><div class="row2"><div class="field"><label for="oaNum">Número de pedido</label><input id="oaNum" autocapitalize="characters" autocomplete="off" maxlength="20" placeholder="PC-20261112-4821"></div>' +
       '<div class="field"><label for="oaCel">Últimos 4 del celular</label><input id="oaCel" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="2045"></div></div>' +
       '<p class="err" id="oaErr" hidden></p><button type="submit" class="btn btn-line btn-block">Agregar a mis pedidos</button></form></details>';
     $('ordList').innerHTML = h;
@@ -1156,7 +1113,7 @@
     var p = o.pricing, items = o.items.map(function (i) {
       return '<div class="od-item"><span class="oc__th">' + itemArt(i) + '</span><div><b>' + esc(i.brand + ' ' + i.name) + '</b><small>Talla ' + esc(i.size) + (i.color ? ' · ' + esc(i.color) : '') + ' · ×' + i.qty + '</small></div><span>' + money(i.price * i.qty) + '</span></div>';
     }).join('');
-    var wa = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola kAIRO, pregunto por mi pedido ' + o.numero);
+    var wa = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola Punto Club, pregunto por mi pedido ' + o.numero);
     $('ordDetail').innerHTML =
       '<div class="od-hero od-hero--' + s + '"><span class="st st--' + s + '">' + STAGE_TXT[s] + '</span><h3>' + esc(o.statusLabel) + '</h3><p>' + esc(stageHint(o)) + '</p>' +
       (s !== 'cancelado' ? '<div class="oc__bar"><i style="width:' + progress(o) + '%"></i></div>' : '') +
@@ -1168,11 +1125,11 @@
       '<section class="od-sec"><h4>Productos</h4>' + items +
       '<div class="totals od-tot">' + (p.promoSavings ? '<div class="save"><span>Promociones</span><span>-' + money(p.promoSavings) + '</span></div>' : '') +
       (p.discount ? '<div class="save"><span>Cupón ' + esc(p.couponCode) + '</span><span>-' + money(p.discount) + '</span></div>' : '') +
-      (p.envio != null ? '<div><span>' + (o.entrega === 'Recoger' ? 'Recoger en tienda' : 'Domicilio') + '</span><span>' + (p.envio ? money(p.envio) : 'Gratis') + '</span></div>' : '') +
+      (p.envio != null ? '<div><span>' + (o.entrega === 'Recoger' ? 'Recoger en tienda' : o.entrega === 'Domicilio' ? 'Domicilio' : 'Envío nacional') + '</span><span>' + (p.envio ? money(p.envio) : 'Gratis') + '</span></div>' : '') +
       '<div class="grand"><span>Total</span><span>' + money(p.totalConEnvio) + '</span></div>' +
       ((o.pago === 'Contraentrega' || o.pago === 'En tienda') && p.saldoContraentrega ? '<div><span>' + (o.pago === 'En tienda' ? 'Pagas al recoger' : 'Pagas al recibir') + '</span><span>' + money(p.saldoContraentrega) + '</span></div>' : '') + '</div>' +
       '<button type="button" class="btn btn-line btn-block" data-rebuy="' + esc(o.numero) + '"><svg aria-hidden="true"><use href="#i-repeat"/></svg>Comprar de nuevo</button></section>' +
-      '<section class="od-sec"><h4>Entrega</h4><dl class="od-dl"><div><dt>Recibe</dt><dd>' + esc(o.nombre) + '</dd></div><div><dt>' + (o.entrega === 'Recoger' ? 'Entrega' : 'Dirección') + '</dt><dd>' + (o.entrega === 'Recoger' ? 'Recoge en la tienda' : esc(o.direccion) + ', ' + esc(o.ciudad)) + '</dd></div><div><dt>Pago</dt><dd>' + esc(PAGO_TXT[o.pago] || o.pago) + '</dd></div><div><dt>Empaque</dt><dd>Sin caja</dd></div></dl></section>' +
+      '<section class="od-sec"><h4>Entrega</h4><dl class="od-dl"><div><dt>Recibe</dt><dd>' + esc(o.nombre) + '</dd></div><div><dt>' + (o.entrega === 'Recoger' ? 'Entrega' : 'Dirección') + '</dt><dd>' + (o.entrega === 'Recoger' ? 'Recoge en la tienda' : esc(o.direccion) + ', ' + esc(o.ciudad) + (o.departamento ? ', ' + esc(o.departamento) : '')) + '</dd></div><div><dt>Pago</dt><dd>' + esc(PAGO_TXT[o.pago] || o.pago) + '</dd></div><div><dt>Empaque</dt><dd>Sin caja</dd></div></dl></section>' +
       '<div class="od-actions"><a class="btn btn-primary" href="' + esc(l.recibo) + '">Ver y descargar recibo</a><a class="btn btn-wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Preguntar por WhatsApp</a></div>';
     if (!keepScroll) { $('ordDetail').scrollTop = 0; $('ordDetail').focus({ preventScroll: true }); }
     if (o.pagoReportado && o.pagoReportado.hasComprobante) loadProof(o);
@@ -1208,7 +1165,7 @@
     if (e.target.id !== 'ordAddForm') return;
     e.preventDefault();
     var num = $('oaNum').value.trim().toUpperCase(), cel = $('oaCel').value.replace(/\D/g, '');
-    var msg = !/^KS-\d{8}-\d{4}$/.test(num) ? 'Escribe el número tal como aparece en tu recibo (KS-…).' : !/^\d{4}$/.test(cel) ? 'Escribe los últimos 4 dígitos de tu celular.' : '';
+    var msg = !/^(PC|KS)-\d{8}-\d{4}$/.test(num) ? 'Escribe el número tal como aparece en tu recibo (PC-…).' : !/^\d{4}$/.test(cel) ? 'Escribe los últimos 4 dígitos de tu celular.' : '';
     if (msg) { $('oaErr').textContent = msg; $('oaErr').hidden = false; return; }
     rememberOrder(num, cel); MP.pendingOpen = num; fetchOrders(num);
   });
@@ -1258,11 +1215,10 @@
     var s = S.settings || {};
     if (s.whatsapp && /^\d{10,13}$/.test(s.whatsapp)) WA = s.whatsapp;
     if (s.pagos && Array.isArray(s.pagos.cuentas) && s.pagos.cuentas.length) { CUENTAS = s.pagos.cuentas; if (S.order && !$('coStep2').hidden) renderAccounts(); }
-    if (s.domicilios && Array.isArray(s.domicilios.barrios)) { DOM = s.domicilios; renderBarrios(); if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
-    // Pago en línea: solo si Wompi está configurado en el servidor. Queda como opción por defecto.
-    var wr = document.querySelector('input[name="pago"][value="Wompi"]');
-    if (s.wompi && $('payWompiOpt').hidden) { $('payWompiOpt').hidden = false; wr.disabled = false; wr.checked = true; if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
-    var m = encodeURIComponent('Hola kAIRO, quiero hacer una consulta.');
+    if (s.envio != null && isFinite(s.envio)) { ENVIO = Number(s.envio); renderCart(); if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
+    if (Array.isArray(s.departamentos) && s.departamentos.length) { DEPTOS = s.departamentos; renderDeptos(); }
+    // Wompi está en pausa: la tienda solo ofrece transferencia o QR (Nequi / Bre-B)
+    var m = encodeURIComponent('Hola Punto Club, quiero hacer una consulta.');
     $('waHelp').href = 'https://wa.me/' + WA + '?text=' + m;
   }
 
@@ -1317,17 +1273,17 @@
   }
   window.addEventListener('kairo:ready', function () {
     renderResume();
-    // Enlaces a un pedido (?pedido=KS-…&c=1234 o #pedidos, p. ej. desde WhatsApp o la vieja página de seguimiento)
+    // Enlaces a un pedido (?pedido=PC-…&c=1234 o #pedidos, p. ej. desde WhatsApp o la vieja página de seguimiento)
     var qs = new URLSearchParams(location.search), lnkNum = String(qs.get('pedido') || '').toUpperCase().slice(0, 20), lnkCel = String(qs.get('c') || '').replace(/\D/g, '').slice(-4);
     var wantOrders = location.hash === '#pedidos' || !!lnkNum;
-    if (lnkNum && /^KS-\d{8}-\d{4}$/.test(lnkNum) && /^\d{4}$/.test(lnkCel)) rememberOrder(lnkNum, lnkCel);
+    if (lnkNum && /^(PC|KS)-\d{8}-\d{4}$/.test(lnkNum) && /^\d{4}$/.test(lnkCel)) rememberOrder(lnkNum, lnkCel);
     var wompiTx = qs.get('wompi') ? String(qs.get('id') || '').slice(0, 64) : '';
     if (wantOrders || qs.get('wompi')) { try { history.replaceState(null, '', location.pathname); } catch (e) { } }
     // Volvió de pagar en Wompi: se consulta el resultado real del pago
     if (wompiTx) { verifyWompi(wompiTx); return; }
     // Volvió después de una recarga o de cambiar a Nequi: lo llevamos directo al pago
     if (S.order && S.order.step === 'pago' && !stack.length) resumeOrder();
-    else if (wantOrders && !stack.length) openOrders(/^KS-\d{8}-\d{4}$/.test(lnkNum) ? lnkNum : '');
+    else if (wantOrders && !stack.length) openOrders(/^(PC|KS)-\d{8}-\d{4}$/.test(lnkNum) ? lnkNum : '');
     else if (hasHistory()) fetchOrders();
   });
   if (!document.getElementById('kLoader')) setTimeout(function () { window.dispatchEvent(new Event('kairo:ready')); }, 0);
@@ -1349,7 +1305,7 @@
     if (!canShow) { bar.hidden = true; bar.innerHTML = ''; return; }
     if (!bar.hidden) return;
     bar.hidden = false;
-    bar.innerHTML = '<div class="wrap"><span><b>Instala kAIRO</b> · ' + (installEvt ? 'ábrela desde tu pantalla de inicio y sigue tus pedidos.' : 'toca <b>Compartir</b> y luego <b>Agregar a inicio</b>.') + '</span>' +
+    bar.innerHTML = '<div class="wrap"><span><b>Instala Punto Club</b> · ' + (installEvt ? 'ábrela desde tu pantalla de inicio y sigue tus pedidos.' : 'toca <b>Compartir</b> y luego <b>Agregar a inicio</b>.') + '</span>' +
       (installEvt ? '<button type="button" class="btn btn-lime" id="installBtn">Instalar</button>' : '') +
       '<button type="button" class="link-btn" id="installX">Ahora no</button></div>';
     if (installEvt) $('installBtn').addEventListener('click', function () {

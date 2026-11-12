@@ -2,11 +2,11 @@
 <html lang="es-CO">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recibo de pedido — kAIRO Sneakers</title>
+<title>Recibo de pedido — Punto Club</title>
 <meta name="robots" content="noindex">
-<link rel="icon" href="img/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" href="img/favicon-96.png">
-<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="icon" href="img/pc-favicon.ico" sizes="any">
+<link rel="icon" type="image/png" href="img/pc-favicon-96.png">
+<link rel="apple-touch-icon" href="img/pc-icon-180.png">
 <link rel="stylesheet" href="css/fonts.css">
 <link rel="stylesheet" href="css/legal.css?v=3">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -44,7 +44,7 @@
 </head>
 <body>
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
-<header class="l-head"><div class="in"><a class="l-brand" href="/"><img src="/img/kairo-logo-blanco.png" alt="kAIRO Sneakers, ir a la tienda" width="187" height="40"></a><nav aria-label="Volver"><a href="/#pedidos">Mis pedidos</a></nav></div></header>
+<header class="l-head"><div class="in"><a class="l-brand" href="/"><img src="/img/punto-club-blanco.png" alt="Punto Club, ir a la tienda" width="187" height="40"></a><nav aria-label="Volver"><a href="/#pedidos">Mis pedidos</a></nav></div></header>
 
 <main id="contenido" tabindex="-1">
   <div id="out" aria-live="polite">
@@ -86,7 +86,7 @@
     .catch(function (e) { ask(e instanceof TypeError ? 'No pudimos consultar en este momento. Revisa tu conexión.' : e.message); });
 
   function pintar(d) {
-    document.title = 'Recibo ' + d.numero + ' — kAIRO Sneakers';
+    document.title = 'Recibo ' + d.numero + ' — Punto Club';
     var fecha = new Date(d.createdAt).toLocaleString('es-CO', { day: 'numeric', month: 'long', year: 'numeric', hour: 'numeric', minute: '2-digit' });
     var rows = d.items.map(function (i) {
       return '<tr><td>' + esc(i.brand + ' ' + i.name) + '<br><small>Talla ' + esc(i.size) + (i.color ? ' · ' + esc(i.color) : '') + '</small><br><span class="nobox">Sin caja</span></td><td class="num">' + esc(i.qty) + '</td><td class="num">' + money(i.price) + '</td><td class="num">' + money(i.price * i.qty) + '</td></tr>';
@@ -95,7 +95,7 @@
     var foot = '<tr><td colspan="3">Subtotal productos</td><td class="num">' + money(sub) + '</td></tr>';
     if (d.promoSavings) foot += '<tr><td colspan="3">Ahorro por promociones (ya incluido en los precios)</td><td class="num">-' + money(d.promoSavings) + '</td></tr>';
     if (d.discount) foot += '<tr><td colspan="3">Cupón ' + esc(d.couponCode) + '</td><td class="num">-' + money(d.discount) + '</td></tr>';
-    if (d.envio != null) foot += '<tr><td colspan="3">' + (d.entrega === 'Recoger' ? 'Recoger en la tienda' : d.entrega === 'Domicilio' ? 'Domicilio' : 'Envío') + '</td><td class="num">' + (d.envio ? money(d.envio) : 'Gratis') + '</td></tr>';
+    if (d.envio != null) foot += '<tr><td colspan="3">' + (d.entrega === 'Recoger' ? 'Recoger en la tienda' : d.entrega === 'Domicilio' ? 'Domicilio' : 'Envío nacional') + '</td><td class="num">' + (d.envio ? money(d.envio) : 'Gratis') + '</td></tr>';
     foot += '<tr class="grand"><td colspan="3">Total</td><td class="num">' + money(d.totalConEnvio) + '</td></tr>';
     var pagoTxt = d.pago === 'Contraentrega'
       ? 'Contraentrega: ' + money(d.pagarAhora) + ' por transferencia y ' + money(d.saldoContraentrega) + ' al recibir'
@@ -105,11 +105,11 @@
     $('out').innerHTML =
       '<div class="tools"><button class="btn" type="button" id="print">Descargar o imprimir (PDF)</button><a class="btn btn--line" href="/?pedido=' + encodeURIComponent(d.numero) + '&c=' + encodeURIComponent(c) + '#pedidos">Ver en Mis pedidos</a></div>' +
       '<article class="rc" aria-labelledby="rcTitle">' +
-      '<div class="rc-top"><div><img src="/img/kairo-logo-negro.png" alt="kAIRO Sneakers" width="215" height="46">' +
+      '<div class="rc-top"><div><img src="/img/punto-club-negro.png" alt="Punto Club" width="215" height="46">' +
       '<div class="rc-biz"><span data-negocio="responsable"></span> · NIT <span data-negocio="nit"></span><br><span data-negocio="direccion"></span>, <span data-negocio="ciudad"></span><br>WhatsApp <span data-negocio="telefonoVisible"></span> · <span data-negocio="correo"></span></div></div>' +
       '<div class="rc-no"><small id="rcTitle">Recibo de pedido</small><b>' + esc(d.numero) + '</b><br><span class="rc-st">' + esc(d.statusLabel) + '</span></div></div>' +
       '<dl class="rc-grid"><div><dt>Fecha</dt><dd>' + esc(fecha) + '</dd></div><div><dt>Cliente</dt><dd>' + esc(d.nombre) + '</dd></div>' +
-      '<div><dt>Entrega</dt><dd>' + esc(d.direccion) + (d.entrega === 'Recoger' ? '' : ', ' + esc(d.ciudad)) + '</dd></div><div><dt>Forma de pago</dt><dd>' + esc(pagoTxt) + '</dd></div>' +
+      '<div><dt>Entrega</dt><dd>' + esc(d.direccion) + (d.entrega === 'Recoger' ? '' : ', ' + esc(d.ciudad) + (d.departamento ? ', ' + esc(d.departamento) : '')) + '</dd></div><div><dt>Forma de pago</dt><dd>' + esc(pagoTxt) + '</dd></div>' +
       (d.guia ? '<div><dt>Guía de envío</dt><dd>' + esc(d.guia) + (d.transportadora ? ' (' + esc(d.transportadora) + ')' : '') + '</dd></div>' : '') + '</dl>' +
       '<div class="table-wrap"><table><caption class="sr-only">Productos del pedido</caption><thead><tr><th scope="col">Producto</th><th scope="col" class="num">Cant.</th><th scope="col" class="num">Precio</th><th scope="col" class="num">Valor</th></tr></thead><tbody>' + rows + '</tbody><tfoot>' + foot + '</tfoot></table></div>' +
       '<p class="rc-legal"><b>Todos los productos se entregan sin caja.</b> Precios en pesos colombianos con impuestos incluidos. Tienes derecho de retracto dentro de los 5 días hábiles siguientes a la entrega y garantía legal de 1 año; consulta <a href="/cambios-y-devoluciones.html">cambios, garantía y retracto</a>. ' +

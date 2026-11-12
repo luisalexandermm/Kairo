@@ -1,5 +1,5 @@
 -- ============================================================
---  kAIRO — esquema de base de datos
+--  Punto Club — esquema de base de datos
 --  Pega esto en: Supabase → SQL Editor → New query → Run
 -- ============================================================
 
@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS orders (
 -- Ajustes (una sola fila, id='app')
 CREATE TABLE IF NOT EXISTS settings (
   id              TEXT PRIMARY KEY DEFAULT 'app',
-  store_name      TEXT DEFAULT 'kAIRO',
+  store_name      TEXT DEFAULT 'Punto Club',
   tagline         TEXT DEFAULT 'Sneaker Store',
   whatsapp        TEXT DEFAULT '573145312045',
   hero_word       TEXT DEFAULT 'SNEAKERS',

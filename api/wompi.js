@@ -6,7 +6,7 @@
    En todos los casos el pedido solo pasa a "Pago confirmado" si Wompi dice APPROVED y el valor coincide. */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors } = require('../lib/helpers');
-const { normalizeStatus, trackingOf } = require('../lib/pedidos');
+const { ORDER_RE, normalizeStatus, trackingOf } = require('../lib/pedidos');
 const { wompiReady, checkoutUrl, getTransaction, validEvent, orderIdFromReference } = require('../lib/wompi');
 const { sendWhatsApp, adminWhatsApp } = require('../lib/whatsapp');
 
@@ -58,7 +58,7 @@ async function applyTransaction(tx) {
     result.orderStatus = 'Pago confirmado';
     await Promise.all([
       sendWhatsApp(adminWhatsApp(), `Pago aprobado en Wompi\nPedido ${numero} · ${money(wompi.valor)} · ${wompi.metodo}\n${c.nombre || ''} · ${c.direccion || ''}, ${c.barrio || ''} (Quibdó)`),
-      c.telefono ? sendWhatsApp('+57' + c.telefono, `kAIRO: recibimos tu pago de ${money(wompi.valor)} para el pedido ${numero}. Ya lo estamos preparando.`) : false
+      c.telefono ? sendWhatsApp('+57' + c.telefono, `Punto Club: recibimos tu pago de ${money(wompi.valor)} para el pedido ${numero}. Ya lo estamos preparando.`) : false
     ]).catch(() => {});
   }
   return result;
@@ -96,7 +96,7 @@ module.exports = async (req, res) => {
   if (b.accion === 'checkout') {
     const numero = String(b.numero || '').trim().toUpperCase();
     const ultimos4 = String(b.ultimos4 || '').replace(/\D/g, '');
-    if (!/^KS-\d{8}-\d{4}$/.test(numero) || !/^\d{4}$/.test(ultimos4)) return err(res, 'Pedido no válido', 400);
+    if (!ORDER_RE.test(numero) || !/^\d{4}$/.test(ultimos4)) return err(res, 'Pedido no válido', 400);
     const { data: o } = await supabase.from('orders').select('*').eq('id', numero).maybeSingle();
     const c = (o && o.customer) || {};
     if (!o || !String(c.telefono || '').endsWith(ultimos4)) return err(res, 'Pedido no encontrado', 404);

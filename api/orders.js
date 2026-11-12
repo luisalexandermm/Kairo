@@ -1,25 +1,20 @@
 'use strict';
 /* POST /api/orders — registra un pedido.
    - Recalcula precios, promociones y cupón en el servidor (nunca confía en el navegador).
-   - Asigna un número legible KS-AAAAMMDD-#### y arranca el seguimiento en "Recibido".
+   - Asigna un número legible PC-AAAAMMDD-#### y arranca el seguimiento en "Recibido".
    - Guarda la prueba de la aceptación de términos y de la autorización de datos (Ley 1581). */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
 const { priceCart } = require('../lib/pricing');
-const { loadDomicilios, precioBarrio } = require('../lib/domicilios');
+const { loadEnvio, departamento } = require('../lib/envios');
 const { makeOrderNumber, clienteHash } = require('../lib/pedidos');
-const { wompiReady, checkoutUrl } = require('../lib/wompi');
 const { sendWhatsApp, adminWhatsApp } = require('../lib/whatsapp');
 
-/* Cómo recibe el cliente: lo recoge (o lo separa) en la tienda, o domicilio en Quibdó.
-   Formas de pago por tipo de entrega. Wompi solo aparece si sus llaves están configuradas. */
-const ENTREGAS = ['Recoger', 'Domicilio'];
-function pagosDisponibles(entrega) {
-  const base = entrega === 'Recoger' ? ['Nequi', 'En tienda'] : ['Nequi', 'Contraentrega'];
-  return wompiReady() ? ['Wompi', ...base] : base;
-}
-/* Por ahora solo se hacen pedidos para entregar en Quibdó */
-const CIUDAD = 'Quibdó', DEPARTAMENTO = 'Chocó';
+/* Por ahora Punto Club solo hace envíos nacionales por transportadora y solo recibe
+   pagos por transferencia o QR (a Nequi o llave Bre-B). Wompi queda en pausa: su código
+   sigue en lib/wompi.js y api/wompi.js para los pedidos viejos que lo usaron. */
+const ENTREGAS = ['Nacional'];
+const PAGOS = ['Nequi'];
 const money = n => '$' + Number(n || 0).toLocaleString('es-CO');
 
 /* Celular colombiano: 10 dígitos que empiezan por 3 (se acepta con 57 adelante) */
@@ -34,20 +29,10 @@ function receiptText(numero, items, customer, pricing) {
   const extra = [];
   if (pricing.promoSavings) extra.push(`Ahorro por promociones: -${money(pricing.promoSavings)}`);
   if (pricing.coupon) extra.push(`Cupón ${pricing.coupon.code}: -${money(pricing.coupon.discount)}`);
-  if (customer.entrega === 'Domicilio') extra.push(`Domicilio (${customer.barrio}): ${pricing.envio ? money(pricing.envio) : 'gratis'}`);
-  const pago = !pricing.pagarAhora && customer.pago !== 'En tienda'
-    ? 'No hay nada que pagar por adelantado.'
-    : customer.pago === 'En tienda'
-    ? `Separado: pagas ${money(pricing.saldoContraentrega)} al recogerlo en la tienda.`
-    : customer.pago === 'Wompi'
-    ? `Pago en línea con Wompi: ${money(pricing.pagarAhora)}.`
-    : customer.pago === 'Nequi'
-    ? `Pago por transferencia o QR (Nequi, Bancolombia…): ${money(pricing.pagarAhora)}. Envíanos el comprobante.`
-    : `Contraentrega: domicilio ${money(pricing.pagarAhora)} por transferencia y saldo de ${money(pricing.saldoContraentrega)} al recibir.`;
-  const entrega = customer.entrega === 'Recoger'
-    ? 'Entrega: recoge en la tienda (Quibdó). Te avisamos por WhatsApp cuando esté listo.'
-    : `Entrega: domicilio en ${customer.direccion}, barrio ${customer.barrio}, ${customer.ciudad}`;
-  return `kAIRO Sneakers — Pedido ${numero}\n\n${lines}\n\n${extra.join('\n')}\nTotal: ${money(pricing.totalConEnvio)}\n${pago}\n` +
+  extra.push(`Envío nacional: ${pricing.envio ? money(pricing.envio) : 'gratis'}`);
+  const pago = `Pago por transferencia o QR (Nequi o Bre-B): ${money(pricing.pagarAhora)}. Envíanos el comprobante.`;
+  const entrega = `Envío a: ${customer.direccion}${customer.barrio ? ', ' + customer.barrio : ''}, ${customer.ciudad}, ${customer.departamento}`;
+  return `Punto Club — Pedido ${numero}\n\n${lines}\n\n${extra.join('\n')}\nTotal: ${money(pricing.totalConEnvio)}\n${pago}\n` +
     `${entrega}\nTodos los productos se entregan sin caja.\n\n` +
     `Sigue tu pedido en la sección "Mis pedidos" de la tienda (número ${numero}).`;
 }
@@ -64,23 +49,20 @@ module.exports = async (req, res) => {
   if (consent.datos !== true) return err(res, 'Debes autorizar el tratamiento de tus datos para poder enviar el pedido', 400);
 
   /* 2. Solo guardamos los datos necesarios para entregar el pedido */
-  const entrega = ENTREGAS.includes(c.entrega) ? c.entrega : null;
-  // La página vieja (guardada en el celular) mandaba "Local"/"Nacional" y no tiene los botones nuevos
-  if (!entrega && ['Local', 'Nacional', undefined].includes(c.entrega)) return err(res, 'La tienda se actualizó. Recarga la página para elegir si recoges en la tienda o quieres domicilio.', 409);
-  if (!entrega) return err(res, 'Elige si recoges en la tienda o quieres domicilio', 400);
-  const recoge = entrega === 'Recoger';
+  // La página vieja (guardada en el celular) mandaba "Recoger"/"Domicilio" y no tiene los campos nuevos
+  if (!ENTREGAS.includes(c.entrega) || !c.departamento) return err(res, 'La tienda se actualizó: ahora hacemos envíos a toda Colombia. Recarga la página para escribir tu ciudad y dirección.', 409);
   const customer = {
     nombre: cleanText(c.nombre, 120),
     telefono: celularColombia(c.telefono),
     cedula: cleanText(c.cedula, 20).replace(/[^\dA-Za-z]/g, ''),
     correo: cleanText(c.correo, 120),
-    direccion: recoge ? 'Recoge en la tienda' : cleanText(c.direccion, 200),
-    barrio: recoge ? '' : cleanText(c.barrio, 80),
-    ciudad: CIUDAD,
-    departamento: DEPARTAMENTO,
+    direccion: cleanText(c.direccion, 200),
+    barrio: cleanText(c.barrio, 80),
+    ciudad: cleanText(c.ciudad, 80),
+    departamento: departamento(c.departamento),
     notas: cleanText(c.notas, 500),
-    pago: pagosDisponibles(entrega).includes(c.pago) ? c.pago : null,
-    entrega,
+    pago: PAGOS.includes(c.pago) ? c.pago : null,
+    entrega: 'Nacional',
     empaque: 'Sin caja'
   };
   // Liga el pedido al dispositivo del cliente para "Mis pedidos" (solo se guarda el hash)
@@ -88,31 +70,27 @@ module.exports = async (req, res) => {
   if (clienteId) customer.clienteId = clienteId;
   if (!customer.nombre) return err(res, 'Escribe tu nombre completo', 400);
   if (!customer.telefono) return err(res, 'Escribe un celular colombiano válido (10 dígitos, empieza por 3)', 400);
-  if (c.ciudad && !/^quibd[oó]$/i.test(cleanText(c.ciudad, 80))) return err(res, 'Por ahora solo hacemos entregas en Quibdó.', 400);
-  if (!customer.direccion) return err(res, 'Escribe la dirección de entrega en Quibdó', 400);
-  if (!recoge && !customer.barrio) return err(res, 'Elige tu barrio para calcular el domicilio', 400);
+  if (customer.cedula.length < 5) return err(res, 'Escribe tu cédula: la transportadora la pide para entregar', 400);
+  if (!customer.departamento) return err(res, 'Elige el departamento de entrega', 400);
+  if (customer.ciudad.length < 3) return err(res, 'Escribe la ciudad o municipio de entrega', 400);
+  if (customer.direccion.length < 5) return err(res, 'Escribe la dirección de entrega', 400);
   if (customer.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.correo)) return err(res, 'El correo no es válido', 400);
-  if (!customer.pago) return err(res, 'Elige un método de pago', 400);
+  if (!customer.pago) return err(res, 'Por ahora solo recibimos pagos por transferencia o QR (Nequi o Bre-B). Recarga la página.', 400);
 
   /* 3. Precios reales */
   const r = await priceCart(supabase, items, coupon);
   if (r.error) return err(res, r.error, r.status || 400);
 
-  /* Domicilio según el barrio (máximo $10.000); recoger en la tienda no tiene costo */
-  const domicilio = recoge ? 0 : precioBarrio(await loadDomicilios(supabase), customer.barrio);
-  const envio = r.freeShipping ? 0 : domicilio;
+  /* Envío nacional: tarifa fija (se edita en el panel). Se paga todo antes de despachar. */
+  const tarifa = await loadEnvio(supabase);
+  const envio = r.freeShipping ? 0 : tarifa;
   const totalConEnvio = r.total + envio;
-  /* Wompi y Nequi: se paga todo antes de la entrega.
-     Contraentrega: se paga el valor del domicilio por Nequi como anticipo y el resto al recibir.
-     En tienda (separar): no se paga nada ahora; todo al recoger. */
-  let pagarAhora = totalConEnvio, saldoContraentrega = 0;
-  if (customer.pago === 'Contraentrega') { pagarAhora = Math.min(domicilio, totalConEnvio); saldoContraentrega = totalConEnvio - pagarAhora; }
-  if (customer.pago === 'En tienda') { pagarAhora = 0; saldoContraentrega = totalConEnvio; }
+  const pagarAhora = totalConEnvio, saldoContraentrega = 0;
   const pricing = {
     listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, subtotal: r.subtotal,
     coupon: r.coupon ? { code: r.coupon.code, description: r.coupon.description, discount: r.coupon.discount, freeShipping: r.coupon.freeShipping } : null,
     freeShipping: r.freeShipping, shippingPromo: r.shippingPromo,
-    entrega, barrio: customer.barrio, domicilio,
+    entrega: 'Nacional', tarifaEnvio: tarifa,
     envio, total: r.total, totalConEnvio, pagarAhora, saldoContraentrega
   };
   customer.consent = {
@@ -150,17 +128,14 @@ module.exports = async (req, res) => {
   const receipt = receiptText(numero, items_, customer, pricing);
   const adminNumber = adminWhatsApp();
   const [adminNotified, customerNotified] = await Promise.all([
-    sendWhatsApp(adminNumber, `Nuevo pedido kAIRO\n\n${receipt}`),
+    sendWhatsApp(adminNumber, `Nuevo pedido Punto Club\n\n${receipt}`),
     sendWhatsApp('+57' + customer.telefono, receipt)
   ]).catch(() => [false, false]);
-
-  /* 7. Pago en línea: link firmado al checkout de Wompi */
-  const wompi = customer.pago === 'Wompi' && pagarAhora > 0 ? checkoutUrl(req, { numero, amount: pagarAhora, customer }) : null;
 
   ok(res, {
     ok: true, id: numero, numero, createdAt: now,
     items: items_, pricing, pago: customer.pago,
-    checkoutUrl: wompi ? wompi.url : null,
+    checkoutUrl: null,
     adminNotified, customerNotified
   }, 201);
 };

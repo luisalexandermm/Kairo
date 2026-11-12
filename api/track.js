@@ -6,7 +6,7 @@
    por Nequi subiendo la foto del comprobante. */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, cleanText } = require('../lib/helpers');
-const { normalizeStatus, trackingOf, buildSteps } = require('../lib/pedidos');
+const { ORDER_RE, normalizeStatus, trackingOf, buildSteps } = require('../lib/pedidos');
 const { randomBytes } = require('crypto');
 
 const RECEIPT_BUCKET = 'kairo-comprobantes';
@@ -52,7 +52,7 @@ module.exports = async (req, res) => {
   const b = req.body || {};
   const numero = String(b.numero || '').trim().toUpperCase();
   const ultimos4 = String(b.ultimos4 || '').replace(/\D/g, '');
-  if (!/^KS-\d{8}-\d{4}$/.test(numero) || !/^\d{4}$/.test(ultimos4)) return err(res, 'Revisa el número del pedido y los 4 dígitos', 400);
+  if (!ORDER_RE.test(numero) || !/^\d{4}$/.test(ultimos4)) return err(res, 'Revisa el número del pedido y los 4 dígitos', 400);
 
   const { data: o, error } = await supabase.from('orders').select('*').eq('id', numero).maybeSingle();
   const tel = o && o.customer ? String(o.customer.telefono || '').replace(/\D/g, '') : '';
@@ -149,7 +149,7 @@ module.exports = async (req, res) => {
 
   ok(res, {
     numero: o.id, createdAt: o.created_at,
-    pago: o.customer.pago || '', ciudad: o.customer.ciudad || '',
+    pago: o.customer.pago || '', ciudad: o.customer.ciudad || '', departamento: o.customer.departamento || '',
     nombre: String(o.customer.nombre || '').split(' ')[0],
     entrega: o.customer.entrega || '',
     direccion: o.customer.entrega === 'Recoger' ? 'Recoge en la tienda' : maskAddress(o.customer.direccion),

@@ -1,7 +1,7 @@
 {
-  "name": "kairo-store",
+  "name": "punto-club-store",
   "version": "3.0.0",
-  "description": "Tienda kAIRO Sneakers — Vercel + Supabase",
+  "description": "Tienda Punto Club — Vercel + Supabase",
   "private": true,
   "scripts": {
     "dev": "node dev-server.js",

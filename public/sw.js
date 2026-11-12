@@ -1,16 +1,16 @@
-/* Service worker de kAIRO (PWA).
+/* Service worker de Punto Club (PWA).
    - Páginas y estilos: primero la red (siempre lo más nuevo), con copia por si no hay señal.
    - Imágenes, fuentes y scripts propios: copia local primero.
    - Nunca guarda nada de /api/ (precios, pedidos, panel).
    - No recarga la página por su cuenta: una actualización nunca interrumpe un pago.
    - El panel (/admin) no pasa por aquí: se usa desde el navegador, por fuera de la app.
    ⚠️ Al subir un ?v= en index.html o en las páginas, cámbialo también aquí y sube CACHE. */
-const CACHE = 'kairo-v20';
+const CACHE = 'puntoclub-v23';
 const APP_SHELL = [
-  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=17', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
-  '/js/tienda.js?v=16', '/js/pwa.js', '/manifest.webmanifest', '/img/kairo-logo-negro.png', '/img/kairo-logo-blanco.png', '/img/nequi-qr.png',
-  '/img/icon-180.png', '/img/icon-192.png', '/img/icon-512.png', '/img/icon-maskable-512.png',
-  '/img/favicon-96.png', '/seguimiento.html', '/recibo.html'
+  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=18', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
+  '/js/tienda.js?v=17', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
+  '/img/pc-icon-180.png', '/img/pc-icon-192.png', '/img/pc-icon-512.png', '/img/pc-icon-maskable-512.png',
+  '/img/pc-favicon-96.png', '/favicon.ico', '/seguimiento.html', '/recibo.html'
 ];
 
 self.addEventListener('install', event => {

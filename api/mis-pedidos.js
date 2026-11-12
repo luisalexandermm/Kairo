@@ -8,7 +8,7 @@
    Nunca devuelve cédula, correo, teléfono completo ni la dirección completa. */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors } = require('../lib/helpers');
-const { clienteHash, publicOrder } = require('../lib/pedidos');
+const { ORDER_RE, clienteHash, publicOrder } = require('../lib/pedidos');
 
 const hits = new Map();
 function tooMany(ip) {
@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
   const extra = (Array.isArray(b.extra) ? b.extra : []).slice(0, 25).map(x => ({
     numero: String((x && x.numero) || '').trim().toUpperCase(),
     ultimos4: String((x && x.ultimos4) || '').replace(/\D/g, '')
-  })).filter(x => /^KS-\d{8}-\d{4}$/.test(x.numero) && /^\d{4}$/.test(x.ultimos4));
+  })).filter(x => ORDER_RE.test(x.numero) && /^\d{4}$/.test(x.ultimos4));
   if (!hash && !extra.length) return ok(res, { orders: [], invalid: [] });
 
   const found = new Map();

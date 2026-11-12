@@ -1,5 +1,5 @@
 /* =====================================================================
-   Pantalla de carga de kAIRO — "Cargando tu experiencia · Arma tu estilo"
+   Pantalla de carga de Punto Club — "Cargando tu experiencia · Arma tu estilo"
    Se arma el tenis del logo pieza por pieza (suela, cuerpo, franja, cordones,
    líneas de velocidad) mientras carga el catálogo; al terminar, el tenis
    "arranca" hacia la derecha y la cortina sube.

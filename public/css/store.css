@@ -1,5 +1,5 @@
 /* =====================================================================
-   kAIRO Sneakers — tienda
+   Punto Club — tienda
    Verde menta con acentos lima (#c6ff3d) del logo. Móvil primero.
    ===================================================================== */
 
@@ -2684,11 +2684,22 @@ fieldset {
 
 .kl-word {
   font-family: 'Anton',sans-serif;
-  font-size: clamp(3rem,15vw,5.4rem);
+  font-size: clamp(2.6rem,12vw,5rem);
   line-height: .9;
   letter-spacing: .02em;
   transform: skewX(-8deg);
   margin-top: 6px;
+}
+
+/* El punto lima de la marca, entre PUNTO y CLUB */
+.kl-word .kl-dot {
+  display: inline-block;
+  width: .36em;
+  height: .36em;
+  margin: 0 .14em;
+  border-radius: 50%;
+  background: var(--lime);
+  vertical-align: .2em;
 }
 
 .kl-word small {

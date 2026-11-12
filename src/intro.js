@@ -1,5 +1,5 @@
 /* =====================================================================
-   kAIRO — animación de entrada: un tenis que se arma pieza por pieza.
+   Punto Club — animación de entrada: un tenis que se arma pieza por pieza.
    Three.js dibuja el tenis en 3D y GSAP coordina la animación.
 
    Este archivo es el código fuente. La tienda usa la versión empaquetada
@@ -51,7 +51,7 @@ function start() {
     eyelet: mat('#c9d6cf', 0.3, 0.6)
   };
 
-  /* ---------- piezas del tenis (diseño propio de kAIRO) ---------- */
+  /* ---------- piezas del tenis (diseño propio de Punto Club) ---------- */
   const shoe = new Group();
   scene.add(shoe);
   const W = 1.3; // ancho del tenis
@@ -124,7 +124,7 @@ function start() {
     eyelets.add(e);
   }));
 
-  // Franja lateral kAIRO: una ola que va del talón a la puntera (se "dibuja" en la animación)
+  // Franja lateral Punto Club: una ola que va del talón a la puntera (se "dibuja" en la animación)
   function stripe(side) {
     const z = side * (W / 2 + 0.035);
     const curve = new CatmullRomCurve3([
@@ -204,7 +204,7 @@ function start() {
     // cordones: caen uno por uno
     .from(laces.children.map(l => l.position), { y: '+=1.6', duration: 0.45, stagger: 0.08, ease: 'bounce.out' }, 2.2)
     .to(M.lace, { opacity: 1, duration: 0.2 }, 2.2)
-    // franja kAIRO: se dibuja de talón a puntera
+    // franja Punto Club: se dibuja de talón a puntera
     .to(draw, { v: 1, duration: 0.7, ease: 'power2.inOut', onUpdate: () => {
       const n = Math.floor(draw.v * stripeCount / 3) * 3;
       stripeL.geometry.setDrawRange(0, n); stripeR.geometry.setDrawRange(0, n);
@@ -213,7 +213,7 @@ function start() {
     .to(shoe.rotation, { y: 0.55, x: 0.14, duration: 2.6, ease: 'power2.inOut' }, 1.2)
     .to(shoe.position, { y: 0.25, duration: 0.6, ease: 'power2.out' }, 3.1)
     .to(shoe.position, { y: 0, duration: 0.5, ease: 'power2.in' }, 3.7)
-    // nombre kAIRO
+    // nombre Punto Club
     .fromTo('#intro .intro__word span', { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.55, stagger: 0.06, ease: 'power4.out' }, 2.9)
     .fromTo('#intro .intro__tag', { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5 }, 3.35)
     // salida: el tenis sale disparado y la cortina sube

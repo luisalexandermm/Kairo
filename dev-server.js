@@ -91,6 +91,6 @@ http.createServer(async (req, res) => {
   fs.createReadStream(file).pipe(res);
 
 }).listen(PORT, () => {
-  console.log(`\n  kAIRO dev  →  http://localhost:${PORT}`);
+  console.log(`\n  Punto Club dev  →  http://localhost:${PORT}`);
   console.log(`  Panel      →  http://localhost:${PORT}/admin.html\n`);
 });

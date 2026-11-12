@@ -3,7 +3,8 @@
    anuncios (banners, barra superior, dinámicas) y ajustes públicos de la tienda. */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors } = require('../lib/helpers');
-const { productPrice, isLive, ENVIO } = require('../lib/pricing');
+const { productPrice, isLive } = require('../lib/pricing');
+const { precioEnvio, DEPARTAMENTOS } = require('../lib/envios');
 
 module.exports = async (req, res) => {
   allowCors(res);
@@ -68,9 +69,10 @@ module.exports = async (req, res) => {
     settings: {
       storeName: settings.store_name, tagline: settings.tagline, whatsapp: settings.whatsapp,
       heroHeadline: settings.hero_headline, shippingNote: settings.shipping_note,
-      anticipo: ENVIO,
-      wompi: require('../lib/wompi').wompiReady(),
-      domicilios: require('../lib/domicilios').sanitize(settings.domicilios),
+      // Envío nacional con tarifa fija; Wompi en pausa (solo transferencia o QR a Nequi / Bre-B)
+      envio: precioEnvio(settings.envio_nacional),
+      departamentos: DEPARTAMENTOS,
+      wompi: false,
       pagos: require('../lib/cuentas').sanitize(settings.pagos)
     },
     products: (products || []).map(mapProduct),

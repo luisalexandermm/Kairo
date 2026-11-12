@@ -1,7 +1,7 @@
 {
-  "name": "kAIRO Sneakers",
-  "short_name": "kAIRO",
-  "description": "Tenis, sandalias y chanclas para hombre y mujer. Paga por Nequi y sigue tu pedido.",
+  "name": "Punto Club",
+  "short_name": "Punto Club",
+  "description": "Tenis, sandalias y chanclas para hombre y mujer con envío a toda Colombia. Paga por QR a Nequi o Bre-B y sigue tu pedido.",
   "lang": "es-CO",
   "start_url": "/?pwa=1",
   "scope": "/",
@@ -10,11 +10,11 @@
   "background_color": "#0e0e0e",
   "theme_color": "#0e0e0e",
   "icons": [
-    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "/img/pc-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/pc-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/img/pc-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Seguir mi pedido", "url": "/seguimiento.html", "icons": [{ "src": "/img/icon-192.png", "sizes": "192x192" }] }
+    { "name": "Seguir mi pedido", "url": "/seguimiento.html", "icons": [{ "src": "/img/pc-icon-192.png", "sizes": "192x192" }] }
   ]
 }
