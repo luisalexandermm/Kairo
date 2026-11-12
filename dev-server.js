@@ -60,6 +60,7 @@ http.createServer(async (req, res) => {
 
   if (path_.startsWith('/api/')) {
     req.body = await parseBody(req).catch(() => ({}));
+    req.query = Object.fromEntries(url.searchParams); // como en Vercel
     req.url  = path_;  // strip query for route matching
 
     try {
@@ -72,6 +73,7 @@ http.createServer(async (req, res) => {
       else if (path_ === '/api/mis-pedidos')   return await handler('mis-pedidos')(req, res);
       else if (path_ === '/api/wompi')         return await handler('wompi')(req, res);
       else if (path_ === '/api/push')          return await handler('push')(req, res);
+      else if (path_ === '/api/opiniones')     return await handler('opiniones')(req, res);
       else if (path_.startsWith('/api/admin')) return await handler('admin')(req, res);
       else { res.writeHead(404); return res.end(JSON.stringify({ error: 'Ruta no encontrada' })); }
     } catch (error) {

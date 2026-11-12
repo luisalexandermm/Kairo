@@ -4685,3 +4685,410 @@ mark.pendiente {
   }
   .od-anim--enviado .od-anim__ico { left: 50%; margin-left: -23px; }
 }
+
+/* =====================================================================
+   Opiniones de clientes
+   ===================================================================== */
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  vertical-align: middle;
+}
+
+.stars svg {
+  width: 16px;
+  height: 16px;
+  color: #d3ddd7;
+}
+
+.stars svg.on {
+  color: #f5b301;
+}
+
+.pd-reviews {
+  grid-column: 1 / -1;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.pd-reviews h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.pd-reviews h4 span {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.rv-empty {
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.rv-sum {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--soft);
+}
+
+.rv-avg {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 92px;
+}
+
+.rv-avg b {
+  font-size: 2.3rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.rv-avg .stars svg {
+  width: 15px;
+  height: 15px;
+}
+
+.rv-avg small {
+  color: var(--muted);
+  font-size: .78rem;
+}
+
+.rv-bars {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+
+.rv-bars li {
+  display: grid;
+  grid-template-columns: 26px 1fr 22px;
+  gap: 6px;
+  align-items: center;
+  font-size: .78rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.rv-bars i {
+  height: 7px;
+  border-radius: 99px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.rv-bars i b {
+  display: block;
+  height: 100%;
+  width: var(--w,0%);
+  background: #f5b301;
+  border-radius: 99px;
+  animation: pc-bar .9s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.rv-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.rv-facts span {
+  font-size: .82rem;
+  padding: 6px 10px;
+  border-radius: 99px;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.rv-list {
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.rv {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.rv:last-child {
+  border-bottom: 0;
+}
+
+.rv__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rv__ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .74rem;
+  font-weight: 800;
+  color: var(--price);
+}
+
+.rv__ok svg {
+  width: 13px;
+  height: 13px;
+}
+
+.rv__who {
+  font-size: .82rem;
+  color: var(--muted);
+  margin: 4px 0 6px;
+}
+
+.rv__who b {
+  color: var(--ink);
+}
+
+.rv__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.rv__tags span {
+  font-size: .74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--soft);
+  color: var(--green);
+}
+
+.rv__txt {
+  font-size: .92rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.rv__pics {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rv__pics a {
+  display: block;
+  width: 76px;
+  height: 76px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--soft);
+  font-size: .6rem;
+  color: var(--muted);
+}
+
+.rv__pics img {
+  width: 76px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+  background: var(--soft);
+}
+
+.rv__reply {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--lime);
+  border-radius: 0 12px 12px 0;
+  background: #f6faf8;
+  font-size: .86rem;
+}
+
+.rv__reply b {
+  display: block;
+  font-size: .78rem;
+  margin-bottom: 2px;
+}
+
+/* --- Formulario en "Mis pedidos" --- */
+.od-rev .od-item .btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.rv-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .8rem;
+  font-weight: 800;
+  color: var(--price);
+}
+
+.rv-done svg {
+  width: 15px;
+  height: 15px;
+}
+
+.rv-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #f6faf8;
+  border: 1.5px solid var(--line);
+  animation: pc-step .4s cubic-bezier(.2,.8,.2,1) both;
+}
+
+.rv-form h5 {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.rv-in {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.rv-in legend {
+  font-weight: 800;
+  font-size: .88rem;
+  margin-bottom: 6px;
+}
+
+/* Estrellas para elegir: van de 5 a 1 en el HTML y se invierten para que el hover pinte hacia la izquierda */
+.rv-stars {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.rv-stars input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.rv-stars label {
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 8px;
+  color: #cfd9d3;
+  transition: transform .12s, color .12s;
+}
+
+.rv-stars label svg {
+  width: 34px;
+  height: 34px;
+  display: block;
+}
+
+.rv-stars input:checked ~ label,
+.rv-stars label:hover,
+.rv-stars label:hover ~ label {
+  color: #f5b301;
+}
+
+.rv-stars input:checked + label {
+  transform: scale(1.12);
+}
+
+.rv-stars input:focus-visible + label {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.rv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rv-chips label {
+  position: relative;
+}
+
+.rv-chips input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.rv-chips span {
+  display: inline-block;
+  padding: 9px 14px;
+  border-radius: 99px;
+  border: 1.6px solid var(--line);
+  background: #fff;
+  font-weight: 700;
+  font-size: .88rem;
+}
+
+.rv-chips input:checked + span {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+.rv-chips input:focus-visible + span {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.rv-prev {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rv-prev span {
+  position: relative;
+}
+
+.rv-prev img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+.rv-prev button {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--ink);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rv-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rv-bars i b, .rv-form { animation: none !important; }
+  .rv-stars label { transition: none; }
+}

@@ -467,6 +467,7 @@
     $('pdQty').textContent = '1';
     $('pdErr').hidden = true;
     syncFavUI();
+    loadReviews(p.id);
     var out = Number(p.stock) === 0;
     $('pdAdd').disabled = out; $('pdBuy').disabled = out;
     if (out) { $('pdErr').hidden = false; $('pdErr').textContent = 'Agotado por ahora. Escríbenos por WhatsApp y te avisamos.'; }
@@ -784,14 +785,15 @@
     var nb = $('acctTabs').querySelector('[data-acct="' + S.acct + '"]'); if (nb) nb.focus();
   });
 
-  function receiptData(file) {
+  function receiptData(file, maxBytes, maxDim) {
+    maxBytes = maxBytes || 1800 * 1024; maxDim = maxDim || 1600;
     if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return Promise.reject(new Error('Elige una imagen JPG, PNG o WEBP.'));
     if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error('La foto original debe pesar menos de 12 MB.'));
     return new Promise(function (resolve, reject) {
       var url = URL.createObjectURL(file), image = new Image();
       image.onload = async function () {
         URL.revokeObjectURL(url);
-        var scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+        var scale = Math.min(1, maxDim / Math.max(image.naturalWidth, image.naturalHeight));
         var width = Math.max(1, Math.round(image.naturalWidth * scale));
         var height = Math.max(1, Math.round(image.naturalHeight * scale));
         var canvas = document.createElement('canvas'), context = canvas.getContext('2d');
@@ -803,7 +805,7 @@
             context.drawImage(image, 0, 0, width, height);
             for (var quality of [0.82, 0.72, 0.62, 0.52]) {
               var blob = await new Promise(function (done) { canvas.toBlob(done, 'image/jpeg', quality); });
-              if (blob && blob.size <= 1800 * 1024) {
+              if (blob && blob.size <= maxBytes) {
                 var reader = new FileReader();
                 reader.onload = function () { resolve(reader.result); };
                 reader.onerror = function () { reject(new Error('No se pudo leer la foto.')); };
@@ -933,6 +935,149 @@
     Object.keys(map).forEach(function (id) { if (!$(id).value.trim() && p[map[id]]) $(id).value = p[map[id]]; });
     if (p.departamento && !$('fDepto').value && DEPTOS.indexOf(p.departamento) > -1) $('fDepto').value = p.departamento;
   }
+
+  /* ---------------- opiniones de clientes ----------------
+     En cada producto: promedio, cómo queda la talla, si llegó bien y las opiniones con fotos.
+     Solo opinan compradores con el pedido Entregado (desde "Mis pedidos"). */
+  var REV = {};          // opiniones ya cargadas por producto (por esta visita)
+  var AJUSTE_TXT = { pequena: 'Queda pequeña', justa: 'Talla justa', grande: 'Queda grande' };
+  function starsHTML(n, cls) {
+    var r = Math.round(Number(n) * 2) / 2, h = '';
+    for (var i = 1; i <= 5; i++) h += '<svg class="' + (Math.round(Number(n)) >= i ? 'on' : '') + '" aria-hidden="true"><use href="#i-star"/></svg>';
+    return '<span class="stars' + (cls ? ' ' + cls : '') + '" role="img" aria-label="' + String(r).replace('.', ',') + ' de 5 estrellas">' + h + '</span>';
+  }
+  async function loadReviews(pid) {
+    var box = $('pdReviews'); if (!box) return;
+    if (REV[pid]) { renderReviews(pid); return; }
+    box.setAttribute('aria-busy', 'true');
+    box.innerHTML = '<h4 id="pdRevT">Opiniones</h4><p class="rv-empty">Cargando opiniones…</p>';
+    try { REV[pid] = await api('/api/opiniones?producto=' + encodeURIComponent(pid)); }
+    catch (e) { REV[pid] = null; box.innerHTML = '<h4 id="pdRevT">Opiniones</h4><p class="rv-empty">No pudimos cargar las opiniones ahora.</p>'; box.removeAttribute('aria-busy'); return; }
+    if (S.sel && S.sel.p && S.sel.p.id === pid) renderReviews(pid);
+  }
+  function renderReviews(pid) {
+    var box = $('pdReviews'), d = REV[pid]; if (!box || !d) return;
+    box.removeAttribute('aria-busy');
+    var r = d.resumen || {}, list = d.opiniones || [];
+    if (!r.total) {
+      box.innerHTML = '<h4 id="pdRevT">Opiniones</h4><p class="rv-empty">Todavía no hay opiniones de este modelo. Si lo compraste, opina desde <button type="button" class="link-btn" data-open-orders>Mis pedidos</button> cuando te llegue.</p>';
+      return;
+    }
+    var aj = r.ajuste || {}, ajTot = (aj.pequena || 0) + (aj.justa || 0) + (aj.grande || 0);
+    var ajTop = ajTot ? ['justa', 'pequena', 'grande'].sort(function (a, b) { return (aj[b] || 0) - (aj[a] || 0); })[0] : '';
+    var dist = (r.distribucion || []).map(function (n, i) { return { e: i + 1, n: n }; }).reverse();
+    box.innerHTML = '<h4 id="pdRevT">Opiniones <span>(' + r.total + ')</span></h4>' +
+      '<div class="rv-sum"><div class="rv-avg"><b>' + String(r.promedio).replace('.', ',') + '</b>' + starsHTML(r.promedio) + '<small>' + r.total + (r.total === 1 ? ' opinión' : ' opiniones') + '</small></div>' +
+      '<ul class="rv-bars" aria-label="Opiniones por estrellas">' + dist.map(function (x) { var pct = r.total ? Math.round(x.n / r.total * 100) : 0; return '<li><span>' + x.e + '★</span><i aria-hidden="true"><b style="--w:' + pct + '%"></b></i><span>' + x.n + '</span></li>'; }).join('') + '</ul></div>' +
+      '<div class="rv-facts">' + (ajTop ? '<span>👟 <b>' + Math.round((aj[ajTop] || 0) / ajTot * 100) + '%</b> dice: ' + AJUSTE_TXT[ajTop].toLowerCase() + '</span>' : '') +
+      (r.llegoBien != null ? '<span>📦 <b>' + r.llegoBien + '%</b> le llegó en buen estado</span>' : '') + '</div>' +
+      '<ul class="rv-list">' + list.map(reviewHTML).join('') + '</ul>';
+  }
+  function reviewHTML(o) {
+    var f = new Date(o.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+    var tags = [o.talla ? 'Talla ' + o.talla : '', o.color || '', o.tallaAjuste ? AJUSTE_TXT[o.tallaAjuste] : '', o.llegoBien === true ? 'Llegó en buen estado' : o.llegoBien === false ? 'Llegó con problemas' : ''].filter(Boolean);
+    return '<li class="rv"><div class="rv__top">' + starsHTML(o.rating) + '<span class="rv__ok"><svg aria-hidden="true"><use href="#i-check"/></svg>Compra verificada</span></div>' +
+      '<p class="rv__who"><b>' + esc(o.nombre) + '</b>' + (o.ciudad ? ' · ' + esc(o.ciudad) : '') + ' · ' + esc(f) + '</p>' +
+      (tags.length ? '<p class="rv__tags">' + tags.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</p>' : '') +
+      '<p class="rv__txt">' + esc(o.comentario) + '</p>' +
+      ((o.fotos || []).length ? '<div class="rv__pics">' + o.fotos.map(function (u, i) { var s = safeHttps(u); return s ? '<a href="' + esc(s) + '" target="_blank" rel="noopener"><img src="' + esc(s) + '" alt="Foto ' + (i + 1) + ' de ' + esc(o.nombre) + '" loading="lazy" decoding="async"></a>' : ''; }).join('') + '</div>' : '') +
+      (o.respuesta ? '<div class="rv__reply"><b>Respuesta de Punto Club</b><p>' + esc(o.respuesta) + '</p></div>' : '') + '</li>';
+  }
+  function safeHttps(u) { u = String(u || ''); return u.indexOf('https://') === 0 && !/[\s"'<>]/.test(u) ? u : ''; }
+
+  /* --- Formulario de opinión (dentro del detalle de un pedido entregado en "Mis pedidos") --- */
+  var revFotos = [];   // fotos ya reducidas, listas para enviar
+  function reviewSecHTML(o) {
+    if (o.status !== 'Entregado' || !Array.isArray(o.opinados)) return '';
+    var pend = o.items.filter(function (i) { return o.opinados.indexOf(i.id) < 0; });
+    return '<section class="od-sec od-rev"><h4>¿Cómo te llegó?</h4>' +
+      (pend.length ? '<p class="hint">Tu opinión ayuda a otros a elegir talla y modelo. Se publica con tu nombre corto y tu ciudad.</p>' : '<p class="hint">¡Gracias por opinar! Tu opinión ya se ve en la tienda.</p>') +
+      o.items.map(function (i) {
+        var done = o.opinados.indexOf(i.id) > -1;
+        return '<div class="od-item"><span class="oc__th">' + itemArt(i) + '</span><div><b>' + esc(i.brand + ' ' + i.name) + '</b><small>Talla ' + esc(i.size) + (i.color ? ' · ' + esc(i.color) : '') + '</small></div>' +
+          (done ? '<span class="rv-done"><svg aria-hidden="true"><use href="#i-check"/></svg>Opinaste</span>' : '<button type="button" class="btn btn-lime btn-sm" data-review="' + esc(o.numero) + '|' + esc(i.id) + '"><svg aria-hidden="true"><use href="#i-star"/></svg>Opinar</button>') + '</div>';
+      }).join('') + '<div id="revFormBox"></div></section>';
+  }
+  function starInput(name, label, req) {
+    var h = '<fieldset class="rv-in"><legend>' + label + (req ? ' *' : '') + '</legend><div class="rv-stars">';
+    for (var i = 5; i >= 1; i--) h += '<input type="radio" id="' + name + i + '" name="' + name + '" value="' + i + '"' + (req ? ' required' : '') + '><label for="' + name + i + '" title="' + i + (i === 1 ? ' estrella' : ' estrellas') + '"><svg aria-hidden="true"><use href="#i-star"/></svg><span class="sr-only">' + i + (i === 1 ? ' estrella' : ' estrellas') + '</span></label>';
+    return h + '</div></fieldset>';
+  }
+  function chips(name, legend, opts) {
+    return '<fieldset class="rv-in"><legend>' + legend + '</legend><div class="rv-chips">' + opts.map(function (o) {
+      return '<label><input type="radio" name="' + name + '" value="' + o[0] + '"><span>' + o[1] + '</span></label>';
+    }).join('') + '</div></fieldset>';
+  }
+  function openReviewForm(key) {
+    var parts = key.split('|'), o = MP.list.find(function (x) { return x.numero === parts[0]; }); if (!o) return;
+    var it = o.items.find(function (i) { return String(i.id) === parts[1]; }); if (!it) return;
+    revFotos = [];
+    var box = $('revFormBox'); if (!box) return;
+    box.innerHTML = '<form id="revForm" class="rv-form" novalidate data-num="' + esc(o.numero) + '" data-pid="' + esc(it.id) + '">' +
+      '<h5>Tu opinión de ' + esc(it.brand + ' ' + it.name) + '</h5>' +
+      starInput('rvRating', 'Calificación general', true) +
+      chips('rvBien', '¿Llegó en buen estado?', [['si', 'Sí, perfecto'], ['no', 'Llegó con un problema']]) +
+      chips('rvAjuste', '¿Cómo te quedó la talla?', [['pequena', 'Pequeña'], ['justa', 'Justa'], ['grande', 'Grande']]) +
+      starInput('rvEnvio', 'Rapidez del envío') + starInput('rvCalidad', 'Calidad del zapato') +
+      '<div class="field"><label for="rvTxt">Cuéntanos tu experiencia *</label><textarea id="rvTxt" maxlength="1000" rows="4" placeholder="¿Cómo te llegaron? ¿Qué tal la calidad y la comodidad?" aria-describedby="rvTxt-e"></textarea><p class="err" id="rvTxt-e" hidden></p></div>' +
+      '<div class="field"><label for="rvPics">Fotos de tus zapatos (opcional, máximo 3)</label><input id="rvPics" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby="rvPics-h"><p class="hint" id="rvPics-h">Se reducen antes de enviarse. No subas fotos con tu cara, documentos o direcciones.</p><div class="rv-prev" id="rvPrev"></div></div>' +
+      '<label class="consent"><input type="checkbox" id="rvOk"><span>Autorizo publicar esta opinión y mis fotos en la tienda con mi nombre corto (<b>' + esc(nombreCorto(o.nombre)) + '</b>) y mi ciudad. *</span></label>' +
+      '<p class="form-err" id="rvErr" role="alert" hidden></p>' +
+      '<div class="rv-actions"><button type="submit" class="btn btn-primary" id="rvBtn">Publicar opinión</button><button type="button" class="btn btn-light" data-review-cancel>Cancelar</button></div></form>';
+    box.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    setTimeout(function () { var f = $('rvRating5'); if (f) f.focus({ preventScroll: true }); }, 350);
+  }
+  function nombreCorto(n) { var p = String(n || '').trim().split(/\s+/); return p[0] ? p[0] + (p.length > 1 ? ' ' + p[p.length - 1].charAt(0) + '.' : '') : 'Cliente'; }
+  function renderRevPrev() {
+    var p = $('rvPrev'); if (!p) return;
+    p.innerHTML = revFotos.map(function (src, i) { return '<span><img src="' + src + '" alt="Foto ' + (i + 1) + ' elegida"><button type="button" data-rmpic="' + i + '" aria-label="Quitar foto ' + (i + 1) + '">×</button></span>'; }).join('');
+  }
+  $('ordersSheet').addEventListener('change', async function (e) {
+    if (e.target.id !== 'rvPics') return;
+    var files = [].slice.call(e.target.files || []), room = 3 - revFotos.length;
+    if (files.length > room) toast('Puedes subir máximo 3 fotos');
+    for (var i = 0; i < Math.min(room, files.length); i++) {
+      try { revFotos.push(await receiptData(files[i], 700 * 1024, 1280)); } catch (x) { toast(x.message || 'No pudimos usar una de las fotos'); }
+    }
+    e.target.value = ''; renderRevPrev();
+  });
+  $('ordersSheet').addEventListener('click', function (e) {
+    var rv = e.target.closest('[data-review]');
+    if (rv) { openReviewForm(rv.dataset.review); return; }
+    if (e.target.closest('[data-review-cancel]')) { var b = $('revFormBox'); if (b) b.innerHTML = ''; revFotos = []; return; }
+    var rm = e.target.closest('[data-rmpic]');
+    if (rm) { revFotos.splice(Number(rm.dataset.rmpic), 1); renderRevPrev(); }
+  });
+  $('ordersSheet').addEventListener('submit', async function (e) {
+    if (e.target.id !== 'revForm') return;
+    e.preventDefault();
+    var f = e.target, val = function (n) { var r = f.querySelector('input[name="' + n + '"]:checked'); return r ? r.value : ''; };
+    var txt = $('rvTxt').value.trim(), msg = '';
+    if (!val('rvRating')) msg = 'Elige de 1 a 5 estrellas en la calificación general.';
+    else if (txt.length < 10) { fieldErr('rvTxt', 'Cuéntanos un poco más (mínimo 10 letras).'); $('rvTxt').focus(); return; }
+    else if (!$('rvOk').checked) msg = 'Marca la autorización para poder publicar tu opinión.';
+    fieldErr('rvTxt', '');
+    if (msg) { $('rvErr').textContent = msg; $('rvErr').hidden = false; return; }
+    $('rvErr').hidden = true;
+    var o = MP.list.find(function (x) { return x.numero === f.dataset.num; }); if (!o) return;
+    var btn = $('rvBtn'); btn.disabled = true; btn.textContent = revFotos.length ? 'Subiendo fotos…' : 'Publicando…';
+    try {
+      await api('/api/opiniones', {
+        numero: o.numero, ultimos4: o.ultimos4, productId: f.dataset.pid, autorizo: true,
+        rating: Number(val('rvRating')), envio: Number(val('rvEnvio')) || null, calidad: Number(val('rvCalidad')) || null,
+        llegoBien: val('rvBien') ? val('rvBien') === 'si' : null, tallaAjuste: val('rvAjuste') || null,
+        comentario: txt, fotos: revFotos
+      });
+      (o.opinados = o.opinados || []).push(f.dataset.pid);
+      delete REV[f.dataset.pid]; revFotos = [];
+      saveMis(); renderOrderDetail(o.numero, true);
+      toast('¡Gracias! Tu opinión ya está publicada ⭐');
+    } catch (err) {
+      if (err.status === 409 && /Ya opinaste/.test(err.message)) { (o.opinados = o.opinados || []).push(f.dataset.pid); renderOrderDetail(o.numero, true); }
+      $('rvErr').textContent = err instanceof TypeError ? 'Sin conexión. Revisa tu internet e intenta de nuevo.' : err.message; $('rvErr').hidden = false;
+      btn.disabled = false; btn.textContent = 'Publicar opinión';
+    }
+  });
 
   /* ---------------- favoritos ---------------- */
   var favs = (store.get(K_FAV) || []).filter(function (x) { return typeof x === 'string'; }).slice(0, 100);
@@ -1122,7 +1267,7 @@
     if (s === 'proceso' && o.status === 'Recibido') return 'Recibimos tu comprobante. Lo estamos verificando.';
     if (s === 'proceso') return o.statusLabel + '. Te avisamos cuando salga.';
     if (s === 'enviado') return o.guia ? 'Guía ' + o.guia + (o.transportadora ? ' · ' + o.transportadora : '') : 'Tu pedido va en camino.';
-    if (s === 'entregado') return '¡Entregado! Esperamos que lo disfrutes.';
+    if (s === 'entregado') return Array.isArray(o.opinados) && o.opinados.length < o.items.length ? '¡Entregado! Cuéntanos cómo te llegaron ⭐' : '¡Entregado! Esperamos que lo disfrutes.';
     return 'Este pedido fue cancelado.';
   }
   function updOrdBadge() {
@@ -1222,6 +1367,7 @@
       (s !== 'cancelado' ? '<section class="od-sec"><h4>Seguimiento</h4><ol class="tl" aria-label="Estados del pedido">' + steps + '</ol></section>' : '') +
       shipCardHTML(o) +
       (isActive(o) ? '<div data-push-slot>' + pushCardHTML(false) + '</div>' : '') +
+      reviewSecHTML(o) +
       (o.nota ? '<div class="od-note"><b>Mensaje de la tienda:</b> ' + esc(o.nota) + '</div>' : '') +
       (o.pagoReportado && o.pagoReportado.hasComprobante ? '<section class="od-sec" id="odProof"><h4>Tu comprobante</h4><p class="hint">Cargando…</p></section>' : '') +
       '<section class="od-sec"><h4>Productos</h4>' + items +

@@ -10,6 +10,7 @@
     { "src": "api/admin.js", "use": "@vercel/node" },
     { "src": "api/wompi.js", "use": "@vercel/node" },
     { "src": "api/push.js", "use": "@vercel/node" },
+    { "src": "api/opiniones.js", "use": "@vercel/node" },
     { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
@@ -35,6 +36,7 @@
     { "src": "/api/mis-pedidos", "dest": "/api/mis-pedidos.js" },
     { "src": "/api/wompi", "dest": "/api/wompi.js" },
     { "src": "/api/push", "dest": "/api/push.js" },
+    { "src": "/api/opiniones", "dest": "/api/opiniones.js" },
     { "src": "/api/admin", "dest": "/api/admin.js" },
     { "src": "/api/admin/(.*)", "dest": "/api/admin.js" },
     { "src": "/(.*)", "dest": "/public/$1" }

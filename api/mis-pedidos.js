@@ -59,5 +59,13 @@ module.exports = async (req, res) => {
   const orders = [...found.values()]
     .sort((a, b2) => String(b2.created_at).localeCompare(String(a.created_at)))
     .map(publicOrder);
+  // Productos que ya tienen opinión (para no pedirla dos veces). Si la tabla aún no existe, se ignora.
+  const entregados = orders.filter(o => o.status === 'Entregado').map(o => o.numero);
+  if (entregados.length) {
+    const { data: ops } = await supabase.from('reviews').select('order_id,product_id').in('order_id', entregados).then(r => r, () => ({ data: [] }));
+    const por = {};
+    (ops || []).forEach(r => { (por[r.order_id] = por[r.order_id] || []).push(r.product_id); });
+    orders.forEach(o => { if (o.status === 'Entregado') o.opinados = por[o.numero] || []; });
+  }
   ok(res, { orders, invalid });
 };

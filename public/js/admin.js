@@ -99,14 +99,14 @@
     var jobs = {
       products: api('/admin/products'), orders: api('/admin/orders'), settings: api('/admin/settings'),
       promos: api('/admin/promos'), coupons: api('/admin/coupons'), announcements: api('/admin/announcements'), pqrs: api('/admin/pqrs'),
-      stats: api('/admin/stats')
+      stats: api('/admin/stats'), opiniones: api('/admin/opiniones')
     };
     var keys = Object.keys(jobs), res = await Promise.allSettled(keys.map(function (k) { return jobs[k]; }));
     var errors = [];
     res.forEach(function (r, i) { var k = keys[i]; if (r.status === 'fulfilled') D[k] = r.value; else { errors.push(r.reason.message); if (k !== 'stats' && k !== 'settings') D[k + 'Error'] = r.reason.message; } });
     res.forEach(function (r, i) { if (r.status === 'fulfilled') delete D[keys[i] + 'Error']; });
     notifyNewOrders(D.orders);
-    renderStats(); renderSales(); renderOrders(); renderProducts(); Object.keys(FORMS).forEach(renderForm); renderPqr(); fillSettings();
+    renderStats(); renderSales(); renderOrders(); renderProducts(); Object.keys(FORMS).forEach(renderForm); renderPqr(); renderOpiniones(); fillSettings();
     if (errors.length) toast(errors[0], 5000);
   }
   /* Cada 20 s: con el panel a la vista se recarga todo; en segundo plano (u otra pestaña)
@@ -910,6 +910,55 @@
   $('pqrList').addEventListener('submit', async function (e) {
     var f = e.target.closest('[data-pqr]'); if (!f) return; e.preventDefault();
     try { await api('/admin/pqrs/' + encodeURIComponent(f.dataset.pqr), { method: 'PUT', body: { estado: f.estado.value, respuesta: f.respuesta.value } }); await loadAll(); toast('PQR actualizada'); }
+    catch (err) { toast(err.message, 4500); }
+  });
+
+  /* ---------------- opiniones de clientes ---------------- */
+  var revFilter = 'todas';
+  var AJ_TXT = { pequena: 'Talla pequeña', justa: 'Talla justa', grande: 'Talla grande' };
+  function starsTxt(n) { n = Math.round(Number(n) || 0); return '<span class="rv-st" aria-label="' + n + ' de 5 estrellas">' + '★★★★★'.slice(0, n) + '<i>' + '★★★★★'.slice(n) + '</i></span>'; }
+  function renderOpiniones() {
+    var box = $('revList'); if (!box) return;
+    var R = D.opiniones || { lista: [] }, all = R.lista || [];
+    if (D.opinionesError) { box.innerHTML = '<p class="form-msg bad">' + esc(D.opinionesError) + '</p>'; return; }
+    if (R.falta) { box.innerHTML = '<p class="ref-box">' + esc(R.falta) + '</p>'; $('revSum').innerHTML = ''; return; }
+    var pub = all.filter(function (r) { return r.estado === 'publicada'; });
+    var avg = pub.length ? (pub.reduce(function (s, r) { return s + r.rating; }, 0) / pub.length) : 0;
+    var sinResp = all.filter(function (r) { return !r.respuesta && r.estado === 'publicada'; }).length;
+    $('revSum').innerHTML = [
+      { v: all.length, l: 'Opiniones' }, { v: pub.length ? avg.toFixed(1).replace('.', ',') + ' ★' : '—', l: 'Promedio publicado' },
+      { v: all.filter(function (r) { return r.rating <= 2; }).length, l: 'Con 1 o 2 estrellas' }, { v: sinResp, l: 'Sin responder' }
+    ].map(function (x) { return '<div class="stat"><b>' + esc(x.v) + '</b><span>' + x.l + '</span></div>'; }).join('');
+    var FILT = [['todas', 'Todas'], ['sin', 'Sin responder'], ['bajas', '1–2 estrellas'], ['ocultas', 'Ocultas']];
+    $('revTabs').innerHTML = FILT.map(function (f) { return '<button type="button" data-revf="' + f[0] + '" aria-pressed="' + (revFilter === f[0]) + '">' + f[1] + '</button>'; }).join('');
+    var list = all.filter(function (r) {
+      return revFilter === 'sin' ? !r.respuesta && r.estado === 'publicada' : revFilter === 'bajas' ? r.rating <= 2 : revFilter === 'ocultas' ? r.estado === 'oculta' : true;
+    });
+    box.innerHTML = list.map(function (r) {
+      var p = D.products.find(function (x) { return x.id === r.product_id; });
+      var tags = [r.talla ? 'Talla ' + r.talla : '', r.color || '', r.talla_ajuste ? AJ_TXT[r.talla_ajuste] : '', r.llego_bien === true ? 'Llegó bien' : r.llego_bien === false ? '⚠️ Llegó con problema' : '',
+        r.envio ? 'Envío ' + r.envio + '★' : '', r.calidad ? 'Calidad ' + r.calidad + '★' : ''].filter(Boolean);
+      return '<article class="order-card' + (r.estado === 'oculta' ? ' rv-hidden' : '') + (r.rating <= 2 ? ' rv-low' : '') + '">' +
+        '<div class="order-card__top"><div><h2 class="rv-prod">' + esc(p ? p.brand + ' ' + p.name : r.product_id) + '</h2><small>' + fdate(r.created_at) + ' · pedido ' + esc(r.order_id) + '</small></div>' + starsTxt(r.rating) + '</div>' +
+        '<div class="order-meta"><span class="pill ' + (r.estado === 'publicada' ? 'on' : 'off') + '">' + (r.estado === 'publicada' ? 'Publicada' : 'Oculta') + '</span><span class="pill off">' + esc(r.nombre) + (r.ciudad ? ' · ' + esc(r.ciudad) : '') + '</span>' + tags.map(function (t) { return '<span class="pill off">' + esc(t) + '</span>'; }).join('') + '</div>' +
+        '<p class="pqr-msg">' + esc(r.comentario) + '</p>' +
+        ((r.fotos || []).length ? '<div class="rv-pics">' + r.fotos.map(function (u, i) { var s = safeUrl(u); return s ? '<a href="' + esc(s) + '" target="_blank" rel="noopener"><img src="' + esc(s) + '" alt="Foto ' + (i + 1) + ' de la opinión" loading="lazy"></a>' : ''; }).join('') + '</div>' : '') +
+        '<form class="tl-form" data-rev="' + esc(r.id) + '"><div class="field full"><label for="rr-' + esc(r.id) + '">Respuesta pública de Punto Club (opcional)</label><textarea id="rr-' + esc(r.id) + '" name="respuesta" maxlength="800" rows="2" placeholder="Ej.: ¡Gracias por tu compra, Ana! Nos alegra que te quedaran perfectos.">' + esc(r.respuesta || '') + '</textarea></div>' +
+        '<div class="full order-actions"><button class="btn btn-primary btn-sm" type="submit">Guardar respuesta</button>' +
+        '<button class="btn btn-line btn-sm" type="button" data-revtoggle="' + esc(r.id) + '" data-to="' + (r.estado === 'publicada' ? 'oculta' : 'publicada') + '">' + (r.estado === 'publicada' ? 'Ocultar' : 'Volver a publicar') + '</button>' +
+        '<button class="btn-danger" type="button" style="margin-left:auto" data-del="opiniones" data-id="' + esc(r.id) + '">Eliminar</button></div></form></article>';
+    }).join('') || '<div class="panel"><p class="empty">' + (all.length ? 'No hay opiniones en esta vista.' : 'Todavía no hay opiniones. Aparecen cuando un cliente con el pedido Entregado opina desde “Mis pedidos”.') + '</p></div>';
+  }
+  $('revTabs').addEventListener('click', function (e) { var b = e.target.closest('[data-revf]'); if (!b) return; revFilter = b.dataset.revf; renderOpiniones(); });
+  $('revList').addEventListener('submit', async function (e) {
+    var f = e.target.closest('[data-rev]'); if (!f) return; e.preventDefault();
+    try { await api('/admin/opiniones/' + encodeURIComponent(f.dataset.rev), { method: 'PUT', body: { respuesta: f.respuesta.value.trim() } }); await loadAll(); toast(f.respuesta.value.trim() ? 'Respuesta publicada' : 'Respuesta quitada'); }
+    catch (err) { toast(err.message, 4500); }
+  });
+  $('revList').addEventListener('click', async function (e) {
+    var t = e.target.closest('[data-revtoggle]'); if (!t) return;
+    if (t.dataset.to === 'oculta' && !confirm('¿Ocultar esta opinión de la tienda?\n\nHazlo solo si es ofensiva, tiene datos personales o no habla del producto. Ocultar opiniones solo por ser negativas puede considerarse publicidad engañosa.')) return;
+    try { await api('/admin/opiniones/' + encodeURIComponent(t.dataset.revtoggle), { method: 'PUT', body: { estado: t.dataset.to } }); await loadAll(); toast(t.dataset.to === 'oculta' ? 'Opinión oculta' : 'Opinión publicada de nuevo'); }
     catch (err) { toast(err.message, 4500); }
   });
 

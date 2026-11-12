@@ -142,6 +142,36 @@ module.exports = async (req, res) => {
     return ok(res, { products: totalP, activeProducts: activeP, promos, orders, newOrders, revenue, pqrPending: pq.count || 0, storage: 'supabase' });
   }
 
+  /* -------- OPINIONES DE CLIENTES -------- */
+  if (section === 'opiniones') {
+    if (method === 'GET') {
+      const { data, error } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(500);
+      if (error) {
+        if (/reviews/.test(error.message)) return ok(res, { lista: [], falta: 'Ejecuta lib/migracion-opiniones-2026-11.sql en Supabase para activar las opiniones.' });
+        return err(res, error.message, 500);
+      }
+      return ok(res, { lista: data || [] });
+    }
+    if (method === 'PUT' && id) {
+      const up = {};
+      if (body.estado != null) { if (!['publicada', 'oculta'].includes(body.estado)) return err(res, 'Estado no válido', 400); up.estado = body.estado; }
+      if (body.respuesta != null) { up.respuesta = cleanText(body.respuesta, 800) || null; up.respuesta_at = up.respuesta ? nowIso() : null; }
+      const { data, error } = await supabase.from('reviews').update(up).eq('id', id).select().single();
+      if (error) return err(res, error.message, 500);
+      return ok(res, data);
+    }
+    if (method === 'DELETE' && id) {
+      const { data: r } = await supabase.from('reviews').select('fotos').eq('id', id).maybeSingle();
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      if (error) return err(res, error.message, 500);
+      const { BUCKET, rutaDesdeUrl } = require('../lib/opiniones');
+      const rutas = ((r && r.fotos) || []).map(rutaDesdeUrl).filter(Boolean);
+      if (rutas.length) await supabase.storage.from(BUCKET).remove(rutas).then(() => {}, () => {});
+      return ok(res, { ok: true });
+    }
+    return err(res, 'Método no permitido', 405);
+  }
+
   /* -------- AVISOS DE PEDIDOS NUEVOS EN LOS DISPOSITIVOS DE LA TIENDA -------- */
   if (section === 'push') {
     if (method === 'GET') return ok(res, { activo: pushReady(), publicKey: pushReady() ? PUBLIC_KEY : '', tabla: await tablaLista(supabase) });

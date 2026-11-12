@@ -19,4 +19,4 @@ create index if not exists push_subs_cliente on push_subs (cliente);
 create index if not exists push_subs_pedidos on push_subs using gin (pedidos);
 
 -- Seguridad: nadie desde el navegador puede leerla (sin políticas = solo el servidor)
-alter table push_subs enable row level securit
+alter table push_subs enable row level security;

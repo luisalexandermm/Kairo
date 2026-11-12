@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/img/pc-icon-180.png">
 <meta name="theme-color" content="#0e0e0e">
 <link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/admin.css?v=12">
+<link rel="stylesheet" href="/css/admin.css?v=13">
 <script src="/js/negocio.js"></script>
 </head>
 <body>
@@ -56,6 +56,7 @@
       <button class="nav-item" data-view="banners">Banners del inicio</button>
       <button class="nav-item" data-view="barra">Barra de aviso</button>
       <button class="nav-item" data-view="dinamicas">Dinámicas</button>
+      <button class="nav-item" data-view="opiniones">Opiniones</button>
       <button class="nav-item" data-view="pqr">PQR <span class="count" id="navPqr" hidden></span></button>
       <button class="nav-item" data-view="ajustes">Ajustes</button>
     </nav>
@@ -151,6 +152,14 @@
     <section class="view" id="view-banners" data-form="banners"></section>
     <section class="view" id="view-barra" data-form="barra"></section>
     <section class="view" id="view-dinamicas" data-form="dinamicas"></section>
+
+    <!-- Opiniones -->
+    <section class="view" id="view-opiniones" aria-labelledby="h-op">
+      <div class="head"><div><h1 class="display" id="h-op">Opiniones</h1><p>Lo que dicen tus clientes. Solo opinan compradores con el pedido Entregado y se publican solas. Oculta solo las ofensivas, con datos personales o que no hablen del producto: esconder las negativas puede considerarse publicidad engañosa. Responder (bien o mal) genera confianza.</p></div><button class="btn btn-line btn-sm" data-reload>Actualizar</button></div>
+      <div class="stats" id="revSum"></div>
+      <div class="tabs" id="revTabs" role="group" aria-label="Filtrar opiniones"></div>
+      <div id="revList"></div>
+    </section>
 
     <!-- PQR -->
     <section class="view" id="view-pqr" aria-labelledby="h-pqr">
@@ -261,6 +270,6 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/js/admin.js?v=15"></script>
+<script src="/js/admin.js?v=16"></script>
 </body>
 </html>
