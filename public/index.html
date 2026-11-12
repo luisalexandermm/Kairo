@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Punto Club">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=18">
+<link rel="stylesheet" href="css/store.css?v=19">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -97,6 +97,8 @@
 <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
 <symbol id="i-box" viewBox="0 0 24 24"><path d="M3.5 7.5 12 3.5l8.5 4v9L12 20.5l-8.5-4zM3.5 7.5 12 11.5l8.5-4M12 11.5v9M7.8 5.5l8.4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></symbol>
 <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0v4.2l1.6 2.4a.9.9 0 0 1-.75 1.4H5.15a.9.9 0 0 1-.75-1.4L6 14.2z M9.8 20.2a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M15.5 8.5V6.2a1.7 1.7 0 0 0-1.7-1.7H6.2a1.7 1.7 0 0 0-1.7 1.7v7.6c0 .94.76 1.7 1.7 1.7h2.3" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
 <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7M20 4v4.7h-4.7M20 12a8 8 0 0 1-13.7 5.6L4 15.3M4 20v-4.7h4.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="s-low"viewBox="0 0 260 140"><path d="M8 118c-3-14 4-24 16-28 10-3 16-9 20-18 5-11 12-21 24-27 16-8 33-9 49-6 12 2 21 9 27 19 4 7 10 12 19 13 14 2 30 1 45 6 14 5 23 15 25 26 2 9-2 15-11 15H18c-5 0-8-1-10 0Z" fill="currentColor"/><path d="M60 44c8-5 20-8 33-7 15 1 25 8 30 17" stroke="rgba(255,255,255,.5)" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M46 60l10-16M58 66l11-17M71 71l11-18" stroke="rgba(255,255,255,.6)" stroke-width="3.2" stroke-linecap="round"/><path d="M150 58c20-3 45 0 62 14 8 6 12 14 10 22" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/><path d="M10 124h236" stroke="#fff" stroke-width="5" opacity=".7"/></symbol>
 <symbol id="s-high" viewBox="0 0 260 140"><path d="M10 118c-3-13 3-22 14-26 9-3 14-8 17-16 3-9 4-20 4-32 0-9 5-14 14-14h44c9 0 13 5 13 14 0 14 3 25 12 33 7 6 16 9 27 10 16 2 36 2 52 8 13 5 21 14 22 24 1 8-3 13-11 13H20c-6 0-9-2-10-4Z" fill="currentColor"/><path d="M60 36h44M60 52h44M60 68h44" stroke="rgba(255,255,255,.45)" stroke-width="4" stroke-linecap="round"/><path d="M150 62c20-2 44 2 60 16" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" opacity=".85"/><path d="M12 124h234" stroke="#fff" stroke-width="5" opacity=".7"/></symbol>
@@ -395,6 +397,7 @@
         <img class="proof-img" id="doneProofImg" alt="Comprobante de pago que enviaste">
         <a class="btn btn-line btn-block" id="doneProofDl" href="#">Descargar mi comprobante</a>
       </div>
+      <div id="donePush"></div>
       <p class="ok-note"><svg aria-hidden="true"><use href="#i-box"/></svg><span>Tu pedido quedó guardado en <b>Mis pedidos</b>. Desde ahí ves su estado en cualquier momento, sin escribir el número.</span></p>
       <div style="display:grid;gap:10px">
         <button type="button" class="btn btn-primary" id="doneTrack"><svg aria-hidden="true"><use href="#i-box"/></svg>Ver en Mis pedidos</button>
@@ -426,7 +429,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/tienda.js?v=17"></script>
+<script src="js/tienda.js?v=18"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>

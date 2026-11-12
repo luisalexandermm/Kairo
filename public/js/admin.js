@@ -389,6 +389,20 @@
       return { label: label, state: o.status === 'Cancelado' ? 'todo' : i < idx ? 'done' : i === idx ? (i === STEPS.length - 1 ? 'done' : 'current') : 'todo', at: i <= idx ? at(k) : null };
     });
   }
+  /* Mensaje de WhatsApp para avisar al cliente del estado actual de su pedido nacional */
+  function waEstado(o, nom) {
+    var c = o.customer || {}, t = o.tracking || {}, pr = o.pricing || {}, link = trackLink(o);
+    var hola = 'Hola ' + (nom || '') + ', ';
+    switch (o.status) {
+      case 'Recibido': return ['Avisar: recibimos el pedido', hola + 'recibimos tu pedido ' + o.id + ' en Punto Club. Para confirmarlo paga ' + money(pr.pagarAhora || o.total) + ' por QR o transferencia y envíanos el comprobante. Sigue tu pedido aquí: ' + link];
+      case 'Pago confirmado': return ['Avisar: pago confirmado', hola + '¡confirmamos el pago de tu pedido ' + o.id + '! 💚 Ya lo estamos alistando para enviarlo a ' + (c.ciudad || 'tu ciudad') + '. Sigue cada paso aquí: ' + link];
+      case 'En preparación': return ['Avisar: en preparación', hola + 'tu pedido ' + o.id + ' se está empacando 📦. Apenas salga te enviamos el número de guía. Síguelo aquí: ' + link];
+      case 'Enviado': return ['Avisar: enviado con guía', hola + '¡tu pedido ' + o.id + ' ya va en camino a ' + (c.ciudad || 'tu ciudad') + '! 🚚' + (t.guia ? ' Transportadora: ' + (t.transportadora || '—') + '. Número de guía: ' + t.guia + '.' : '') + (t.link ? ' Rastréalo aquí: ' + t.link : '') + ' También lo ves en: ' + link];
+      case 'Entregado': return ['Avisar: entregado', hola + 'tu pedido ' + o.id + ' aparece como entregado 🎉. ¡Gracias por comprar en Punto Club! Si algo no está bien, escríbenos por aquí.'];
+      case 'Cancelado': return ['Avisar: cancelado', hola + 'tu pedido ' + o.id + ' fue cancelado. Si tienes dudas o quieres hacerlo de nuevo, escríbenos por aquí.'];
+      default: return null;
+    }
+  }
   function trackLink(o) { var t = String((o.customer || {}).telefono || '').slice(-4); return location.origin + '/seguimiento.html?pedido=' + encodeURIComponent(o.id) + '&c=' + t; }
   function renderOrders() {
     $('ordTabs').innerHTML = ORD_TABS.map(function (t) {
@@ -423,8 +437,7 @@
         ? ['Avisar: listo para recoger', 'Hola ' + nom + ', tu pedido ' + o.id + ' de Punto Club ya está listo para recoger en la tienda' + (N.direccion ? ' (' + N.direccion + ')' : '') + (N.horario ? ', horario ' + N.horario : '') + '.' + (c.pago === 'En tienda' && pr.saldoContraentrega ? ' Recuerda que pagas ' + money(pr.saldoContraentrega) + ' al recogerlo.' : '') + ' ¡Te esperamos!']
         : c.entrega === 'Domicilio'
         ? ['Avisar: va en camino', 'Hola ' + nom + ', tu pedido ' + o.id + ' de Punto Club va en camino a ' + (c.direccion || 'tu dirección') + (c.barrio ? ', barrio ' + c.barrio : '') + '.' + (pr.saldoContraentrega ? ' Ten listos ' + money(pr.saldoContraentrega) + ' para pagar al recibir.' : '')]
-        : c.entrega === 'Nacional'
-        ? ['Avisar: ya lo enviamos', 'Hola ' + nom + ', tu pedido ' + o.id + ' de Punto Club ya va en camino a ' + (c.ciudad || 'tu ciudad') + '.' + (t.guia ? ' Transportadora: ' + (t.transportadora || '') + ', guía ' + t.guia + '.' : '') + ' Puedes seguirlo aquí: ' + trackLink(o)]
+        : c.entrega === 'Nacional' ? waEstado(o, nom)
         : null;
       var isLocal = c.entrega === 'Recoger' || c.entrega === 'Domicilio';
       return '<article class="order-card' + (o.status === 'Recibido' ? ' is-new' : '') + '" aria-labelledby="o-' + esc(o.id) + '">' +
@@ -440,12 +453,13 @@
         (isLocal ? '<input type="hidden" name="guia" value="' + esc(t.guia || '') + '">' : '<div class="field"><label for="gu-' + esc(o.id) + '">Número de guía</label><input id="gu-' + esc(o.id) + '" name="guia" value="' + esc(t.guia || '') + '" maxlength="60"></div>') +
         (c.entrega === 'Recoger' ? '<input type="hidden" name="transportadora" value="' + esc(t.transportadora || '') + '">'
           : '<div class="field"><label for="tr-' + esc(o.id) + '">' + (c.entrega === 'Domicilio' ? 'Domiciliario' : 'Transportadora') + '</label><input id="tr-' + esc(o.id) + '" name="transportadora" list="' + (c.entrega === 'Domicilio' ? 'riders' : 'carriers') + '" value="' + esc(t.transportadora || '') + '" maxlength="60"' + (c.entrega === 'Domicilio' ? ' placeholder="Quién lo lleva"' : '') + '></div>') +
+        (isLocal ? '' : '<div class="field full"><label for="lk-' + esc(o.id) + '">Enlace de rastreo (opcional)</label><input id="lk-' + esc(o.id) + '" name="link" type="url" inputmode="url" value="' + esc(t.link || '') + '" maxlength="300" placeholder="https://… (si la transportadora te da un enlace directo)"><small>Si lo dejas vacío, el cliente ve el botón a la página de rastreo de Servientrega o Coordinadora, o solo la guía para copiar.</small></div>') +
         '<div class="field full"><label for="no-' + esc(o.id) + '">Mensaje para el cliente (se ve en su seguimiento)</label><input id="no-' + esc(o.id) + '" name="nota" value="' + esc(t.nota || '') + '" maxlength="400" placeholder="' + (c.entrega === 'Recoger' ? 'Ej.: Ya está listo, pasa después de las 2 p. m.' : 'Ej.: Sale hoy en la tarde') + '"></div>' +
         '<div class="full order-actions"><button class="btn btn-primary btn-sm" type="submit">Guardar seguimiento</button>' +
         '<button class="btn btn-line btn-sm" type="button" data-receipt="' + esc(o.id) + '">Ver recibo</button>' +
         '<button class="btn btn-line btn-sm" type="button" data-copylink="' + esc(o.id) + '">Copiar enlace de seguimiento</button>' +
         (tel ? '<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57' + esc(tel.slice(-10)) + '?text=' + encodeURIComponent(waText) + '">WhatsApp al cliente</a>' : '') +
-        (tel && waQuick ? '<a class="btn btn-line btn-sm" target="_blank" rel="noopener" href="https://wa.me/57' + esc(tel.slice(-10)) + '?text=' + encodeURIComponent(waQuick[1]) + '">' + esc(waQuick[0]) + '</a>' : '') +
+        (tel && waQuick ? '<a class="btn btn-wa-quick btn-sm" data-wa-quick="' + esc(o.id) + '" target="_blank" rel="noopener" href="https://wa.me/57' + esc(tel.slice(-10)) + '?text=' + encodeURIComponent(waQuick[1]) + '">' + esc(waQuick[0]) + '</a>' : '') +
         '<button class="btn-danger" type="button" style="margin-left:auto" data-del="orders" data-id="' + esc(o.id) + '">Eliminar</button></div>' +
         '</form></article>';
     }).join('') || '<div class="panel"><p class="empty">No hay pedidos en esta vista.</p></div>';
@@ -457,6 +471,8 @@
     var f = e.target.closest('[data-track]'); if (!f) return; e.preventDefault();
     var id = f.dataset.track, o = D.orders.find(function (x) { return x.id === id; });
     var body = { status: f.status.value, guia: f.guia.value.trim(), transportadora: f.transportadora.value.trim(), nota: f.nota.value.trim() };
+    if (f.link) body.link = f.link.value.trim();
+    var cambioEstado = o && o.status !== body.status;
     if (o && o.status === 'Recibido' && body.status !== 'Recibido' && body.status !== 'Cancelado' &&
       !(o.customer && o.customer.wompi && o.customer.wompi.status === 'APPROVED') &&
       !(o.customer && o.customer.pago === 'En tienda') &&
@@ -465,7 +481,13 @@
     try {
       var upd = await api('/admin/orders/' + encodeURIComponent(id), { method: 'PUT', body: body });
       D.orders = D.orders.map(function (x) { return x.id === id ? upd : x; });
-      renderOrders(); renderStats(); toast('Seguimiento de ' + id + ' guardado');
+      renderOrders(); renderStats();
+      var avisoTxt = upd.avisos > 0 ? ' · notificación enviada al celular del cliente' : upd.avisos === 0 ? ' · el cliente no tiene avisos activados' : '';
+      toast('Seguimiento de ' + id + ' guardado' + avisoTxt + (cambioEstado ? '. Avísale también por WhatsApp 👇' : ''), 6000);
+      if (cambioEstado) {
+        var wb = document.querySelector('[data-wa-quick="' + (window.CSS && CSS.escape ? CSS.escape(id) : id) + '"]');
+        if (wb) { wb.classList.add('pulse'); wb.scrollIntoView({ block: 'center', behavior: 'smooth' }); setTimeout(function () { wb.focus({ preventScroll: true }); }, 400); }
+      }
     } catch (err) { toast(err.message, 4500); btn.disabled = false; }
   });
   $('orderList').addEventListener('click', async function (e) {

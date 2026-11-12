@@ -878,6 +878,7 @@
     $('doneProof').hidden = !sentProof;
     if (sentProof) { $('doneProofImg').src = sentProof; $('doneProofDl').href = sentProof; $('doneProofDl').download = 'Comprobante-' + o.numero + '.jpg'; }
     $('doneWa').href = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola Punto Club, tengo una pregunta sobre mi pedido ' + o.numero);
+    renderPushSlots();
   }
   $('doneClose').addEventListener('click', function () { finishOrder(); closeLayer($('coSheet')); });
   $('doneTrack').addEventListener('click', function () {
@@ -984,8 +985,75 @@
   var MP = {
     list: Array.isArray(misSaved.cache) ? misSaved.cache : [],
     extra: Array.isArray(misSaved.extra) ? misSaved.extra.filter(function (x) { return x && x.numero && x.ultimos4; }) : [],
-    tab: 'todos', open: '', loading: false, fetchedAt: 0, stale: false, err: ''
+    tab: 'todos', open: '', loading: false, fetchedAt: 0, stale: false, err: '', changed: {}
   };
+  /* ---------------- avisos del pedido en el celular (web push) ----------------
+     El cliente los activa una vez; luego le llega una notificación con cada cambio
+     (pago confirmado, en preparación, enviado con guía, entregado), aunque la app esté cerrada. */
+  var K_AVISOS = 'kairo.avisos.v1', PUSH_KEY = '';
+  function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function isStandalone() { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } }
+  // 'on' | 'off' | 'denied' | 'ios' (iPhone sin instalar la app) | 'na' (no disponible)
+  function pushState() {
+    if (!PUSH_KEY) return 'na';
+    if (!pushSupported()) return isIOS() && !isStandalone() ? 'ios' : 'na';
+    if (Notification.permission === 'denied') return 'denied';
+    return store.get(K_AVISOS) && Notification.permission === 'granted' ? 'on' : 'off';
+  }
+  function b64ToBytes(k) {
+    var s = atob((k + '==='.slice((k.length + 3) % 4)).replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(s.length);
+    for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
+    return a;
+  }
+  function pushSig() { return MP.extra.map(function (x) { return x.numero; }).sort().join(',') + '|' + ((store.get(K_CLIENTE) || {}).id ? 1 : 0); }
+  function swReady() { return Promise.race([navigator.serviceWorker.ready, new Promise(function (_, no) { setTimeout(function () { no(new Error('sw')); }, 8000); })]); }
+  var pushBusy = false;
+  async function enablePush(quiet) {
+    if (pushBusy) return; pushBusy = true;
+    try {
+      var perm = Notification.permission === 'granted' ? 'granted' : quiet ? Notification.permission : await Notification.requestPermission();
+      if (perm !== 'granted') { if (!quiet) toast(perm === 'denied' ? 'Bloqueaste los avisos. Puedes activarlos en los ajustes del navegador.' : 'Los avisos quedaron sin activar.'); return; }
+      var reg = await swReady();
+      var sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(PUSH_KEY) });
+      await api('/api/push', { accion: 'suscribir', sub: sub.toJSON(), cliente: (store.get(K_CLIENTE) || {}).id ? clienteId() : '', pedidos: MP.extra });
+      store.set(K_AVISOS, { at: Date.now(), sig: pushSig() });
+      if (!quiet) toast('¡Listo! Te avisaremos en este celular cada vez que tu pedido avance.');
+    } catch (e) {
+      if (!quiet) toast(e && e.status ? e.message : 'No pudimos activar los avisos en este navegador.');
+    } finally { pushBusy = false; renderPushSlots(); }
+  }
+  async function disablePush() {
+    try {
+      var reg = await swReady(), sub = await reg.pushManager.getSubscription();
+      if (sub) { api('/api/push', { accion: 'quitar', endpoint: sub.endpoint }).catch(function () { }); await sub.unsubscribe(); }
+    } catch (e) { }
+    store.del(K_AVISOS); toast('Avisos desactivados en este celular'); renderPushSlots();
+  }
+  // Si ya estaban activos y el cliente agregó pedidos nuevos, se actualiza la suscripción en silencio
+  function syncPush() { var a = store.get(K_AVISOS); if (pushState() === 'on' && (!a || a.sig !== pushSig())) enablePush(true); }
+  function pushCardHTML(compact) {
+    var st = pushState();
+    if (st === 'on') return '<p class="push-on"><svg aria-hidden="true"><use href="#i-bell"/></svg><span>Avisos activados en este celular</span><button type="button" class="link-btn" data-push-off>Desactivar</button></p>';
+    if (st === 'off') return '<div class="push-card' + (compact ? ' push-card--compact' : '') + '"><span class="push-card__ico" aria-hidden="true"><svg><use href="#i-bell"/></svg></span><div><b>Te avisamos cada paso</b><p>Recibe una notificación cuando confirmemos tu pago, despachemos tu pedido y te enviemos la guía.</p></div><button type="button" class="btn btn-lime btn-sm" data-push-on>Activar avisos</button></div>';
+    if (st === 'denied') return '<p class="push-off">Los avisos están bloqueados en este navegador. Actívalos en los ajustes del sitio si quieres recibirlos.</p>';
+    if (st === 'ios') return '<p class="push-off"><svg aria-hidden="true"><use href="#i-bell"/></svg><span>En iPhone, para recibir avisos de tu pedido instala la app: toca <b>Compartir</b> y luego <b>Agregar a inicio</b>.</span></p>';
+    return '';
+  }
+  function renderPushSlots() {
+    document.querySelectorAll('[data-push-slot]').forEach(function (el) { el.innerHTML = pushCardHTML(el.hasAttribute('data-compact')); });
+    var dp = $('donePush'); if (dp) dp.innerHTML = pushCardHTML(true);
+  }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-push-on]')) enablePush(false);
+    else if (e.target.closest('[data-push-off]')) disablePush();
+    var cg = e.target.closest('[data-copy-guia]');
+    if (cg) {
+      var g = cg.getAttribute('data-copy-guia');
+      (navigator.clipboard ? navigator.clipboard.writeText(g) : Promise.reject()).then(function () { toast('Guía ' + g + ' copiada'); cg.classList.add('copied'); setTimeout(function () { cg.classList.remove('copied'); }, 1600); }, function () { window.prompt('Copia tu número de guía:', g); });
+    }
+  });
+
   function saveMis() { store.set(K_MIS, { extra: MP.extra.slice(0, 25), cache: MP.list.slice(0, 30), at: Date.now() }); }
   function rememberOrder(numero, ultimos4) {
     if (!numero || !/^\d{4}$/.test(ultimos4 || '')) return;
@@ -1045,7 +1113,12 @@
       var d = await api('/api/mis-pedidos', { cliente: (store.get(K_CLIENTE) || {}).id ? clienteId() : '', extra: MP.extra });
       var invalid = d.invalid || [];
       MP.extra = MP.extra.filter(function (x) { return invalid.indexOf(x.numero) < 0; });
+      var antes = {}; MP.list.forEach(function (o) { antes[o.numero] = o.status + '|' + (o.guia || ''); });
       MP.list = d.orders || []; MP.fetchedAt = Date.now(); MP.stale = false;
+      var cambios = MP.list.filter(function (o) { return antes[o.numero] && antes[o.numero] !== o.status + '|' + (o.guia || ''); });
+      cambios.forEach(function (o) { MP.changed[o.numero] = 1; });
+      if (cambios.length === 1) toast('Tu pedido ' + cambios[0].numero + ': ' + cambios[0].statusLabel + (cambios[0].guia && cambios[0].status === 'Enviado' ? ' · guía ' + cambios[0].guia : ''));
+      else if (cambios.length > 1) toast(cambios.length + ' de tus pedidos tienen novedades');
       saveMis();
       if (addedNum && invalid.indexOf(addedNum) > -1) MP.err = 'No encontramos el pedido ' + addedNum + ' con esos 4 dígitos. Revisa los datos.';
       else if (addedNum) toast('Pedido ' + addedNum + ' agregado');
@@ -1053,7 +1126,7 @@
       MP.err = e instanceof TypeError ? 'Sin conexión: te mostramos lo último que guardamos.' : e.message;
     } finally {
       MP.loading = false; $('ordRefresh').classList.remove('spin');
-      updOrdBadge();
+      updOrdBadge(); syncPush();
       if (stack.indexOf($('ordersSheet')) > -1) {
         // Si se pidió abrir un pedido (enlace o recién agregado) y ya llegó, se muestra su detalle
         var want = MP.pendingOpen; MP.pendingOpen = '';
@@ -1067,11 +1140,12 @@
   function orderCardHTML(o) {
     var s = stage(o), n = o.items.reduce(function (t, i) { return t + (i.qty || 1); }, 0);
     var thumbs = o.items.slice(0, 4).map(function (i) { return '<span class="oc__th">' + itemArt(i) + '</span>'; }).join('') + (o.items.length > 4 ? '<span class="oc__th oc__more">+' + (o.items.length - 4) + '</span>' : '');
-    return '<article class="oc oc--' + s + '">' +
+    return '<article class="oc oc--' + s + (MP.changed[o.numero] ? ' oc--changed' : '') + '">' +
+      (MP.changed[o.numero] ? '<span class="oc__new">Novedad</span>' : '') +
       '<button type="button" class="oc__hit" data-ord="' + esc(o.numero) + '" aria-label="Ver detalle del pedido ' + esc(o.numero) + '"></button>' +
       '<div class="oc__top"><div><b>' + esc(o.numero) + '</b><small>' + esc(fmtShort(o.createdAt)) + ' · ' + n + (n === 1 ? ' producto' : ' productos') + '</small></div><span class="st st--' + s + '">' + STAGE_TXT[s] + '</span></div>' +
       '<div class="oc__thumbs" aria-hidden="true">' + thumbs + '</div>' +
-      (s !== 'cancelado' ? '<div class="oc__bar" aria-hidden="true"><i style="width:' + progress(o) + '%"></i></div>' : '') +
+      (s !== 'cancelado' ? '<div class="oc__bar" aria-hidden="true"><i style="--w:' + progress(o) + '%"></i></div>' : '') +
       '<p class="oc__hint">' + esc(stageHint(o)) + '</p>' +
       '<div class="oc__row"><span class="oc__total">Total <b>' + money(o.pricing.totalConEnvio) + '</b></span>' +
       (s === 'pagar' ? '<button type="button" class="btn btn-primary btn-sm" data-pay="' + esc(o.numero) + '">Pagar ahora</button>' : '<span class="oc__go">Ver detalle<svg aria-hidden="true"><use href="#i-arrow"/></svg></span>') +
@@ -1093,6 +1167,7 @@
     else if (!MP.list.length) h += '<div class="empty-state"><span class="empty-state__ico"><svg aria-hidden="true"><use href="#i-box"/></svg></span><h3>Aún no tienes pedidos</h3><p>Cuando compres, tu pedido aparece aquí automáticamente y puedes seguirlo paso a paso.</p><button type="button" class="btn btn-primary" data-go-shop>Ir a comprar</button></div>';
     else if (!list.length) h += '<p class="ord-empty">No tienes pedidos en “' + esc(TABS.filter(function (t) { return t[0] === MP.tab; })[0][1]) + '”.</p>';
     else h += list.map(orderCardHTML).join('');
+    if (MP.list.some(isActive)) h = '<div data-push-slot data-compact>' + pushCardHTML(true) + '</div>' + h;
     h += '<details class="ord-add"' + (MP.err && /4 dígitos/.test(MP.err) ? ' open' : '') + '><summary>¿Compraste desde otro celular? Agrega tu pedido</summary>' +
       '<form id="ordAddForm" novalidate><div class="row2"><div class="field"><label for="oaNum">Número de pedido</label><input id="oaNum" autocapitalize="characters" autocomplete="off" maxlength="20" placeholder="PC-20261112-4821"></div>' +
       '<div class="field"><label for="oaCel">Últimos 4 del celular</label><input id="oaCel" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="2045"></div></div>' +
@@ -1102,12 +1177,12 @@
   function renderOrderDetail(num, keepScroll) {
     var o = MP.list.find(function (x) { return x.numero === num; });
     if (!o) { MP.open = ''; renderOrders(); return; }
-    MP.open = num;
+    MP.open = num; delete MP.changed[num];
     var s = stage(o), l = { recibo: '/recibo.html?pedido=' + encodeURIComponent(o.numero) + '&c=' + encodeURIComponent(o.ultimos4) };
     $('ordBack').hidden = false; $('ordTabs').hidden = true; $('ordList').hidden = true; $('ordDetail').hidden = false;
     $('ordTitle').textContent = 'Pedido ' + o.numero; $('ordHello').textContent = fmtShort(o.createdAt);
-    var steps = (o.steps || []).map(function (st) {
-      return '<li class="' + st.state + '"><span class="dot" aria-hidden="true"></span><b>' + esc(st.label) + '</b>' + (st.at ? '<small>' + esc(fmtTime(st.at)) + '</small>' : '') +
+    var steps = (o.steps || []).map(function (st, i) {
+      return '<li class="' + st.state + '" style="--i:' + i + '"><span class="dot" aria-hidden="true"></span><b>' + esc(st.label) + '</b>' + (st.at ? '<small>' + esc(fmtTime(st.at)) + '</small>' : '') +
         (st.state === 'current' ? '<span class="sr-only"> (estado actual)</span>' : st.state === 'done' ? '<span class="sr-only"> (completado)</span>' : '') + '</li>';
     }).join('');
     var p = o.pricing, items = o.items.map(function (i) {
@@ -1115,11 +1190,12 @@
     }).join('');
     var wa = 'https://wa.me/' + WA + '?text=' + encodeURIComponent('Hola Punto Club, pregunto por mi pedido ' + o.numero);
     $('ordDetail').innerHTML =
-      '<div class="od-hero od-hero--' + s + '"><span class="st st--' + s + '">' + STAGE_TXT[s] + '</span><h3>' + esc(o.statusLabel) + '</h3><p>' + esc(stageHint(o)) + '</p>' +
-      (s !== 'cancelado' ? '<div class="oc__bar"><i style="width:' + progress(o) + '%"></i></div>' : '') +
+      '<div class="od-hero od-hero--' + s + '">' + stageArt(s) + '<span class="st st--' + s + '">' + STAGE_TXT[s] + '</span><h3>' + esc(o.statusLabel) + '</h3><p>' + esc(stageHint(o)) + '</p>' +
+      (s !== 'cancelado' ? '<div class="oc__bar"><i style="--w:' + progress(o) + '%"></i></div>' : '') +
       (s === 'pagar' ? '<button type="button" class="btn btn-lime btn-block" data-pay="' + esc(o.numero) + '">Pagar ' + money(p.pagarAhora) + (o.pago === 'Wompi' ? ' en línea' : '') + '</button>' : '') + '</div>' +
       (s !== 'cancelado' ? '<section class="od-sec"><h4>Seguimiento</h4><ol class="tl" aria-label="Estados del pedido">' + steps + '</ol></section>' : '') +
-      (o.guia ? '<div class="od-note"><b>Guía de envío:</b> ' + esc(o.guia) + (o.transportadora ? ' (' + esc(o.transportadora) + ')' : '') + '</div>' : '') +
+      shipCardHTML(o) +
+      (isActive(o) ? '<div data-push-slot>' + pushCardHTML(false) + '</div>' : '') +
       (o.nota ? '<div class="od-note"><b>Mensaje de la tienda:</b> ' + esc(o.nota) + '</div>' : '') +
       (o.pagoReportado && o.pagoReportado.hasComprobante ? '<section class="od-sec" id="odProof"><h4>Tu comprobante</h4><p class="hint">Cargando…</p></section>' : '') +
       '<section class="od-sec"><h4>Productos</h4>' + items +
@@ -1133,6 +1209,25 @@
       '<div class="od-actions"><a class="btn btn-primary" href="' + esc(l.recibo) + '">Ver y descargar recibo</a><a class="btn btn-wa" href="' + esc(wa) + '" target="_blank" rel="noopener"><svg aria-hidden="true"><use href="#i-wa"/></svg>Preguntar por WhatsApp</a></div>';
     if (!keepScroll) { $('ordDetail').scrollTop = 0; $('ordDetail').focus({ preventScroll: true }); }
     if (o.pagoReportado && o.pagoReportado.hasComprobante) loadProof(o);
+  }
+  /* Ilustración animada de la etapa (solo decorativa) */
+  function stageArt(s) {
+    var ico = { pagar: 'i-lock', proceso: 'i-box', enviado: 'i-truck', entregado: 'i-check' }[s];
+    if (!ico) return '';
+    return '<div class="od-anim od-anim--' + s + '" aria-hidden="true"><span class="od-anim__road"></span><span class="od-anim__ico"><svg><use href="#' + ico + '"/></svg></span>' +
+      (s === 'entregado' ? '<span class="od-anim__ring"></span><span class="od-anim__ring od-anim__ring--2"></span>' : '') + '</div>';
+  }
+  /* Tarjeta de envío: transportadora, número de guía para copiar y enlace de rastreo */
+  function shipCardHTML(o) {
+    if (!o.guia) {
+      if (o.entrega !== 'Nacional' || stage(o) === 'cancelado' || stage(o) === 'entregado') return '';
+      return '<section class="od-ship od-ship--wait"><span class="od-ship__ico" aria-hidden="true"><svg><use href="#i-truck"/></svg></span><div><b>Número de guía</b><p>Aparece aquí cuando despachemos tu pedido' + (pushState() === 'on' ? ', y te avisamos al celular.' : '.') + '</p></div></section>';
+    }
+    var carrier = o.transportadora || 'la transportadora';
+    return '<section class="od-ship" aria-labelledby="odShipT"><div class="od-ship__top"><span class="od-ship__ico" aria-hidden="true"><svg><use href="#i-truck"/></svg></span><div><small id="odShipT">Tu envío va con</small><b>' + esc(carrier) + '</b></div></div>' +
+      '<div class="od-ship__guia"><div><small>Número de guía</small><b>' + esc(o.guia) + '</b></div><button type="button" class="od-ship__copy" data-copy-guia="' + esc(o.guia) + '" aria-label="Copiar el número de guía ' + esc(o.guia) + '"><svg aria-hidden="true"><use href="#i-copy"/></svg><span>Copiar</span></button></div>' +
+      (String(o.rastreo || '').indexOf('https://') === 0 ? '<a class="btn btn-primary btn-block" href="' + esc(o.rastreo) + '" target="_blank" rel="noopener">Rastrear en ' + esc(o.transportadora || 'la transportadora') + '<svg aria-hidden="true"><use href="#i-arrow"/></svg></a><p class="od-ship__hint">Si te pide el número, pega la guía que copiaste.</p>'
+        : '<p class="od-ship__hint">Copia la guía y búscala en la página de ' + esc(carrier) + ' para ver dónde va tu paquete.</p>') + '</section>';
   }
   async function loadProof(o) {
     try {
@@ -1218,6 +1313,7 @@
     if (s.envio != null && isFinite(s.envio)) { ENVIO = Number(s.envio); renderCart(); if (stack.indexOf($('coSheet')) > -1) renderCheckoutSummary(); }
     if (Array.isArray(s.departamentos) && s.departamentos.length) { DEPTOS = s.departamentos; renderDeptos(); }
     // Wompi está en pausa: la tienda solo ofrece transferencia o QR (Nequi / Bre-B)
+    if (typeof s.push === 'string' && s.push !== PUSH_KEY) { PUSH_KEY = s.push; renderPushSlots(); syncPush(); }
     var m = encodeURIComponent('Hola Punto Club, quiero hacer una consulta.');
     $('waHelp').href = 'https://wa.me/' + WA + '?text=' + m;
   }

@@ -5,10 +5,10 @@
    - No recarga la página por su cuenta: una actualización nunca interrumpe un pago.
    - El panel (/admin) no pasa por aquí: se usa desde el navegador, por fuera de la app.
    ⚠️ Al subir un ?v= en index.html o en las páginas, cámbialo también aquí y sube CACHE. */
-const CACHE = 'puntoclub-v23';
+const CACHE = 'puntoclub-v24';
 const APP_SHELL = [
-  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=18', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
-  '/js/tienda.js?v=17', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
+  '/', '/index.html', '/css/fonts.css', '/css/store.css?v=19', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
+  '/js/tienda.js?v=18', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
   '/img/pc-icon-180.png', '/img/pc-icon-192.png', '/img/pc-icon-512.png', '/img/pc-icon-maskable-512.png',
   '/img/pc-favicon-96.png', '/favicon.ico', '/seguimiento.html', '/recibo.html'
 ];
@@ -41,4 +41,30 @@ self.addEventListener('fetch', event => {
     return;
   }
   event.respondWith(caches.match(req).then(cached => cached || fromNetwork()));
+});
+
+/* ---------- Avisos de pedidos (web push) ----------
+   El servidor manda { title, body, url, tag }. Al tocar el aviso se abre el pedido en "Mis pedidos". */
+self.addEventListener('push', event => {
+  let d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data && event.data.text() }; }
+  event.waitUntil(self.registration.showNotification(d.title || 'Punto Club', {
+    body: d.body || 'Tu pedido tiene novedades.',
+    icon: '/img/pc-icon-192.png',
+    badge: '/img/pc-favicon-96.png',
+    tag: d.tag || 'pedido',
+    renotify: true,
+    vibrate: [120, 60, 120],
+    data: { url: d.url || '/#pedidos' }
+  }));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = new URL((event.notification.data && event.notification.data.url) || '/#pedidos', self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    const open = list.find(c => new URL(c.url).origin === self.location.origin);
+    if (open) return open.navigate(url).then(c => (c || open).focus()).catch(() => open.focus());
+    return self.clients.openWindow(url);
+  }));
 });

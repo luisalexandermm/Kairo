@@ -1885,3 +1885,10 @@ mark.pendiente {
   .vchart__x span { font-size: .62rem; }
   .vchart__bars, .vchart__x { gap: 1px; }
 }
+
+/* Botón para avisar al cliente por WhatsApp según el estado del pedido */
+.btn-wa-quick { background: #1faa59; color: #fff; border: 0; }
+.btn-wa-quick:hover { background: #178a48; }
+.btn-wa-quick.pulse { animation: pc-wa-pulse 1.1s ease-out 4; }
+@keyframes pc-wa-pulse { 0% { box-shadow: 0 0 0 0 rgba(31,170,89,.6); } 100% { box-shadow: 0 0 0 14px rgba(31,170,89,0); } }
+@media (prefers-reduced-motion: reduce) { .btn-wa-quick.pulse { animation: none; outline: 3px solid #c6ff3d; } }

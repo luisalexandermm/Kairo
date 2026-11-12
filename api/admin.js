@@ -2,7 +2,8 @@
 /* /api/admin/* — panel de administración (requiere token firmado). */
 const supabase = require('../lib/supabase');
 const { ok, err, allowCors, checkToken, slug, hashPassword, cleanText } = require('../lib/helpers');
-const { STATUSES, normalizeStatus, trackingOf } = require('../lib/pedidos');
+const { STATUSES, normalizeStatus, trackingOf, linkOk } = require('../lib/pedidos');
+const { notifyOrder, pushReady } = require('../lib/push');
 const { precioEnvio } = require('../lib/envios');
 const { wompiReady } = require('../lib/wompi');
 const { sanitize: sanitizeCuentas } = require('../lib/cuentas');
@@ -331,8 +332,10 @@ module.exports = async (req, res) => {
         history: status !== prev ? [...t.history, { status, at }] : t.history,
         guia: body.guia != null ? cleanText(body.guia, 60) : t.guia,
         transportadora: body.transportadora != null ? cleanText(body.transportadora, 60) : t.transportadora,
-        nota: body.nota != null ? cleanText(body.nota, 400) : t.nota
+        nota: body.nota != null ? cleanText(body.nota, 400) : t.nota,
+        link: body.link != null ? linkOk(body.link) : t.link
       };
+      if (body.link && !tracking.link) return err(res, 'El enlace de rastreo debe empezar por https://', 400);
       if (status === 'Enviado' && !tracking.guia) return err(res, 'Para marcarlo como Enviado escribe el número de guía', 400);
       let up = await supabase.from('orders').update({ status, tracking, updated_at: at }).eq('id', id).select().single();
       if (up.error && /tracking/i.test(up.error.message)) {
@@ -340,7 +343,14 @@ module.exports = async (req, res) => {
       }
       if (up.error) return err(res, up.error.message, 500);
       const d = up.data;
-      return ok(res, { ...d, status: normalizeStatus(d.status), tracking: trackingOf(d), pricing: d.pricing || (d.customer && d.customer.pricing) || null });
+      /* Aviso al celular del cliente: si cambió el estado, o si se agregó/cambió la guía */
+      let avisos = null;
+      const guiaNueva = tracking.guia && tracking.guia !== t.guia;
+      if (pushReady() && (status !== prev || guiaNueva)) {
+        try { avisos = await notifyOrder(supabase, d, status, tracking, { soloGuia: status === prev }); }
+        catch (e) { console.error('[push] aviso del pedido', id, e.message); avisos = 0; }
+      }
+      return ok(res, { ...d, status: normalizeStatus(d.status), tracking: trackingOf(d), pricing: d.pricing || (d.customer && d.customer.pricing) || null, avisos });
     }
     if (method === 'DELETE' && id) {
       const { error } = await supabase.from('orders').delete().eq('id', id);

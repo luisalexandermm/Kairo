@@ -73,6 +73,7 @@ module.exports = async (req, res) => {
       envio: precioEnvio(settings.envio_nacional),
       departamentos: DEPARTAMENTOS,
       wompi: false,
+      push: require('../lib/push').pushReady() ? require('../lib/push').PUBLIC_KEY : '',
       pagos: require('../lib/cuentas').sanitize(settings.pagos)
     },
     products: (products || []).map(mapProduct),
