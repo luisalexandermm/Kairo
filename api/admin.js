@@ -48,9 +48,9 @@ const CRUD = {
     table: 'promos', key: 'id', idFrom: b => slug(b.title || 'promo') + '-' + Date.now().toString(36).slice(-4),
     fields: {
       title: v => cleanText(v, 80), description: v => cleanText(v, 300), badge: v => cleanText(v, 30),
-      kind: v => (['descuento', 'envio', 'informativa'].includes(v) ? v : 'informativa'),
+      kind: v => (['descuento', 'segunda', 'envio', 'informativa'].includes(v) ? v : 'informativa'),
       discount: v => Math.min(90, Math.max(0, Math.round(Number(v) || 0))),
-      scope_type: v => (['todo', 'marca', 'categoria', 'genero', 'producto'].includes(v) ? v : 'todo'),
+      scope_type: v => (['todo', 'marca', 'categoria', 'genero', 'producto', 'nombre'].includes(v) ? v : 'todo'),
       scope_value: v => cleanText(v, 80), min_subtotal: v => Math.max(0, Math.round(Number(v) || 0)),
       starts_at: date, ends_at: date, conditions: v => cleanText(v, 1500), active: v => v !== false,
       image: v => imagenOk(v), popup: v => v === true
@@ -58,7 +58,7 @@ const CRUD = {
     defaults: { kind: 'informativa', scope_type: 'todo', active: true },
     validate(r) {
       if (!r.title) return 'Escribe el título de la promoción';
-      if (r.kind === 'descuento' && !r.discount) return 'Escribe el porcentaje de descuento (1 a 90)';
+      if ((r.kind === 'descuento' || r.kind === 'segunda') && !r.discount) return 'Escribe el porcentaje de descuento (1 a 90)';
       if (r.kind !== 'informativa' && (!r.conditions || r.conditions.length < 15)) return 'Escribe las condiciones de la promoción (qué aplica, desde cuándo y hasta cuándo). Son obligatorias por la Ley 1480.';
       if (r.scope_type !== 'todo' && !r.scope_value) return 'Indica a qué marca, categoría, género o producto aplica';
       if (r.starts_at && r.ends_at && r.ends_at < r.starts_at) return 'La fecha final es anterior a la inicial';
@@ -72,14 +72,17 @@ const CRUD = {
       value: v => Math.max(0, Math.round(Number(v) || 0)), max_discount: v => Math.max(0, Math.round(Number(v) || 0)),
       min_subtotal: v => Math.max(0, Math.round(Number(v) || 0)), max_uses: v => Math.max(0, Math.round(Number(v) || 0)),
       starts_at: date, ends_at: date, conditions: v => cleanText(v, 1500), active: v => v !== false,
-      image: v => imagenOk(v), publico: v => v === true, popup: v => v === true
+      image: v => imagenOk(v), publico: v => v === true, popup: v => v === true,
+      scope_type: v => (['todo', 'marca', 'categoria', 'genero', 'producto', 'nombre'].includes(v) ? v : 'todo'),
+      scope_value: v => cleanText(v, 80)
     },
-    defaults: { type: 'porcentaje', active: true, uses: 0 },
+    defaults: { type: 'porcentaje', active: true, uses: 0, scope_type: 'todo' },
     validate(r, isNew) {
       if (isNew && (!r.code || r.code.length < 3)) return 'El código debe tener al menos 3 letras o números';
       if (r.type === 'porcentaje' && (r.value < 1 || r.value > 90)) return 'El porcentaje debe estar entre 1 y 90';
       if (r.type === 'valor' && r.value < 1000) return 'El valor del cupón debe ser de al menos $1.000';
-      if (r.popup && !r.publico) return 'Para mostrar el cupón en la ventana al entrar, marca también “Mostrar en la tienda”.';
+      if (r.popup && !r.publico) return 'Para mostrar el cupón en la ventana al entrar, marca también “Mostrar a los clientes”.';
+      if (r.scope_type && r.scope_type !== 'todo' && !r.scope_value) return 'Indica a qué marca, categoría, género, producto o modelo aplica el cupón';
       if (r.publico && (!r.conditions || r.conditions.length < 15)) return 'Un cupón que se muestra en la tienda necesita sus condiciones (mínimo de compra, vigencia, límite de usos). Ley 1480.';
       if (r.starts_at && r.ends_at && r.ends_at < r.starts_at) return 'La fecha final es anterior a la inicial';
     }
@@ -108,7 +111,8 @@ const CRUD = {
   }
 };
 
-const faltaCol = e => /(image|popup|publico)/.test(e.message) && /column/i.test(e.message) ? 'Falta preparar la base: ejecuta lib/migracion-cupones-fotos-2026-11.sql en Supabase.' : '';
+const faltaCol = e => /scope_(type|value)/.test(e.message) && /column/i.test(e.message) ? 'Falta preparar la base: ejecuta lib/migracion-cupones-alcance-2026-11.sql en Supabase.'
+  : /(image|popup|publico)/.test(e.message) && /column/i.test(e.message) ? 'Falta preparar la base: ejecuta lib/migracion-cupones-fotos-2026-11.sql en Supabase.' : '';
 
 function cleanRow(body, cfg, isNew) {
   const row = {};

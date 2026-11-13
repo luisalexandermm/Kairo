@@ -29,6 +29,7 @@ function receiptText(numero, items, customer, pricing) {
   const lines = items.map(i => `- ${i.brand} ${i.name} | Talla ${i.size}${i.color ? ' | ' + i.color : ''} x${i.qty} | ${money(i.price * i.qty)}`).join('\n');
   const extra = [];
   if (pricing.promoSavings) extra.push(`Ahorro por promociones: -${money(pricing.promoSavings)}`);
+  if (pricing.segunda) extra.push(`(incluye ${pricing.segunda.title}: -${money(pricing.segunda.savings)})`);
   if (pricing.coupon) extra.push(`Cupón ${pricing.coupon.code}: -${money(pricing.coupon.discount)}`);
   extra.push(`Envío nacional: ${pricing.envio ? money(pricing.envio) : 'gratis'}`);
   const pago = `Pago por transferencia o QR (Nequi o Bre-B): ${money(pricing.pagarAhora)}. Envíanos el comprobante.`;
@@ -88,7 +89,7 @@ module.exports = async (req, res) => {
   const totalConEnvio = r.total + envio;
   const pagarAhora = totalConEnvio, saldoContraentrega = 0;
   const pricing = {
-    listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, subtotal: r.subtotal,
+    listSubtotal: r.listSubtotal, promoSavings: r.promoSavings, segunda: r.segunda, subtotal: r.subtotal,
     coupon: r.coupon ? { code: r.coupon.code, description: r.coupon.description, discount: r.coupon.discount, freeShipping: r.coupon.freeShipping } : null,
     freeShipping: r.freeShipping, shippingPromo: r.shippingPromo,
     entrega: 'Nacional', tarifaEnvio: tarifa,

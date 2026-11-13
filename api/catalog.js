@@ -65,7 +65,9 @@ module.exports = async (req, res) => {
     .map(c => ({
       code: c.code, description: c.description || '', type: c.type, value: Number(c.value) || 0,
       maxDiscount: Number(c.max_discount) || 0, minSubtotal: Number(c.min_subtotal) || 0,
-      endsAt: c.ends_at || null, conditions: c.conditions || '', image: c.image || '', popup: c.popup === true
+      endsAt: c.ends_at || null, conditions: c.conditions || '', image: c.image || '', popup: c.popup === true,
+      scopeType: c.scope_type || 'todo', scopeValue: c.scope_value || '',
+      scopeLabel: c.scope_type && c.scope_type !== 'todo' ? require('../lib/pricing').scopeLabel(c) : ''
     }));
 
   // Las dinámicas con azar sin número de autorización de Coljuegos nunca se publican.

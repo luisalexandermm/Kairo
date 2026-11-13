@@ -5,10 +5,10 @@
    - No recarga la página por su cuenta: una actualización nunca interrumpe un pago.
    - El panel (/admin) no pasa por aquí: se usa desde el navegador, por fuera de la app.
    ⚠️ Al subir un ?v= en index.html o en las páginas, cámbialo también aquí y sube CACHE. */
-const CACHE = 'puntoclub-v32';
+const CACHE = 'puntoclub-v33';
 const APP_SHELL = [
   '/', '/index.html', '/css/fonts.css', '/css/store.css?v=24', '/css/legal.css?v=3', '/js/negocio.js', '/js/loader.js',
-  '/js/tienda.js?v=26', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
+  '/js/tienda.js?v=27', '/js/pwa.js', '/manifest.webmanifest', '/img/punto-club-negro.png', '/img/punto-club-blanco.png', '/img/nequi-qr.png',
   '/img/pc-icon-180.png', '/img/pc-icon-192.png', '/img/pc-icon-512.png', '/img/pc-icon-maskable-512.png',
   '/img/pc-favicon-96.png', '/favicon.ico', '/seguimiento.html', '/recibo.html'
 ];

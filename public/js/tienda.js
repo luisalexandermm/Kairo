@@ -435,7 +435,8 @@
   function cupUnit(c) { return c.type === 'envio' ? 'gratis' : 'de descuento'; }
   function cupRules(c) {
     var r = [];
-    if (c.minSubtotal) r.push('En compras desde ' + money(c.minSubtotal));
+    if (c.scopeLabel) r.push('Solo para ' + c.scopeLabel);
+    if (c.minSubtotal) r.push((c.scopeLabel ? 'Desde ' : 'En compras desde ') + money(c.minSubtotal) + (c.scopeLabel ? ' en esos productos' : ''));
     if (c.type === 'porcentaje' && c.maxDiscount) r.push('Descuento máximo ' + money(c.maxDiscount));
     if (c.endsAt) r.push('Vence el ' + new Date(c.endsAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }));
     return r;
@@ -609,7 +610,9 @@
     $('pdBrand').textContent = p.brand;
     $('pdName').textContent = p.name;
     $('pdMeta').textContent = p.category + ' · ' + p.gender + (p.tag ? ' · ' + p.tag : '');
-    $('pdPrice').innerHTML = '<b>' + money(priceOf(p)) + '</b>' + (sale ? '<s><span class="sr-only">Antes </span>' + money(p.price) + '</s>' : '') + (p.promo ? '<span class="pd__promo">' + esc(p.promo.title) + '</span>' : '');
+    var seg2 = S.promos.filter(function (pr) { return pr.kind === 'segunda' && scopeMatch(pr, p); })[0];
+    $('pdPrice').innerHTML = '<b>' + money(priceOf(p)) + '</b>' + (sale ? '<s><span class="sr-only">Antes </span>' + money(p.price) + '</s>' : '') + (p.promo ? '<span class="pd__promo">' + esc(p.promo.title) + '</span>' : '') +
+      (seg2 ? '<span class="pd__promo">2.ª unidad -' + seg2.discount + '%</span>' : '');
     $('pdDesc').textContent = p.desc || '';
     $('pdMedia').style.setProperty('--tint', p.bg || '#e2f0e8');
     $('pdMedia').innerHTML = art(p, '', S.sel.color);
@@ -666,21 +669,48 @@
   function cartLines() {
     return S.cart.map(function (i) { var p = S.products.find(function (x) { return x.id === i.id; }); return p ? Object.assign({ p: p, price: priceOf(p) }, i) : null; }).filter(Boolean);
   }
+  /* ¿La promoción o cupón aplica a este producto? (igual que lib/pricing.js) */
+  function plano(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function scopeMatch(pr, p) {
+    var t = pr.scopeType || 'todo', v = String(pr.scopeValue || '').trim().toLowerCase();
+    if (t === 'todo') return true;
+    if (t === 'marca') return String(p.brand || '').toLowerCase() === v;
+    if (t === 'categoria') return String(p.category || '').toLowerCase() === v;
+    if (t === 'genero') return String(p.gender || '').toLowerCase() === v || (v !== 'unisex' && String(p.gender || '').toLowerCase() === 'unisex');
+    if (t === 'producto') return String(p.id) === String(pr.scopeValue || '').trim();
+    if (t === 'nombre') { var w = plano(pr.scopeValue); return !!w && (' ' + plano(p.brand + ' ' + p.name) + ' ').indexOf(' ' + w + ' ') > -1; }
+    return false;
+  }
+  /* Segunda unidad con descuento: pares de mayor a menor precio, la 2.ª de cada par lleva el % */
+  function segundaCalc(lines) {
+    var used = lines.map(function () { return 0; }), savings = 0, titles = [];
+    S.promos.filter(function (pr) { return pr.kind === 'segunda' && pr.discount > 0; }).sort(function (a, b) { return b.discount - a.discount; }).forEach(function (pr) {
+      var pct = Math.min(90, pr.discount), units = [];
+      lines.forEach(function (l, i) { if (scopeMatch(pr, l.p)) for (var k = used[i]; k < l.qty; k++) units.push({ i: i, price: l.price }); });
+      units.sort(function (a, b) { return b.price - a.price; });
+      var pares = units.length - units.length % 2;
+      for (var k = 0; k < pares; k++) { used[units[k].i]++; if (k % 2 === 1) savings += Math.round(units[k].price * pct / 100 / 100) * 100; }
+      if (pares) titles.push(pr.title);
+    });
+    return { savings: savings, title: titles.join(' + ') };
+  }
   function calc() {
     var lines = cartLines();
     var list = lines.reduce(function (s, l) { return s + l.p.price * l.qty; }, 0);
-    var sub = lines.reduce(function (s, l) { return s + l.price * l.qty; }, 0);
+    var seg = segundaCalc(lines);
+    var sub = lines.reduce(function (s, l) { return s + l.price * l.qty; }, 0) - seg.savings;
     var disc = S.coupon ? Math.min(S.coupon.discount || 0, sub) : 0;
     var shipPromo = S.promos.filter(function (p) { return p.kind === 'envio' && sub >= (p.minSubtotal || 0); })[0];
     var free = !!(S.coupon && S.coupon.freeShipping) || !!shipPromo;
     // Envío nacional: tarifa fija (se configura en el panel)
     var envio = free ? 0 : ENVIO;
     var total = Math.max(0, sub - disc);
-    return { lines: lines, list: list, sub: sub, save: list - sub, disc: disc, free: free, shipPromo: shipPromo, envio: envio, total: total, totalConEnvio: total + envio, count: lines.reduce(function (s, l) { return s + l.qty; }, 0) };
+    return { lines: lines, list: list, sub: sub, save: list - sub, seg: seg, disc: disc, free: free, shipPromo: shipPromo, envio: envio, total: total, totalConEnvio: total + envio, count: lines.reduce(function (s, l) { return s + l.qty; }, 0) };
   }
   function totalsHTML(c, pago) {
     var h = '<div><span>Productos</span><span>' + money(c.list) + '</span></div>';
-    if (c.save) h += '<div class="save"><span>Promociones</span><span>-' + money(c.save) + '</span></div>';
+    if (c.save - c.seg.savings > 0) h += '<div class="save"><span>Promociones</span><span>-' + money(c.save - c.seg.savings) + '</span></div>';
+    if (c.seg.savings) h += '<div class="save"><span>' + esc(c.seg.title) + '</span><span>-' + money(c.seg.savings) + '</span></div>';
     if (c.disc) h += '<div class="save"><span>Cupón ' + esc(S.coupon.code) + '</span><span>-' + money(c.disc) + '</span></div>';
     var promoTxt = c.shipPromo && !(S.coupon && S.coupon.freeShipping) ? ' (' + esc(c.shipPromo.title) + ')' : '';
     h += '<div><span>Envío nacional' + promoTxt + '</span><span>' + (c.envio ? money(c.envio) : 'Gratis') + '</span></div>';

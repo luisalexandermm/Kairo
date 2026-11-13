@@ -722,7 +722,7 @@
 
   /* ---------------- formularios genéricos ---------------- */
   var LINK_OPTS = [['ninguno', 'Sin enlace'], ['producto', 'Un producto'], ['marca', 'Una marca'], ['categoria', 'Una categoría'], ['genero', 'Hombre o Mujer'], ['url', 'Una página (https:// o /)']];
-  var SCOPE_OPTS = [['todo', 'Toda la tienda'], ['marca', 'Una marca'], ['categoria', 'Una categoría'], ['genero', 'Hombre o Mujer'], ['producto', 'Un producto']];
+  var SCOPE_OPTS = [['todo', 'Toda la tienda'], ['marca', 'Una marca'], ['categoria', 'Una categoría'], ['genero', 'Hombre o Mujer'], ['producto', 'Un producto'], ['nombre', 'Modelos cuyo nombre contiene…']];
   var DATES = [
     { k: 'starts_at', l: 'Empieza', t: 'datetime', half: 1 }, { k: 'ends_at', l: 'Termina', t: 'datetime', half: 1, h: 'Vacío = sin fecha de fin.' }
   ];
@@ -735,17 +735,17 @@
         { k: 'title', l: 'Título *', t: 'text', max: 80 },
         { k: 'image', l: 'Foto de la promoción (opcional)', t: 'image', h: 'Se ve en la notificación de la promoción y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600) y con poco texto: el título y el descuento ya se escriben encima.' },
         { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona la ve una sola vez. Si hay varias, se muestra la primera.' },
-        { k: 'kind', l: 'Tipo', t: 'select', opts: [['descuento', 'Descuento en el precio'], ['envio', 'Envío gratis'], ['informativa', 'Solo informativa']] },
-        { k: 'discount', l: 'Descuento %', t: 'number', min: 0, max: 90, half: 1, showIf: { kind: 'descuento' } },
+        { k: 'kind', l: 'Tipo', t: 'select', opts: [['descuento', 'Descuento en el precio'], ['segunda', 'Segunda unidad con descuento'], ['envio', 'Envío gratis'], ['informativa', 'Solo informativa (no descuenta nada)']], h: '“Segunda unidad”: por cada 2 pares que aplican, el de menor precio lleva el descuento (2 pares = 1 con descuento, 4 pares = 2).' },
+        { k: 'discount', l: 'Descuento %', t: 'number', min: 0, max: 90, half: 1, showIf: { kind: ['descuento', 'segunda'] } },
         { k: 'min_subtotal', l: 'Compra mínima ($)', t: 'number', min: 0, half: 1, showIf: { kind: 'envio' } },
-        { k: 'scope_type', l: 'Aplica a', t: 'select', opts: SCOPE_OPTS, half: 1, showIf: { kind: 'descuento' } },
-        { k: 'scope_value', l: '¿Cuál?', t: 'scope', half: 1, showIf: { kind: 'descuento' } },
+        { k: 'scope_type', l: 'Aplica a', t: 'select', opts: SCOPE_OPTS, half: 1, showIf: { kind: ['descuento', 'segunda'] } },
+        { k: 'scope_value', l: '¿Cuál?', t: 'scope', half: 1, showIf: { kind: ['descuento', 'segunda'] } },
         { k: 'badge', l: 'Etiqueta corta', t: 'text', max: 30, half: 1, h: 'Ej.: -20%, Envío gratis' },
         { k: 'description', l: 'Descripción', t: 'textarea', max: 300 },
         { k: 'conditions', l: 'Condiciones *', t: 'textarea', max: 1500, h: 'Obligatorias para descuento y envío gratis.' }
       ].concat(DATES).concat([{ k: 'active', l: 'Activa', t: 'check', def: true }]),
       cols: function (r) {
-        var what = r.kind === 'descuento' ? r.discount + '% · ' + scopeTxt(r) : r.kind === 'envio' ? 'Envío gratis desde ' + money(r.min_subtotal) : 'Informativa';
+        var what = r.kind === 'descuento' ? r.discount + '% · ' + scopeTxt(r) : r.kind === 'segunda' ? '2.ª unidad -' + r.discount + '% · ' + scopeTxt(r) : r.kind === 'envio' ? 'Envío gratis desde ' + money(r.min_subtotal) : 'Informativa (no descuenta)';
         return [thumbTxt(r) + '<b>' + esc(r.title) + '</b><br><small>' + esc(r.description || '') + '</small>' + (r.popup ? '<br><span class="pill on">Ventana al entrar</span>' : ''), esc(what), periodTxt(r), activeTxt(r)];
       },
       heads: ['Promoción', 'Qué hace', 'Vigencia', 'Estado']
@@ -762,7 +762,9 @@
         { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona lo ve una sola vez, con un botón para usarlo.', showIf: { publico: true } },
         { k: 'type', l: 'Tipo', t: 'select', opts: [['porcentaje', 'Porcentaje'], ['valor', 'Valor fijo en pesos'], ['envio', 'Envío gratis']], half: 1 },
         { k: 'value', l: 'Valor (% o $)', t: 'number', min: 0, half: 1, showIf: { type: ['porcentaje', 'valor'] } },
-        { k: 'max_discount', l: 'Tope del descuento ($)', t: 'number', min: 0, half: 1, h: '0 = sin tope', showIf: { type: 'porcentaje' } },
+        { k: 'scope_type', l: 'Sirve para', t: 'select', opts: SCOPE_OPTS, half: 1, h: 'Si no es “Toda la tienda”, el cupón solo funciona con esos productos en el carrito, y la compra mínima y el descuento se calculan solo sobre ellos.' },
+        { k: 'scope_value', l: '¿Cuál?', t: 'scope', half: 1 },
+        { k: 'max_discount', l: 'Tope del descuento ($)', t: 'number', min: 0, half: 1, h: 'Lo máximo que se descuenta (no la compra máxima). Ej.: 10% hasta compras de $600.000 → tope $60.000. 0 = sin tope.', showIf: { type: 'porcentaje' } },
         { k: 'min_subtotal', l: 'Compra mínima ($)', t: 'number', min: 0, half: 1 },
         { k: 'max_uses', l: 'Usos máximos', t: 'number', min: 0, half: 1, h: '0 = sin límite' },
         { k: 'description', l: 'Descripción', t: 'text', max: 200 },
@@ -770,7 +772,7 @@
       ].concat(DATES).concat([{ k: 'active', l: 'Activo', t: 'check', def: true }]),
       cols: function (r) {
         var what = r.type === 'porcentaje' ? r.value + '%' + (r.max_discount ? ' (tope ' + money(r.max_discount) + ')' : '') : r.type === 'valor' ? money(r.value) : 'Envío gratis';
-        return [thumbTxt(r) + '<b>' + esc(r.code) + '</b><br><small>' + esc(r.description || '') + '</small>' + (r.publico ? '<br><span class="pill on">Notificación en la tienda</span>' : '<br><span class="pill off">Secreto</span>') + (r.popup ? ' <span class="pill on">Ventana al entrar</span>' : ''), esc(what) + (r.min_subtotal ? '<br><small>Desde ' + money(r.min_subtotal) + '</small>' : ''), esc((r.uses || 0) + (r.max_uses ? ' / ' + r.max_uses : '')) + ' usos', periodTxt(r), activeTxt(r)];
+        return [thumbTxt(r) + '<b>' + esc(r.code) + '</b>' + (r.scope_type && r.scope_type !== 'todo' ? ' <span class="pill warn">Solo ' + esc(scopeTxt(r)) + '</span>' : '') + '<br><small>' + esc(r.description || '') + '</small>' + (r.publico ? '<br><span class="pill on">Notificación en la tienda</span>' : '<br><span class="pill off">Secreto</span>') + (r.popup ? ' <span class="pill on">Ventana al entrar</span>' : ''), esc(what) + (r.min_subtotal ? '<br><small>Desde ' + money(r.min_subtotal) + '</small>' : ''), esc((r.uses || 0) + (r.max_uses ? ' / ' + r.max_uses : '')) + ' usos', periodTxt(r), activeTxt(r)];
       },
       heads: ['Cupón', 'Descuento', 'Usos', 'Vigencia', 'Estado']
     },
@@ -811,7 +813,7 @@
     }
   };
   function thumbTxt(r) { var u = safeUrl(r.image); return u ? '<img class="row-thumb" src="' + esc(u) + '" alt="" loading="lazy">' : ''; }
-  function scopeTxt(r) { var t = r.scope_type || 'todo'; if (t === 'todo') return 'toda la tienda'; var v = r.scope_value || ''; if (t === 'producto') { var p = D.products.find(function (x) { return x.id === v; }); v = p ? p.brand + ' ' + p.name : v; } return v; }
+  function scopeTxt(r) { var t = r.scope_type || 'todo'; if (t === 'todo') return 'toda la tienda'; var v = r.scope_value || ''; if (t === 'nombre') return 'modelos “' + v + '”'; if (t === 'producto') { var p = D.products.find(function (x) { return x.id === v; }); v = p ? p.brand + ' ' + p.name : v; } return v; }
   function periodTxt(r) { return r.starts_at || r.ends_at ? (r.starts_at ? fdate(r.starts_at, false) : 'Ya') + ' → ' + (r.ends_at ? fdate(r.ends_at, false) : 'sin fin') : 'Sin fechas'; }
   function activeTxt(r) {
     var now = new Date(), live = r.active !== false && (!r.starts_at || new Date(r.starts_at) <= now) && (!r.ends_at || new Date(r.ends_at) >= now);
@@ -845,6 +847,7 @@
     if (type === 'genero') return '<select id="' + id + '" name="' + f.k + '">' + ['Hombre', 'Mujer'].map(function (x) { return '<option' + (x === val ? ' selected' : '') + '>' + x + '</option>'; }).join('') + '</select>';
     if (type === 'marca') { var brands = Array.from(new Set(D.products.map(function (p) { return p.brand; }))); return '<input id="' + id + '" name="' + f.k + '" list="fbrands" value="' + esc(val || '') + '"><datalist id="fbrands">' + brands.map(function (b) { return '<option>' + esc(b) + '</option>'; }).join('') + '</datalist>'; }
     if (type === 'url') return '<input id="' + id + '" name="' + f.k + '" value="' + esc(val || '') + '" placeholder="https://… o /terminos.html">';
+    if (type === 'nombre') return '<input id="' + id + '" name="' + f.k + '" value="' + esc(val || '') + '" maxlength="40" placeholder="Ej.: SB  (sirve para Nike SB, Nike SB Dunk…)">';
     return '<input id="' + id + '" name="' + f.k + '" value="" disabled placeholder="No aplica">';
   }
   function fieldHTML(f, r, isNew) {
