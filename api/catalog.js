@@ -11,13 +11,15 @@ module.exports = async (req, res) => {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET') return err(res, 'Método no permitido', 405);
 
-  const [{ data: products, error: pe }, { data: promos, error: me }, { data: settings, error: se }, ann] =
+  const [{ data: products, error: pe }, { data: promos, error: me }, { data: settings, error: se }, ann, cup] =
     await Promise.all([
       supabase.from('products').select('*').eq('active', true).order('position'),
       supabase.from('promos').select('*').eq('active', true).order('position'),
       supabase.from('settings').select('*').eq('id', 'app').single(),
       // Si todavía no se ejecutó la migración de octubre, la tabla no existe: la tienda sigue funcionando.
-      supabase.from('announcements').select('*').eq('active', true).order('position').then(r => r, () => ({ data: [] }))
+      supabase.from('announcements').select('*').eq('active', true).order('position').then(r => r, () => ({ data: [] })),
+      // Cupones públicos ("Cupones para ti"). Si falta la migración de fotos, simplemente no hay.
+      supabase.from('coupons').select('*').eq('active', true).eq('publico', true).then(r => r, () => ({ data: [] }))
     ]);
 
   if (pe || me || se) return err(res, 'Error al leer la base de datos', 500);
@@ -53,8 +55,18 @@ module.exports = async (req, res) => {
     id: p.id, title: p.title, description: p.description, badge: p.badge,
     kind: p.kind || 'informativa', discount: p.kind === 'descuento' ? Number(p.discount) || 0 : 0,
     scopeType: p.scope_type || 'todo', scopeValue: p.scope_value || '',
-    minSubtotal: Number(p.min_subtotal) || 0, endsAt: p.ends_at || null, conditions: p.conditions || ''
+    minSubtotal: Number(p.min_subtotal) || 0, endsAt: p.ends_at || null, conditions: p.conditions || '',
+    image: p.image || '', popup: p.popup === true
   });
+
+  // Solo cupones vigentes y con usos disponibles
+  const pubCoupons = ((cup && cup.data) || [])
+    .filter(c => isLive(c, now) && !(Number(c.max_uses) > 0 && Number(c.uses) >= Number(c.max_uses)))
+    .map(c => ({
+      code: c.code, description: c.description || '', type: c.type, value: Number(c.value) || 0,
+      maxDiscount: Number(c.max_discount) || 0, minSubtotal: Number(c.min_subtotal) || 0,
+      endsAt: c.ends_at || null, conditions: c.conditions || '', image: c.image || '', popup: c.popup === true
+    }));
 
   // Las dinámicas con azar sin número de autorización de Coljuegos nunca se publican.
   const pubAnn = (ann.data || [])
@@ -78,6 +90,7 @@ module.exports = async (req, res) => {
     },
     products: (products || []).map(mapProduct),
     promos: livePromos.map(pubPromo),
+    coupons: pubCoupons,
     announcements: pubAnn
   });
 };

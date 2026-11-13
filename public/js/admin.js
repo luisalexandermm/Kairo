@@ -663,10 +663,31 @@
   });
   $('prodFile').addEventListener('change', async function () { var url = await upload(this.files[0]); if (url) { prodImageUrl = url; prodPreview(); } });
   function fileToDataURL(file) { return new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = function () { rej(new Error('No se pudo leer el archivo')); }; r.readAsDataURL(file); }); }
+  /* Fotos grandes (las del celular pesan 3–8 MB) se reducen antes de subirlas: máx. 1800 px, en WEBP
+     (conserva fondos transparentes). Así nunca pasan del límite de envío del servidor. Los GIF no se tocan. */
+  function shrinkImage(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size <= 1.5 * 1024 * 1024) return fileToDataURL(file);
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var s = Math.min(1, 1800 / Math.max(img.naturalWidth, img.naturalHeight));
+        var c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * s); c.height = Math.round(img.naturalHeight * s);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        var out = c.toDataURL('image/webp', 0.86);
+        // Navegadores sin WEBP devuelven PNG: si quedó pesado, se usa JPG
+        if (out.indexOf('data:image/webp') !== 0 && out.length > 3.5 * 1024 * 1024) out = c.toDataURL('image/jpeg', 0.86);
+        resolve(out);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('No se pudo abrir la imagen')); };
+      img.src = url;
+    });
+  }
   async function upload(file) {
     if (!file) return '';
-    if (file.size > 5 * 1024 * 1024) { toast('La imagen pesa más de 5 MB'); return ''; }
-    try { toast('Subiendo imagen…'); var r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: await fileToDataURL(file) } }); toast('Imagen subida'); return r.url; }
+    if (file.size > 20 * 1024 * 1024) { toast('La imagen pesa más de 20 MB'); return ''; }
+    if (/gif/.test(file.type) && file.size > 3.3 * 1024 * 1024) { toast('El GIF pesa demasiado (máximo 3 MB)'); return ''; }
+    try { toast('Subiendo imagen…'); var r = await api('/admin/upload', { method: 'POST', body: { name: file.name, data: await shrinkImage(file) } }); toast('Imagen subida'); return r.url; }
     catch (err) { toast('Error al subir: ' + err.message, 4500); return ''; }
   }
   $('saveProduct').addEventListener('click', async function () {
@@ -719,11 +740,13 @@
         { k: 'scope_value', l: '¿Cuál?', t: 'scope', half: 1, showIf: { kind: 'descuento' } },
         { k: 'badge', l: 'Etiqueta corta', t: 'text', max: 30, half: 1, h: 'Ej.: -20%, Envío gratis' },
         { k: 'description', l: 'Descripción', t: 'textarea', max: 300 },
-        { k: 'conditions', l: 'Condiciones *', t: 'textarea', max: 1500, h: 'Obligatorias para descuento y envío gratis.' }
+        { k: 'conditions', l: 'Condiciones *', t: 'textarea', max: 1500, h: 'Obligatorias para descuento y envío gratis.' },
+        { k: 'image', l: 'Foto de la promoción (opcional)', t: 'image', h: 'Se ve en la tarjeta de la promoción y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600) y con poco texto: el título y el descuento ya se escriben encima.' },
+        { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona la ve una sola vez. Si hay varias, se muestra la primera.' }
       ].concat(DATES).concat([{ k: 'active', l: 'Activa', t: 'check', def: true }]),
       cols: function (r) {
         var what = r.kind === 'descuento' ? r.discount + '% · ' + scopeTxt(r) : r.kind === 'envio' ? 'Envío gratis desde ' + money(r.min_subtotal) : 'Informativa';
-        return ['<b>' + esc(r.title) + '</b><br><small>' + esc(r.description || '') + '</small>', esc(what), periodTxt(r), activeTxt(r)];
+        return [thumbTxt(r) + '<b>' + esc(r.title) + '</b><br><small>' + esc(r.description || '') + '</small>' + (r.popup ? '<br><span class="pill on">Ventana al entrar</span>' : ''), esc(what), periodTxt(r), activeTxt(r)];
       },
       heads: ['Promoción', 'Qué hace', 'Vigencia', 'Estado']
     },
@@ -739,11 +762,14 @@
         { k: 'min_subtotal', l: 'Compra mínima ($)', t: 'number', min: 0, half: 1 },
         { k: 'max_uses', l: 'Usos máximos', t: 'number', min: 0, half: 1, h: '0 = sin límite' },
         { k: 'description', l: 'Descripción', t: 'text', max: 200 },
-        { k: 'conditions', l: 'Condiciones', t: 'textarea', max: 1500 }
+        { k: 'conditions', l: 'Condiciones', t: 'textarea', max: 1500, h: 'Obligatorias si el cupón se muestra en la tienda.' },
+        { k: 'publico', l: 'Mostrar en la tienda (sección “Cupones para ti”)', t: 'check', h: 'Si no lo marcas, el cupón es secreto: solo lo usa quien conoce el código.' },
+        { k: 'image', l: 'Foto del cupón (opcional)', t: 'image', h: 'Aparece en el cupón y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600).', showIf: { publico: true } },
+        { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona lo ve una sola vez, con un botón para usarlo.', showIf: { publico: true } }
       ].concat(DATES).concat([{ k: 'active', l: 'Activo', t: 'check', def: true }]),
       cols: function (r) {
         var what = r.type === 'porcentaje' ? r.value + '%' + (r.max_discount ? ' (tope ' + money(r.max_discount) + ')' : '') : r.type === 'valor' ? money(r.value) : 'Envío gratis';
-        return ['<b>' + esc(r.code) + '</b><br><small>' + esc(r.description || '') + '</small>', esc(what) + (r.min_subtotal ? '<br><small>Desde ' + money(r.min_subtotal) + '</small>' : ''), esc((r.uses || 0) + (r.max_uses ? ' / ' + r.max_uses : '')) + ' usos', periodTxt(r), activeTxt(r)];
+        return [thumbTxt(r) + '<b>' + esc(r.code) + '</b><br><small>' + esc(r.description || '') + '</small>' + (r.publico ? '<br><span class="pill on">En la tienda</span>' : '<br><span class="pill off">Secreto</span>') + (r.popup ? ' <span class="pill on">Ventana al entrar</span>' : ''), esc(what) + (r.min_subtotal ? '<br><small>Desde ' + money(r.min_subtotal) + '</small>' : ''), esc((r.uses || 0) + (r.max_uses ? ' / ' + r.max_uses : '')) + ' usos', periodTxt(r), activeTxt(r)];
       },
       heads: ['Cupón', 'Descuento', 'Usos', 'Vigencia', 'Estado']
     },
@@ -783,6 +809,7 @@
       heads: ['Dinámica', 'Tipo', 'Vigencia', 'Estado']
     }
   };
+  function thumbTxt(r) { var u = safeUrl(r.image); return u ? '<img class="row-thumb" src="' + esc(u) + '" alt="" loading="lazy">' : ''; }
   function scopeTxt(r) { var t = r.scope_type || 'todo'; if (t === 'todo') return 'toda la tienda'; var v = r.scope_value || ''; if (t === 'producto') { var p = D.products.find(function (x) { return x.id === v; }); v = p ? p.brand + ' ' + p.name : v; } return v; }
   function periodTxt(r) { return r.starts_at || r.ends_at ? (r.starts_at ? fdate(r.starts_at, false) : 'Ya') + ' → ' + (r.ends_at ? fdate(r.ends_at, false) : 'sin fin') : 'Sin fechas'; }
   function activeTxt(r) {
@@ -942,6 +969,7 @@
         '<div class="order-card__top"><div><h2 class="rv-prod">' + esc(p ? p.brand + ' ' + p.name : r.product_id) + '</h2><small>' + fdate(r.created_at) + ' · pedido ' + esc(r.order_id) + '</small></div>' + starsTxt(r.rating) + '</div>' +
         '<div class="order-meta"><span class="pill ' + (r.estado === 'publicada' ? 'on' : 'off') + '">' + (r.estado === 'publicada' ? 'Publicada' : 'Oculta') + '</span><span class="pill off">' + esc(r.nombre) + (r.ciudad ? ' · ' + esc(r.ciudad) : '') + '</span>' + tags.map(function (t) { return '<span class="pill off">' + esc(t) + '</span>'; }).join('') + '</div>' +
         '<p class="pqr-msg">' + esc(r.comentario) + '</p>' +
+        (safeUrl(r.video) ? '<video class="rv-video" src="' + esc(r.video) + '" controls playsinline preload="metadata"></video>' : '') +
         ((r.fotos || []).length ? '<div class="rv-pics">' + r.fotos.map(function (u, i) { var s = safeUrl(u); return s ? '<a href="' + esc(s) + '" target="_blank" rel="noopener"><img src="' + esc(s) + '" alt="Foto ' + (i + 1) + ' de la opinión" loading="lazy"></a>' : ''; }).join('') + '</div>' : '') +
         '<form class="tl-form" data-rev="' + esc(r.id) + '"><div class="field full"><label for="rr-' + esc(r.id) + '">Respuesta pública de Punto Club (opcional)</label><textarea id="rr-' + esc(r.id) + '" name="respuesta" maxlength="800" rows="2" placeholder="Ej.: ¡Gracias por tu compra, Ana! Nos alegra que te quedaran perfectos.">' + esc(r.respuesta || '') + '</textarea></div>' +
         '<div class="full order-actions"><button class="btn btn-primary btn-sm" type="submit">Guardar respuesta</button>' +

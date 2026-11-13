@@ -41,6 +41,8 @@ const prodToFront = p => ({
 /*  Promociones, cupones y anuncios: CRUD genérico con validaciones     */
 /* ------------------------------------------------------------------ */
 const date = v => (v ? new Date(v).toISOString() : null);
+/* Foto de promoción o cupón: solo de la tienda (/img/…) o https (bucket de Supabase) */
+const imagenOk = v => { const s = String(v || '').trim(); return /^(https:\/\/[^\s"'<>]+|\/img\/[\w.-]+)$/.test(s) ? s.slice(0, 600) : ''; };
 const CRUD = {
   promos: {
     table: 'promos', key: 'id', idFrom: b => slug(b.title || 'promo') + '-' + Date.now().toString(36).slice(-4),
@@ -50,7 +52,8 @@ const CRUD = {
       discount: v => Math.min(90, Math.max(0, Math.round(Number(v) || 0))),
       scope_type: v => (['todo', 'marca', 'categoria', 'genero', 'producto'].includes(v) ? v : 'todo'),
       scope_value: v => cleanText(v, 80), min_subtotal: v => Math.max(0, Math.round(Number(v) || 0)),
-      starts_at: date, ends_at: date, conditions: v => cleanText(v, 1500), active: v => v !== false
+      starts_at: date, ends_at: date, conditions: v => cleanText(v, 1500), active: v => v !== false,
+      image: v => imagenOk(v), popup: v => v === true
     },
     defaults: { kind: 'informativa', scope_type: 'todo', active: true },
     validate(r) {
@@ -68,13 +71,16 @@ const CRUD = {
       type: v => (['porcentaje', 'valor', 'envio'].includes(v) ? v : 'porcentaje'),
       value: v => Math.max(0, Math.round(Number(v) || 0)), max_discount: v => Math.max(0, Math.round(Number(v) || 0)),
       min_subtotal: v => Math.max(0, Math.round(Number(v) || 0)), max_uses: v => Math.max(0, Math.round(Number(v) || 0)),
-      starts_at: date, ends_at: date, conditions: v => cleanText(v, 1500), active: v => v !== false
+      starts_at: date, ends_at: date, conditions: v => cleanText(v, 1500), active: v => v !== false,
+      image: v => imagenOk(v), publico: v => v === true, popup: v => v === true
     },
     defaults: { type: 'porcentaje', active: true, uses: 0 },
     validate(r, isNew) {
       if (isNew && (!r.code || r.code.length < 3)) return 'El código debe tener al menos 3 letras o números';
       if (r.type === 'porcentaje' && (r.value < 1 || r.value > 90)) return 'El porcentaje debe estar entre 1 y 90';
       if (r.type === 'valor' && r.value < 1000) return 'El valor del cupón debe ser de al menos $1.000';
+      if (r.popup && !r.publico) return 'Para mostrar el cupón en la ventana al entrar, marca también “Mostrar en la tienda”.';
+      if (r.publico && (!r.conditions || r.conditions.length < 15)) return 'Un cupón que se muestra en la tienda necesita sus condiciones (mínimo de compra, vigencia, límite de usos). Ley 1480.';
       if (r.starts_at && r.ends_at && r.ends_at < r.starts_at) return 'La fecha final es anterior a la inicial';
     }
   },
@@ -101,6 +107,8 @@ const CRUD = {
     }
   }
 };
+
+const faltaCol = e => /(image|popup|publico)/.test(e.message) && /column/i.test(e.message) ? 'Falta preparar la base: ejecuta lib/migracion-cupones-fotos-2026-11.sql en Supabase.' : '';
 
 function cleanRow(body, cfg, isNew) {
   const row = {};
@@ -161,11 +169,11 @@ module.exports = async (req, res) => {
       return ok(res, data);
     }
     if (method === 'DELETE' && id) {
-      const { data: r } = await supabase.from('reviews').select('fotos').eq('id', id).maybeSingle();
+      const { data: r } = await supabase.from('reviews').select('*').eq('id', id).maybeSingle();
       const { error } = await supabase.from('reviews').delete().eq('id', id);
       if (error) return err(res, error.message, 500);
       const { BUCKET, rutaDesdeUrl } = require('../lib/opiniones');
-      const rutas = ((r && r.fotos) || []).map(rutaDesdeUrl).filter(Boolean);
+      const rutas = ((r && r.fotos) || []).concat(r && r.video ? [r.video] : []).map(rutaDesdeUrl).filter(Boolean);
       if (rutas.length) await supabase.storage.from(BUCKET).remove(rutas).then(() => {}, () => {});
       return ok(res, { ok: true });
     }
@@ -291,7 +299,7 @@ module.exports = async (req, res) => {
       const v = cfg.validate(row, true);
       if (v) return err(res, v, 400);
       const { data, error } = await supabase.from(cfg.table).insert(row).select().single();
-      if (error) return err(res, /duplicate|unique/i.test(error.message) ? 'Ya existe uno con ese código' : error.message, error.code === '23505' ? 409 : 500);
+      if (error) return err(res, /duplicate|unique/i.test(error.message) ? 'Ya existe uno con ese código' : faltaCol(error) || error.message, error.code === '23505' ? 409 : 500);
       return ok(res, data, 201);
     }
     if (method === 'PUT' && id) {
@@ -301,7 +309,7 @@ module.exports = async (req, res) => {
       const v = cfg.validate({ ...current, ...row }, false);
       if (v) return err(res, v, 400);
       const { data, error } = await supabase.from(cfg.table).update({ ...row, updated_at: nowIso() }).eq(cfg.key, id).select().single();
-      if (error) return err(res, error.message, 500);
+      if (error) return err(res, faltaCol(error) || error.message, 500);
       return ok(res, data);
     }
     if (method === 'DELETE' && id) {

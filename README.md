@@ -39,10 +39,21 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 - **Aviso de pedido nuevo para la tienda**: en **Panel → Resumen** toca **📲 Activar avisos en este celular** (en cada celular o computador donde quieras enterarte). Cada pedido nuevo llega como notificación del sistema, con sonido y vibración, aunque el panel esté cerrado o la pantalla bloqueada. Con el panel abierto, además suena el “ding-dong” cada 5 segundos hasta que toques la pantalla. Si falta algo por configurar, el Resumen te lo dice.
 - **Para activarlo**: ejecuta `lib/migracion-avisos-2026-11.sql` en Supabase y pon en Vercel (Settings → Environment Variables) las variables `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` que quedaron en tu `.env`. Luego vuelve a publicar. Nunca subas la llave privada a GitHub.
 
+### Cupones y promociones con foto (12 de noviembre de 2026)
+- **Cupones para ti**: en el panel, al crear o editar un cupón, marca **“Mostrar en la tienda”** y súbele una foto. Se ve como un ticket (valor, compra mínima, vencimiento y código) con el botón **Usar**: si el cliente tiene productos, el cupón se aplica al carrito; si no, queda guardado y se aplica solo cuando agregue algo. Los cupones sin esa casilla siguen siendo secretos.
+- **Promociones con foto**: la foto encabeza la tarjeta y las de descuento tienen **Ver productos**, que filtra el catálogo por la marca, categoría, género o producto de la promoción.
+- **Ventana al entrar**: marca **“Mostrar en una ventana al entrar”** en un cupón o promoción. Aparece unos segundos después de cargar la tienda, una sola vez por persona, con la foto y el botón para usarla.
+- Las fotos grandes (las del celular) se reducen solas en el panel antes de subirse (máx. 1800 px, WEBP). Esto también aplica a productos y banners.
+- **Para activarlo**: ejecuta `lib/migracion-cupones-fotos-2026-11.sql` en Supabase.
+
+### Corrección: comprar desde Favoritos
+- El detalle del tenis y la compra se abrían **detrás** de Favoritos y no se podía comprar desde ahí. Ahora cada ventana se abre encima de la anterior.
+
 ### Opiniones de clientes (12 de noviembre de 2026)
 - **Solo compradores verificados**: cuando un pedido queda **Entregado**, en “Mis pedidos” aparece **¿Cómo te llegó?** con un botón **Opinar** por cada producto. El cliente da estrellas (general, rapidez del envío y calidad), dice si llegó en buen estado y cómo le quedó la talla, escribe su comentario y puede subir hasta 3 fotos. Una opinión por producto y por pedido. El aviso de “Entregado” en el celular lo invita a opinar.
 - **Se publican solas** en el detalle de cada producto: promedio, barras por estrellas, “% dice: talla justa”, “% le llegó en buen estado” y cada opinión con la etiqueta **Compra verificada**, su talla, color, fotos y tu respuesta.
-- **Privacidad**: se muestra solo el nombre corto (“Ana G.”) y la ciudad, con autorización expresa del cliente. Nunca el nombre completo, celular, cédula ni dirección. Se actualizaron los términos (sección 10) y la política de datos; `versionPoliticas` pasó a `2026-11-12` en `public/js/negocio.js`.
+- **Privacidad**: cada opinión muestra **solo** el nombre corto (“Ana G.”), las estrellas, el comentario y sus fotos o video, con autorización expresa del cliente. Nunca la ciudad, la dirección, el nombre completo, el celular ni la cédula (la ciudad ya ni se guarda). Los resúmenes del producto (“% dice talla justa”) son anónimos.
+- **Video**: el cliente puede subir un video (MP4, MOV o WEBM, máx. 30 MB). Va directo a Supabase con un permiso temporal que el servidor solo da a compradores verificados; Vercel no deja pasar archivos tan grandes. Se actualizaron los términos (sección 10) y la política de datos; `versionPoliticas` pasó a `2026-11-12` en `public/js/negocio.js`.
 - **Panel → Opiniones**: todas las opiniones con filtros (sin responder, 1–2 estrellas, ocultas), respuesta pública, ocultar/volver a publicar y eliminar (borra también las fotos). Oculta solo las ofensivas, con datos personales o que no hablen del producto: esconder las negativas puede considerarse publicidad engañosa.
 - **Para activarlo**: ejecuta `lib/migracion-opiniones-2026-11.sql` en Supabase (crea la tabla `reviews` y el bucket público `punto-club-opiniones` para las fotos). Sin ella la tienda funciona igual y el producto dice que aún no hay opiniones.
 

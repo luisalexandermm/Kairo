@@ -1900,5 +1900,9 @@ mark.pendiente {
 .rv-pics { display: flex; gap: 8px; margin: 8px 0; }
 .rv-pics img { width: 84px; height: 84px; object-fit: cover; border-radius: 12px; display: block; }
 .order-card.rv-low { border-left: 4px solid #e0533d; }
+.rv-video { display: block; width: 100%; max-width: 320px; max-height: 360px; border-radius: 12px; background: #000; margin: 8px 0; }
 .order-card.rv-hidden { opacity: .62; }
 #revSum { margin-bottom: 14px; }
+
+/* Miniatura de la foto en las tablas de promociones y cupones */
+.row-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 8px; float: left; margin: 2px 10px 2px 0; }

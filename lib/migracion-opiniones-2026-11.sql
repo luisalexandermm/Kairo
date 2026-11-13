@@ -28,16 +28,23 @@ create table if not exists reviews (
   unique (order_id, product_id)
 );
 
+-- Video opcional de la opinión (enlace público). Se agrega aparte por si la tabla ya existía.
+alter table reviews add column if not exists video text not null default '';
+
 create index if not exists reviews_producto on reviews (product_id, estado, created_at desc);
 create index if not exists reviews_creadas on reviews (created_at desc);
 
 -- Seguridad: solo el servidor lee y escribe (la tienda las pide a /api/opiniones)
 alter table reviews enable row level security;
 
--- Fotos de las opiniones: bucket público (se muestran en la tienda), máx. 1 MB, solo imágenes
+-- Fotos y videos de las opiniones: bucket público (se muestran en la tienda).
+-- Límite por archivo 30 MB (los videos). Las fotos el servidor las limita a 1 MB.
+-- Los videos los sube el cliente directo con un permiso temporal que da el servidor
+-- solo si el pedido está Entregado; nadie más puede escribir en este bucket.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('punto-club-opiniones', 'punto-club-opiniones', true, 1048576, array['image/jpeg', 'image/png', 'image/webp'])
+values ('punto-club-opiniones', 'punto-club-opiniones', true, 31457280,
+        array['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm'])
 on conflict (id) do update set
   public = true,
-  file_size_limit = 1048576,
-  allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+  file_size_limit = 31457280,
+  allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm'];
