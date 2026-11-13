@@ -5476,3 +5476,174 @@ html.popx-open body {
 .rv__video { display: block; width: 100%; max-width: 360px; max-height: 420px; margin-top: 10px; border-radius: 14px; background: #000; }
 .rv-vprev { display: grid; gap: 6px; justify-items: start; margin-top: 8px; }
 .rv-vprev video { width: 100%; max-width: 260px; max-height: 300px; border-radius: 12px; background: #000; }
+
+
+/* =====================================================================
+   Notificaciones dentro de la app (ofertas, cupones y avisos)
+   Flotan arriba de la pantalla; no ocupan espacio en la página.
+   ===================================================================== */
+.noti {
+  position: fixed;
+  top: calc(10px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 115;
+  width: min(440px, calc(100% - 20px));
+  transform: translate(-50%, calc(-100% - 30px));
+  opacity: 0;
+  transition: transform .42s cubic-bezier(.2,1.25,.4,1), opacity .25s ease;
+  touch-action: pan-x;
+}
+
+.noti.on {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.noti[hidden] {
+  display: none;
+}
+
+.noti__card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 40px 12px 10px;
+  border-radius: 20px;
+  background: rgba(15,21,18,.94);
+  color: #fff;
+  box-shadow: 0 18px 36px -14px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08);
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.noti__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.noti__pic {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0e4d38;
+}
+
+.noti__pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.noti__pic--ico {
+  display: grid;
+  place-items: center;
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.noti__pic--ico svg {
+  width: 26px;
+  height: 26px;
+}
+
+.noti__txt {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.noti__txt small {
+  font-size: .7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--lime);
+}
+
+.noti__txt b {
+  font-size: .95rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.noti__txt span {
+  font-size: .8rem;
+  color: rgba(255,255,255,.75);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.noti__btn {
+  flex: none;
+}
+
+.noti__x {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  cursor: pointer;
+}
+
+.noti__x svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Barra que muestra cuánto falta para que se vaya sola */
+.noti__bar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--lime);
+  transform-origin: left;
+  animation: pc-noti-bar var(--ms, 7000ms) linear both;
+}
+
+.noti.paused .noti__bar {
+  animation-play-state: paused;
+}
+
+@keyframes pc-noti-bar {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (min-width: 980px) {
+  .noti { top: 84px; left: auto; right: 24px; transform: translate(calc(100% + 40px), 0); }
+  .noti.on { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .noti { transition: opacity .2s; }
+  .noti__bar { animation: none; }
+}

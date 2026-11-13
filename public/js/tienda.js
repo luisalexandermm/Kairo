@@ -425,11 +425,12 @@
     if (l.type === 'url') { var u = safeUrl(l.value); if (u) location.href = u; }
   }
 
-  /* ---------------- cupones para ti y ventana al entrar ----------------
-     Los cupones marcados como públicos en el panel se ven como tickets; "Usar" lo aplica al carrito
-     (o lo guarda hasta que haya productos). Una promoción o cupón destacado puede salir en una
-     ventana al entrar, una sola vez por persona. */
-  var K_CUP = 'kairo.cupon.v1', K_POP = 'kairo.ventana.v1';
+  /* ---------------- ofertas, cupones y avisos como notificaciones dentro de la app ----------------
+     Cupones públicos, promociones y avisos aparecen como notificaciones flotantes arriba de la
+     pantalla: una a la vez, una vez por visita, y se van solas. No ocupan espacio en la página.
+     Tocar una abre su detalle (con condiciones). Lo marcado como "ventana al entrar" sale en la
+     ventana grande y ya no se repite como notificación en esa visita. */
+  var K_CUP = 'kairo.cupon.v1', K_POP = 'kairo.ventana.v1', K_NOTI = 'kairo.notis.v1';
   function cupValue(c) { return c.type === 'porcentaje' ? c.value + '%' : c.type === 'valor' ? money(c.value) : 'Envío'; }
   function cupUnit(c) { return c.type === 'envio' ? 'gratis' : 'de descuento'; }
   function cupRules(c) {
@@ -439,37 +440,86 @@
     if (c.endsAt) r.push('Vence el ' + new Date(c.endsAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' }));
     return r;
   }
-  function couponCardHTML(c) {
-    var on = S.coupon && S.coupon.code === c.code, img = safeUrl(c.image);
-    return '<article class="cup' + (on ? ' cup--on' : '') + (img ? ' cup--img' : '') + '">' +
-      (img ? '<div class="cup__pic"><img src="' + esc(img) + '" alt="" loading="lazy" decoding="async"></div>' : '') +
-      '<div class="cup__main"><div class="cup__val"><b>' + esc(cupValue(c)) + '</b><span>' + cupUnit(c) + '</span></div>' +
-      '<div class="cup__info"><p class="cup__desc">' + esc(c.description || 'Cupón de Punto Club') + '</p>' +
-      cupRules(c).map(function (t) { return '<small>' + esc(t) + '</small>'; }).join('') +
-      '<span class="cup__code">' + esc(c.code) + '</span></div></div>' +
-      '<div class="cup__foot"><button type="button" class="btn ' + (on ? 'btn-light' : 'btn-lime') + ' btn-sm" data-cup-use="' + esc(c.code) + '">' + (on ? '✓ Aplicado' : 'Usar') + '</button>' +
-      (c.conditions ? '<details><summary>Condiciones</summary><p>' + esc(c.conditions) + '</p></details>' : '') + '</div></article>';
-  }
-  function renderCoupons() {
-    var list = S.coupons || [];
-    $('cupSec').hidden = !list.length;
-    $('cupRow').innerHTML = list.map(couponCardHTML).join('');
-  }
   function useCoupon(code) {
-    closePopup();
+    closePopup(); hideNoti();
     if (S.coupon && S.coupon.code === code) { openCart(); return; }
     $('couponIn').value = code;
-    if (S.cart.length) { store.del(K_CUP); applyCoupon(code).then(renderCoupons); openCart(); return; }
+    if (S.cart.length) { store.del(K_CUP); applyCoupon(code); openCart(); return; }
     store.set(K_CUP, code);
     toast('Cupón ' + code + ' guardado: se aplica solo cuando agregues productos al carrito 🛍️');
-    renderCoupons();
   }
   function applyPendingCoupon() {
     var pend = store.get(K_CUP);
     if (!pend || S.coupon || !S.cart.length) return;
     store.del(K_CUP); $('couponIn').value = pend;
-    applyCoupon(pend).then(function () { renderCoupons(); if (stack.indexOf($('coSheet')) > -1 && !$('coStep1').hidden) renderCheckoutSummary(); });
+    applyCoupon(pend).then(function () { if (stack.indexOf($('coSheet')) > -1 && !$('coStep1').hidden) renderCheckoutSummary(); });
   }
+
+  /* --- Cola de notificaciones --- */
+  var notiT = null, notiHideT = null, notiCur = null, notiStarted = false, notiLeft = 0, notiAt = 0, popKey = '';
+  var NOTI_MS = 7000;
+  function notiSeen() { try { return JSON.parse(sessionStorage.getItem(K_NOTI) || '{}'); } catch (e) { return {}; } }
+  function markNoti(k) { var s = notiSeen(); s[k] = 1; try { sessionStorage.setItem(K_NOTI, JSON.stringify(s)); } catch (e) { } }
+  function notiQueue() {
+    var seen = notiSeen(), q = [];
+    S.ann.filter(function (a) { return a.kind === 'barra'; }).forEach(function (a) { q.push({ k: 'a:' + a.id, a: a }); });
+    (S.coupons || []).forEach(function (c) { q.push({ k: 'c:' + c.code, c: c }); });
+    S.promos.forEach(function (p) { q.push({ k: 'p:' + p.id, p: p }); });
+    return q.filter(function (x) { return !seen[x.k] && x.k !== popKey; });
+  }
+  function startNotis() { if (notiStarted) return; notiStarted = true; scheduleNoti(3500); }
+  function scheduleNoti(ms) { clearTimeout(notiT); notiT = setTimeout(nextNoti, ms); }
+  function notiBusy() {
+    return stack.length || isPaying || !$('popx').hidden || document.documentElement.classList.contains('k-loading') || document.visibilityState !== 'visible';
+  }
+  function nextNoti() {
+    if (notiCur) return;
+    var q = notiQueue(); if (!q.length) return;
+    if (notiBusy()) { scheduleNoti(3000); return; } // espera a que el cliente termine lo que hace
+    showNoti(q[0]);
+  }
+  function notiData(it) {
+    if (it.c) { var c = it.c; return { img: safeUrl(c.image), ico: 'i-ticket', kick: '🎁 Cupón para ti', title: cupValue(c) + ' ' + cupUnit(c), text: (c.description ? c.description + ' · ' : '') + 'Código ' + c.code, btn: 'Usar', act: 'data-cup-use="' + esc(c.code) + '"' }; }
+    if (it.p) { var p = it.p; return { img: safeUrl(p.image), ico: 'i-spark', kick: p.badge || 'Promoción', title: p.title, text: p.description || (p.endsAt ? 'Hasta el ' + fmtDate(p.endsAt) : ''), btn: 'Ver', act: 'data-noti-open' }; }
+    var a = it.a, link = a.linkType && a.linkType !== 'ninguno';
+    return { img: '', ico: 'i-bell', kick: 'Aviso', title: a.title, text: a.subtitle || '', btn: link ? (a.buttonText || 'Ver') : '', act: link ? 'data-noti-link' : '' };
+  }
+  function showNoti(it) {
+    var d = notiData(it); notiCur = it; markNoti(it.k);
+    $('notiBox').innerHTML = '<article class="noti__card" style="--ms:' + NOTI_MS + 'ms">' +
+      '<button type="button" class="noti__main" data-noti-open aria-label="' + esc(d.kick + ': ' + d.title + '. Ver detalle') + '">' +
+      (d.img ? '<span class="noti__pic"><img src="' + esc(d.img) + '" alt=""></span>' : '<span class="noti__pic noti__pic--ico"><svg aria-hidden="true"><use href="#' + d.ico + '"/></svg></span>') +
+      '<span class="noti__txt"><small>' + esc(d.kick) + '</small><b>' + esc(d.title) + '</b>' + (d.text ? '<span>' + esc(d.text) + '</span>' : '') + '</span></button>' +
+      (d.btn ? '<button type="button" class="btn btn-lime btn-sm noti__btn" ' + d.act + '>' + esc(d.btn) + '</button>' : '') +
+      '<button type="button" class="noti__x" data-noti-x aria-label="Cerrar notificación"><svg aria-hidden="true"><use href="#i-close"/></svg></button>' +
+      '<i class="noti__bar" aria-hidden="true"></i></article>';
+    $('notiBox').hidden = false;
+    requestAnimationFrame(function () { $('notiBox').classList.add('on'); });
+    if (navigator.vibrate) { try { navigator.vibrate(30); } catch (e) { } }
+    notiLeft = NOTI_MS; resumeNoti();
+  }
+  function resumeNoti() { if (!notiCur) return; clearTimeout(notiHideT); notiAt = Date.now(); notiHideT = setTimeout(hideNoti, notiLeft); $('notiBox').classList.remove('paused'); }
+  function pauseNoti() { if (!notiCur) return; clearTimeout(notiHideT); notiLeft = Math.max(1500, notiLeft - (Date.now() - notiAt)); $('notiBox').classList.add('paused'); }
+  function hideNoti() {
+    if (!notiCur) return;
+    clearTimeout(notiHideT); notiCur = null;
+    $('notiBox').classList.remove('on', 'paused');
+    setTimeout(function () { if (!notiCur) { $('notiBox').hidden = true; $('notiBox').innerHTML = ''; } }, 300);
+    scheduleNoti(9000); // la siguiente, con calma
+  }
+  // Pasar el dedo o el mouse encima la pausa; deslizar hacia arriba la cierra
+  var notiY = null;
+  $('notiBox').addEventListener('pointerenter', pauseNoti);
+  $('notiBox').addEventListener('pointerleave', function () { notiY = null; resumeNoti(); });
+  $('notiBox').addEventListener('focusin', pauseNoti);
+  $('notiBox').addEventListener('focusout', resumeNoti);
+  $('notiBox').addEventListener('pointerdown', function (e) { notiY = e.clientY; pauseNoti(); });
+  $('notiBox').addEventListener('pointermove', function (e) {
+    if (notiY == null) return; var dy = e.clientY - notiY;
+    if (dy < 0) $('notiBox').style.transform = 'translate(-50%,' + dy + 'px)';
+    if (dy < -45) { notiY = null; $('notiBox').style.transform = ''; hideNoti(); }
+  });
+  $('notiBox').addEventListener('pointerup', function () { notiY = null; $('notiBox').style.transform = ''; });
 
   /* Ventana al entrar */
   var popShown = false, popPrevFocus = null;
@@ -479,7 +529,7 @@
     var cands = (S.coupons || []).filter(function (c) { return c.popup; }).map(function (c) { return { k: 'c:' + c.code, c: c }; })
       .concat(S.promos.filter(function (p) { return p.popup; }).map(function (p) { return { k: 'p:' + p.id, p: p }; }));
     var it = cands.find(function (x) { return !seen[x.k]; }); if (!it) return;
-    seen[it.k] = Date.now(); store.set(K_POP, seen); popShown = true;
+    seen[it.k] = Date.now(); store.set(K_POP, seen); popShown = true; popKey = it.k;
     openPopup(it);
   }
   function openPopup(it) {
@@ -489,10 +539,10 @@
       '<div class="popx__body">' + (c
         ? '<span class="popx__kick">🎁 Un regalo para ti</span><h2 id="popxT"><b>' + esc(cupValue(c)) + '</b> ' + cupUnit(c) + '</h2>' + (c.description ? '<p>' + esc(c.description) + '</p>' : '') +
           '<p class="popx__rules">' + cupRules(c).map(esc).join(' · ') + '</p><div class="popx__code"><span>Código</span><b>' + esc(c.code) + '</b></div>' +
-          '<button type="button" class="btn btn-lime btn-block" data-cup-use="' + esc(c.code) + '">Usar cupón</button>'
+          '<button type="button" class="btn btn-lime btn-block" data-cup-use="' + esc(c.code) + '">' + (S.coupon && S.coupon.code === c.code ? '✓ Ya está aplicado · ver carrito' : 'Usar cupón') + '</button>'
         : (p.badge ? '<span class="popx__kick">' + esc(p.badge) + '</span>' : '') + '<h2 id="popxT">' + esc(p.title) + '</h2>' + (p.description ? '<p>' + esc(p.description) + '</p>' : '') +
           (p.endsAt ? '<p class="popx__rules">Hasta el ' + fmtDate(p.endsAt) + '</p>' : '') +
-          '<button type="button" class="btn btn-lime btn-block" data-promo-go="' + esc(p.id) + '">' + (p.kind === 'descuento' ? 'Ver productos' : 'Ver promoción') + '</button>') +
+          '<button type="button" class="btn btn-lime btn-block" data-promo-go="' + esc(p.id) + '">' + (p.kind === 'informativa' ? 'Entendido' : 'Ver productos') + '</button>') +
       '<button type="button" class="link-btn popx__later" data-popx-close>Ahora no</button>' +
       ((c || p).conditions ? '<details><summary>Ver condiciones</summary><p>' + esc((c || p).conditions) + '</p></details>' : '') + '</div>';
     popPrevFocus = document.activeElement;
@@ -518,37 +568,28 @@
   });
   document.addEventListener('click', function (e) {
     if (e.target.closest('[data-popx-close]')) { closePopup(); return; }
+    if (e.target.closest('[data-noti-x]')) { hideNoti(); return; }
     var u = e.target.closest('[data-cup-use]'); if (u) { useCoupon(u.dataset.cupUse); return; }
+    if (e.target.closest('[data-noti-open]') && notiCur) {
+      var it = notiCur; hideNoti();
+      if (it.a) { if (it.a.linkType && it.a.linkType !== 'ninguno') followLink({ type: it.a.linkType, value: it.a.linkValue }); }
+      else openPopup(it);
+      return;
+    }
+    if (e.target.closest('[data-noti-link]') && notiCur) { var a = notiCur.a; hideNoti(); followLink({ type: a.linkType, value: a.linkValue }); return; }
     var g = e.target.closest('[data-promo-go]');
     if (g) {
       closePopup();
-      var p = S.promos.find(function (x) { return x.id === g.dataset.promoGo; }); if (!p) return;
-      if (p.kind === 'descuento') followLink(p.scopeType && p.scopeType !== 'todo' ? { type: p.scopeType, value: p.scopeValue } : { type: 'ninguno' });
-      else { var sec = $('promosSec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      var p = S.promos.find(function (x) { return x.id === g.dataset.promoGo; }); if (!p || p.kind === 'informativa') return;
+      followLink(p.kind === 'descuento' && p.scopeType && p.scopeType !== 'todo' ? { type: p.scopeType, value: p.scopeValue } : { type: 'ninguno' });
     }
   });
 
   /* ---------------- barra superior, promos y dinámicas ---------------- */
   function fmtDate(d) { return new Date(d).toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }); }
   function renderNotices() {
-    var bar = S.ann.find(function (a) { return a.kind === 'barra'; });
-    if (bar) {
-      $('topbarIn').innerHTML = '<span>' + esc(bar.title) + (bar.subtitle ? ' — ' + esc(bar.subtitle) : '') + '</span>' + (bar.linkType && bar.linkType !== 'ninguno' ? ' <button type="button" class="tb-link" id="tbLink">' + esc(bar.buttonText || 'Ver') + '</button>' : '');
-      $('topbar').hidden = false;
-      var l = $('tbLink'); if (l) l.addEventListener('click', function () { followLink({ type: bar.linkType, value: bar.linkValue }); });
-    } else $('topbar').hidden = true;
-
-    $('promosSec').hidden = !S.promos.length;
-    $('promoRow').innerHTML = S.promos.map(function (p) {
-      var img = safeUrl(p.image);
-      return '<article class="promo' + (img ? ' promo--img' : '') + '">' +
-        (img ? '<div class="promo__pic"><img src="' + esc(img) + '" alt="" loading="lazy" decoding="async">' + (p.badge ? '<span class="promo__badge">' + esc(p.badge) + '</span>' : '') + '</div>' : (p.badge ? '<span class="promo__badge">' + esc(p.badge) + '</span>' : '')) +
-        '<div class="promo__body"><h3>' + esc(p.title) + '</h3>' + (p.description ? '<p>' + esc(p.description) + '</p>' : '') +
-        (p.endsAt ? '<span class="until">Hasta el ' + fmtDate(p.endsAt) + '</span>' : '') +
-        (p.kind === 'descuento' ? '<button type="button" class="btn btn-primary btn-sm promo__go" data-promo-go="' + esc(p.id) + '">Ver productos<svg aria-hidden="true"><use href="#i-arrow"/></svg></button>' : '') +
-        (p.conditions ? '<details><summary>Ver condiciones</summary><p>' + esc(p.conditions) + '</p></details>' : '') + '</div></article>';
-    }).join('');
-    renderCoupons();
+    // La barra de aviso, los cupones y las promociones salen como notificaciones (ver arriba), no en la página
+    $('topbar').hidden = true;
 
     var dins = S.ann.filter(function (a) { return a.kind === 'dinamica'; });
     $('dinSec').hidden = !dins.length;
@@ -690,7 +731,7 @@
       msg.className = 'coupon-msg bad';
       msg.textContent = e instanceof TypeError ? 'No pudimos validar el cupón. Revisa tu conexión.' : e.message;
       if (quiet) msg.textContent = 'El cupón ' + code + ' ya no aplica a este carrito: ' + msg.textContent;
-    } finally { $('couponBtn').disabled = false; saveCart(); renderCart(); renderCoupons(); }
+    } finally { $('couponBtn').disabled = false; saveCart(); renderCart(); }
   }
   function revalidateCoupon() { if (S.coupon && S.cart.length) applyCoupon(S.coupon.code, true); else if (!S.cart.length) { S.coupon = null; $('couponMsg').textContent = ''; } }
   $('couponForm').addEventListener('submit', function (e) { e.preventDefault(); applyCoupon($('couponIn').value.trim().toUpperCase()); });
@@ -1689,6 +1730,7 @@
   }
   window.addEventListener('kairo:ready', function () {
     setTimeout(maybePopup, 2500);
+    startNotis();
     renderResume();
     // Enlaces a un pedido (?pedido=PC-…&c=1234 o #pedidos, p. ej. desde WhatsApp o la vieja página de seguimiento)
     var qs = new URLSearchParams(location.search), lnkNum = String(qs.get('pedido') || '').toUpperCase().slice(0, 20), lnkCel = String(qs.get('c') || '').replace(/\D/g, '').slice(-4);

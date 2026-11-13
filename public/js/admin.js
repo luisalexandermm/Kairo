@@ -733,6 +733,8 @@
       help: 'Ley 1480: publica siempre las condiciones (a qué aplica, desde y hasta cuándo, si hay límite de unidades). No anuncies un “antes” que nunca existió.',
       fields: [
         { k: 'title', l: 'Título *', t: 'text', max: 80 },
+        { k: 'image', l: 'Foto de la promoción (opcional)', t: 'image', h: 'Se ve en la notificación de la promoción y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600) y con poco texto: el título y el descuento ya se escriben encima.' },
+        { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona la ve una sola vez. Si hay varias, se muestra la primera.' },
         { k: 'kind', l: 'Tipo', t: 'select', opts: [['descuento', 'Descuento en el precio'], ['envio', 'Envío gratis'], ['informativa', 'Solo informativa']] },
         { k: 'discount', l: 'Descuento %', t: 'number', min: 0, max: 90, half: 1, showIf: { kind: 'descuento' } },
         { k: 'min_subtotal', l: 'Compra mínima ($)', t: 'number', min: 0, half: 1, showIf: { kind: 'envio' } },
@@ -740,9 +742,7 @@
         { k: 'scope_value', l: '¿Cuál?', t: 'scope', half: 1, showIf: { kind: 'descuento' } },
         { k: 'badge', l: 'Etiqueta corta', t: 'text', max: 30, half: 1, h: 'Ej.: -20%, Envío gratis' },
         { k: 'description', l: 'Descripción', t: 'textarea', max: 300 },
-        { k: 'conditions', l: 'Condiciones *', t: 'textarea', max: 1500, h: 'Obligatorias para descuento y envío gratis.' },
-        { k: 'image', l: 'Foto de la promoción (opcional)', t: 'image', h: 'Se ve en la tarjeta de la promoción y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600) y con poco texto: el título y el descuento ya se escriben encima.' },
-        { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona la ve una sola vez. Si hay varias, se muestra la primera.' }
+        { k: 'conditions', l: 'Condiciones *', t: 'textarea', max: 1500, h: 'Obligatorias para descuento y envío gratis.' }
       ].concat(DATES).concat([{ k: 'active', l: 'Activa', t: 'check', def: true }]),
       cols: function (r) {
         var what = r.kind === 'descuento' ? r.discount + '% · ' + scopeTxt(r) : r.kind === 'envio' ? 'Envío gratis desde ' + money(r.min_subtotal) : 'Informativa';
@@ -756,20 +756,21 @@
       help: 'Publica las condiciones del cupón donde lo compartas (mínimo de compra, vigencia, límite de usos).',
       fields: [
         { k: 'code', l: 'Código *', t: 'text', max: 30, upper: 1, onlyNew: 1, h: 'Letras y números, sin espacios. Ej.: PUNTO10' },
+        // Foto y visibilidad arriba, para que se vean sin bajar (antes la foto quedaba escondida al final)
+        { k: 'image', l: 'Foto del cupón (opcional)', t: 'image', h: 'Aparece en la notificación y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600). Al subirla, el cupón se marca para mostrarse a los clientes.' },
+        { k: 'publico', l: 'Mostrar a los clientes (sale como notificación en la tienda)', t: 'check', h: 'Aparece como notificación flotante, una vez por visita, con botón para usarlo. Si no lo marcas, el cupón es secreto: solo lo usa quien conoce el código.' },
+        { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona lo ve una sola vez, con un botón para usarlo.', showIf: { publico: true } },
         { k: 'type', l: 'Tipo', t: 'select', opts: [['porcentaje', 'Porcentaje'], ['valor', 'Valor fijo en pesos'], ['envio', 'Envío gratis']], half: 1 },
         { k: 'value', l: 'Valor (% o $)', t: 'number', min: 0, half: 1, showIf: { type: ['porcentaje', 'valor'] } },
         { k: 'max_discount', l: 'Tope del descuento ($)', t: 'number', min: 0, half: 1, h: '0 = sin tope', showIf: { type: 'porcentaje' } },
         { k: 'min_subtotal', l: 'Compra mínima ($)', t: 'number', min: 0, half: 1 },
         { k: 'max_uses', l: 'Usos máximos', t: 'number', min: 0, half: 1, h: '0 = sin límite' },
         { k: 'description', l: 'Descripción', t: 'text', max: 200 },
-        { k: 'conditions', l: 'Condiciones', t: 'textarea', max: 1500, h: 'Obligatorias si el cupón se muestra en la tienda.' },
-        { k: 'publico', l: 'Mostrar en la tienda (sección “Cupones para ti”)', t: 'check', h: 'Si no lo marcas, el cupón es secreto: solo lo usa quien conoce el código.' },
-        { k: 'image', l: 'Foto del cupón (opcional)', t: 'image', h: 'Aparece en el cupón y en la ventana al entrar. Mejor horizontal (por ejemplo 1200 × 600).', showIf: { publico: true } },
-        { k: 'popup', l: 'Mostrar en una ventana al entrar a la tienda', t: 'check', h: 'Cada persona lo ve una sola vez, con un botón para usarlo.', showIf: { publico: true } }
+        { k: 'conditions', l: 'Condiciones', t: 'textarea', max: 1500, h: 'Obligatorias si el cupón se muestra en la tienda.' }
       ].concat(DATES).concat([{ k: 'active', l: 'Activo', t: 'check', def: true }]),
       cols: function (r) {
         var what = r.type === 'porcentaje' ? r.value + '%' + (r.max_discount ? ' (tope ' + money(r.max_discount) + ')' : '') : r.type === 'valor' ? money(r.value) : 'Envío gratis';
-        return [thumbTxt(r) + '<b>' + esc(r.code) + '</b><br><small>' + esc(r.description || '') + '</small>' + (r.publico ? '<br><span class="pill on">En la tienda</span>' : '<br><span class="pill off">Secreto</span>') + (r.popup ? ' <span class="pill on">Ventana al entrar</span>' : ''), esc(what) + (r.min_subtotal ? '<br><small>Desde ' + money(r.min_subtotal) + '</small>' : ''), esc((r.uses || 0) + (r.max_uses ? ' / ' + r.max_uses : '')) + ' usos', periodTxt(r), activeTxt(r)];
+        return [thumbTxt(r) + '<b>' + esc(r.code) + '</b><br><small>' + esc(r.description || '') + '</small>' + (r.publico ? '<br><span class="pill on">Notificación en la tienda</span>' : '<br><span class="pill off">Secreto</span>') + (r.popup ? ' <span class="pill on">Ventana al entrar</span>' : ''), esc(what) + (r.min_subtotal ? '<br><small>Desde ' + money(r.min_subtotal) + '</small>' : ''), esc((r.uses || 0) + (r.max_uses ? ' / ' + r.max_uses : '')) + ' usos', periodTxt(r), activeTxt(r)];
       },
       heads: ['Cupón', 'Descuento', 'Usos', 'Vigencia', 'Estado']
     },
@@ -787,7 +788,7 @@
     },
     barra: {
       endpoint: 'announcements', kind: 'barra', key: 'id', title: 'Barra de aviso', one: 'aviso',
-      intro: 'Una franja negra en la parte de arriba de la tienda. Se muestra el primer aviso activo.',
+      intro: 'Cada aviso activo sale como notificación flotante en la tienda (arriba de la pantalla), una vez por visita, junto con los cupones y promociones. No ocupa espacio en la página.',
       fields: [
         { k: 'title', l: 'Mensaje *', t: 'text', max: 90 }, { k: 'subtitle', l: 'Complemento', t: 'text', max: 220 },
         { k: 'button_text', l: 'Texto del enlace', t: 'text', max: 30, half: 1 }, { k: 'link_type', l: 'Llevar a', t: 'select', opts: LINK_OPTS, half: 1 }, { k: 'link_value', l: '¿Cuál?', t: 'scope' }
@@ -898,7 +899,12 @@
     }
     if (t.dataset.upload) {
       var url = await upload(t.files[0]);
-      if (url) { $('gForm').elements[t.dataset.upload].value = url; $('ff-' + t.dataset.upload + '-pv').innerHTML = '<img src="' + esc(url) + '" alt="">'; }
+      if (url) {
+        $('gForm').elements[t.dataset.upload].value = url; $('ff-' + t.dataset.upload + '-pv').innerHTML = '<img src="' + esc(url) + '" alt="">';
+        // Un cupón con foto es para mostrarlo: se marca "Mostrar en la tienda" solo
+        var pub = editing && editing.name === 'coupons' && $('gForm').elements.publico;
+        if (pub && !pub.checked) { pub.checked = true; toast('Foto lista. Marcamos “Mostrar a los clientes” para que se vea. Recuerda guardar.', 5000); }
+      }
     }
     applyShowIf();
   });

@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Punto Club">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=22">
+<link rel="stylesheet" href="css/store.css?v=24">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -99,6 +99,7 @@
 <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.8l2.83 5.74 6.33.92-4.58 4.46 1.08 6.3L12 17.24l-5.66 2.98 1.08-6.3L2.84 9.46l6.33-.92z" fill="currentColor"/></symbol>
 <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0v4.2l1.6 2.4a.9.9 0 0 1-.75 1.4H5.15a.9.9 0 0 1-.75-1.4L6 14.2z M9.8 20.2a2.4 2.4 0 0 0 4.4 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-gift" viewBox="0 0 24 24"><path d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM3 7.5h18V11H3zM12 7.5V21M12 7.5S10.6 3 8.2 3C6.8 3 6 4 6 5.1 6 6.6 7.6 7.5 9.4 7.5M12 7.5S13.4 3 15.8 3C17.2 3 18 4 18 5.1c0 1.5-1.6 2.4-3.4 2.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></symbol>
 <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 7.5A1.5 1.5 0 0 1 4.5 6h15A1.5 1.5 0 0 1 21 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V14a2 2 0 0 0 0-4z M14.5 6v12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="0"/></symbol>
 <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M15.5 8.5V6.2a1.7 1.7 0 0 0-1.7-1.7H6.2a1.7 1.7 0 0 0-1.7 1.7v7.6c0 .94.76 1.7 1.7 1.7h2.3" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
 <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7M20 4v4.7h-4.7M20 12a8 8 0 0 1-13.7 5.6L4 15.3M4 20v-4.7h4.7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -179,16 +180,6 @@
   </section>
 
   <div class="wrap">
-    <section class="sec" id="cupSec" aria-labelledby="h-cup" hidden>
-      <div class="sec-head"><div><h2 id="h-cup">Cupones para ti</h2><p>Toca “Usar” y se aplica a tu carrito.</p></div></div>
-      <div class="cup-row" id="cupRow"></div>
-    </section>
-
-    <section class="sec" id="promosSec" aria-labelledby="h-promos" hidden>
-      <div class="sec-head"><div><h2 id="h-promos">Promociones vigentes</h2><p>Cada una con sus condiciones.</p></div></div>
-      <div class="promo-row" id="promoRow"></div>
-    </section>
-
     <section class="sec" id="dinSec" aria-labelledby="h-din" hidden>
       <div class="sec-head"><div><h2 id="h-din">Dinámicas</h2><p>Lee las bases antes de participar.</p></div></div>
       <div class="promo-row" id="dinRow"></div>
@@ -264,6 +255,9 @@
 </nav>
 
 <div class="overlay" id="overlay"></div>
+
+<!-- ============ NOTIFICACIONES DENTRO DE LA APP (ofertas, cupones y avisos) ============ -->
+<div class="noti" id="notiBox" role="status" aria-live="polite" hidden></div>
 
 <!-- ============ VENTANA AL ENTRAR (cupón o promoción destacada) ============ -->
 <div class="popx" id="popx" hidden>
@@ -445,7 +439,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/tienda.js?v=23"></script>
+<script src="js/tienda.js?v=26"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>
