@@ -39,6 +39,12 @@ Tienda en HTML/CSS/JS, funciones serverless en `api/` (Vercel) y base de datos e
 - **Aviso de pedido nuevo para la tienda**: en **Panel → Resumen** toca **📲 Activar avisos en este celular** (en cada celular o computador donde quieras enterarte). Cada pedido nuevo llega como notificación del sistema, con sonido y vibración, aunque el panel esté cerrado o la pantalla bloqueada. Con el panel abierto, además suena el “ding-dong” cada 5 segundos hasta que toques la pantalla. Si falta algo por configurar, el Resumen te lo dice.
 - **Para activarlo**: ejecuta `lib/migracion-avisos-2026-11.sql` en Supabase y pon en Vercel (Settings → Environment Variables) las variables `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` que quedaron en tu `.env`. Luego vuelve a publicar. Nunca subas la llave privada a GitHub.
 
+### Tallas por color (14 de noviembre de 2026)
+- En el panel, cada color del producto tiene **sus propias tallas** (“Colores y tallas”). Las tallas del producto se calculan solas: son todas las que hay en algún color.
+- En la tienda el cliente elige primero el color; las tallas que no hay en ese color salen tachadas. Si cambia a un color sin la talla elegida, se le avisa.
+- El servidor rechaza el pedido si la talla no existe en ese color.
+- No requiere SQL: las tallas se guardan dentro de cada color. Los productos antiguos (sin tallas por color) siguen usando las tallas del producto hasta que los edites y guardes.
+
 ### Cupones para ciertos productos y “segunda unidad” (13 de noviembre de 2026)
 - **Cupón solo para ciertos productos**: en el cupón, “Sirve para” (toda la tienda, marca, categoría, género, un producto o **modelos cuyo nombre contiene…**, p. ej. `SB` → Nike SB). Si el carrito no tiene esos productos, el cupón no aplica; la compra mínima y el % se calculan **solo sobre esos productos** (ya con sus descuentos). “Tope del descuento” es lo máximo que se descuenta (10% hasta compras de $600.000 → tope $60.000).
 - **Promoción “Segunda unidad con descuento”** (tipo nuevo): con los pares que aplican, ordenados de mayor a menor precio, el segundo de cada par lleva el % (2 pares → 1 con descuento; 3 → 1; 4 → 2). Se calcula sobre el precio final del producto. El carrito, el resumen de compra, el pedido y el recibo muestran el ahorro aparte. Las promociones “Solo informativa” **no descuentan nada**.

@@ -2090,6 +2090,12 @@ footer :focus-visible {
   font-weight: 800;
 }
 
+.size:disabled {
+  opacity: .38;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
 .size[aria-pressed="true"] {
   background: var(--green);
   border-color: var(--green);

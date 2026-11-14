@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="/img/pc-icon-180.png">
 <meta name="theme-color" content="#0e0e0e">
 <link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/admin.css?v=15">
+<link rel="stylesheet" href="/css/admin.css?v=16">
 <script src="/js/negocio.js"></script>
 </head>
 <body>
@@ -234,12 +234,11 @@
     </div>
     <div class="field"><label for="pTag">Etiqueta</label><input id="pTag" placeholder="Running, Clásico, Verano…"></div>
     <div class="field"><label for="pDesc">Descripción</label><textarea id="pDesc" placeholder="Materiales, amortiguación, ajuste… (solo datos que puedas respaldar)"></textarea></div>
-    <fieldset class="field"><legend>Tallas disponibles</legend><div class="size-chips" id="sizeChips"></div></fieldset>
     <fieldset class="field">
-      <legend>Colores</legend>
+      <legend>Colores y tallas</legend>
       <div id="colorRows"></div>
       <button class="btn btn-line btn-sm" type="button" id="addColor">+ Agregar color</button>
-      <small>Cada color puede tener su propia foto.</small>
+      <small>Cada color tiene su propia foto y sus propias tallas: toca las tallas que tienes en ese color.</small>
     </fieldset>
     <div class="g3">
       <div class="field"><label for="pShape">Silueta (si no hay foto)</label>
@@ -270,6 +269,6 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/js/admin.js?v=21"></script>
+<script src="/js/admin.js?v=22"></script>
 </body>
 </html>

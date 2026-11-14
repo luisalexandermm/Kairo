@@ -733,6 +733,29 @@ tr:last-child td {
 
 /* color rows */
 
+.color-block {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.color-block .color-row {
+  margin-bottom: 6px;
+}
+
+.color-sizes__lbl {
+  display: block;
+  font-size: .75rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  opacity: .75;
+}
+
+.color-sizes .size-chip {
+  padding: 6px 10px;
+}
+
 .color-row {
   display: grid;
   grid-template-columns: minmax(120px,1fr) 54px minmax(150px,1.3fr) 72px 34px;

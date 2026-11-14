@@ -26,6 +26,16 @@ const toDb = (obj, map) => {
   if ('category' in r && !CATEGORIES.includes(r.category)) r.category = 'Tenis';
   if ('gender' in r && !GENDERS.includes(r.gender)) r.gender = 'Unisex';
   if ('brand' in r) r.brand = cleanText(r.brand, 40);
+  // Tallas por color: números válidos; las tallas del producto = todas las de sus colores
+  if (Array.isArray(r.colors)) {
+    r.colors = r.colors.slice(0, 20).map(c => {
+      const out = { n: cleanText(c && c.n, 40) || 'Color', h: /^#[0-9a-f]{6}$/i.test(c && c.h) ? c.h : '#333333', image: String((c && c.image) || '').slice(0, 500) };
+      if (Array.isArray(c && c.sizes)) out.sizes = [...new Set(c.sizes.map(Number).filter(s => s >= 20 && s <= 50))].sort((a, b) => a - b);
+      return out;
+    });
+    const all = r.colors.filter(c => c.sizes).flatMap(c => c.sizes);
+    if (all.length) r.sizes = [...new Set(all)].sort((a, b) => a - b);
+  }
   return r;
 };
 const prodToFront = p => ({

@@ -616,7 +616,7 @@
     $('pdDesc').textContent = p.desc || '';
     $('pdMedia').style.setProperty('--tint', p.bg || '#e2f0e8');
     $('pdMedia').innerHTML = art(p, '', S.sel.color);
-    $('pdSizes').innerHTML = (p.sizes || []).map(function (s) { return '<button type="button" class="size" data-size="' + esc(s) + '" aria-pressed="false">' + esc(s) + '</button>'; }).join('');
+    renderSizes();
     $('pdColors').innerHTML = (p.colors || []).map(function (c, i) { return '<button type="button" class="color" data-color="' + i + '" aria-pressed="' + (i === 0) + '"><i style="background:' + esc(c.h) + '" aria-hidden="true"></i>' + esc(c.n) + '</button>'; }).join('');
     $('pdColorLbl').hidden = !(p.colors || []).length;
     $('pdSizeHint').textContent = 'Elige una';
@@ -630,8 +630,20 @@
     if (out) { $('pdErr').hidden = false; $('pdErr').textContent = 'Agotado por ahora. Escríbenos por WhatsApp y te avisamos.'; }
     openLayer($('pdSheet'));
   }
+  /* Tallas del color elegido (productos antiguos sin tallas por color: las del producto) */
+  function sizesOf(p, c) { return (c && Array.isArray(c.sizes) && c.sizes.length ? c.sizes : p.sizes || []).map(Number); }
+  function renderSizes() {
+    var p = S.sel.p, have = sizesOf(p, S.sel.color);
+    var all = (p.sizes || []).map(Number);
+    have.forEach(function (s) { if (all.indexOf(s) < 0) all.push(s); });
+    all.sort(function (a, b) { return a - b; });
+    $('pdSizes').innerHTML = all.map(function (s) {
+      var ok = have.indexOf(s) > -1, on = ok && S.sel.size === s;
+      return '<button type="button" class="size" data-size="' + esc(s) + '" aria-pressed="' + on + '"' + (ok ? '' : ' disabled aria-label="Talla ' + esc(s) + ', no disponible en este color"') + '>' + esc(s) + '</button>';
+    }).join('');
+  }
   $('pdSizes').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-size]'); if (!b) return;
+    var b = e.target.closest('[data-size]'); if (!b || b.disabled) return;
     S.sel.size = Number(b.dataset.size);
     this.querySelectorAll('.size').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
     $('pdSizeHint').textContent = 'Talla ' + S.sel.size; $('pdErr').hidden = true;
@@ -642,6 +654,12 @@
     this.querySelectorAll('.color').forEach(function (x) { x.setAttribute('aria-pressed', x === b); });
     $('pdColorHint').textContent = S.sel.color.n;
     $('pdMedia').innerHTML = art(S.sel.p, '', S.sel.color);
+    // Si la talla elegida no existe en este color, se quita la selección y se avisa
+    if (S.sel.size && sizesOf(S.sel.p, S.sel.color).indexOf(S.sel.size) < 0) {
+      $('pdSizeHint').textContent = 'La talla ' + S.sel.size + ' no está en ' + S.sel.color.n + '. Elige otra';
+      S.sel.size = null;
+    }
+    renderSizes();
   });
   $('pdMinus').addEventListener('click', function () { S.sel.qty = Math.max(1, S.sel.qty - 1); $('pdQty').textContent = S.sel.qty; });
   $('pdPlusQ').addEventListener('click', function () { S.sel.qty = Math.min(9, S.sel.qty + 1); $('pdQty').textContent = S.sel.qty; });
@@ -1667,7 +1685,10 @@
     var added = 0;
     o.items.forEach(function (i) {
       var p = S.products.find(function (x) { return x.id === i.id; });
-      if (!p || Number(p.stock) === 0 || (p.sizes || []).map(Number).indexOf(Number(i.size)) < 0) return;
+      if (!p || Number(p.stock) === 0) return;
+      var col = (p.colors || []).find(function (c) { return c.n === i.color; });
+      if ((p.colors || []).length && i.color && !col) return;
+      if (sizesOf(p, col).indexOf(Number(i.size)) < 0) return;
       var key = p.id + '|' + i.size + '|' + (i.color || '');
       var it = S.cart.find(function (c) { return c.key === key; });
       if (it) it.qty = Math.min(9, it.qty + (i.qty || 1)); else S.cart.push({ key: key, id: p.id, size: Number(i.size), color: i.color || '', qty: Math.min(9, i.qty || 1) });

@@ -16,7 +16,7 @@
 <meta name="apple-mobile-web-app-title" content="Punto Club">
 <link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/fonts.css">
-<link rel="stylesheet" href="css/store.css?v=24">
+<link rel="stylesheet" href="css/store.css?v=25">
 <script>
   /* La pantalla de carga se muestra en cada apertura (web y PWA).
      Si /js/loader.js no llega a cargar, este respaldo la quita a los 6 s. */
@@ -277,11 +277,11 @@
         <div class="pd__price" id="pdPrice"></div>
         <p class="pd__desc" id="pdDesc"></p>
         <p class="notice-box"><svg aria-hidden="true"><use href="#i-nobox"/></svg><span><b>Se entrega sin caja.</b> El par llega protegido en bolsa, sin la caja original de la marca.</span></p>
+        <div class="opt" id="pdColorLbl">Color <span id="pdColorHint"></span></div>
+        <div class="colors" id="pdColors" role="group" aria-labelledby="pdColorLbl"></div>
         <div class="opt" id="pdSizeLbl">Talla <span id="pdSizeHint">Elige una</span></div>
         <div class="sizes" id="pdSizes" role="group" aria-labelledby="pdSizeLbl"></div>
         <p class="pd__err" id="pdErr" role="alert" hidden></p>
-        <div class="opt" id="pdColorLbl">Color <span id="pdColorHint"></span></div>
-        <div class="colors" id="pdColors" role="group" aria-labelledby="pdColorLbl"></div>
         <div class="opt" id="pdQtyLbl">Cantidad</div>
         <div class="qty" role="group" aria-labelledby="pdQtyLbl"><button type="button" id="pdMinus" aria-label="Quitar uno">−</button><output id="pdQty" aria-live="polite">1</output><button type="button" id="pdPlusQ" aria-label="Agregar uno">+</button></div>
         <div style="display:grid;gap:10px;margin-top:16px">
@@ -439,7 +439,7 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/tienda.js?v=27"></script>
+<script src="js/tienda.js?v=28"></script>
 <script src="js/pwa.js"></script>
 </body>
 </html>

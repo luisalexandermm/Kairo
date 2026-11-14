@@ -627,16 +627,18 @@
     $('pShape').value = p.shape || 's-low'; $('pShoeColor').value = p.shoeColor || '#1d2733'; $('pBg').value = p.bg || '#e2f0e8';
     $('pActive').checked = p.active !== false; $('pFeatured').checked = !!p.featured;
     prodImageUrl = p.image || '';
-    pickedSizes = new Set(p.sizes && p.sizes.length ? p.sizes.map(Number) : [36, 37, 38, 39, 40, 41, 42, 43]);
-    $('sizeChips').innerHTML = ALL_SIZES.map(function (s) { return '<button type="button" class="size-chip' + (pickedSizes.has(s) ? ' on' : '') + '" data-sz="' + s + '" aria-pressed="' + pickedSizes.has(s) + '">' + s + '</button>'; }).join('');
-    $('colorRows').innerHTML = (p.colors && p.colors.length ? p.colors : [{ n: 'Negro', h: '#1d2733' }]).map(colorRow).join('');
+    // Productos antiguos (sin tallas por color): cada color arranca con las tallas del producto
+    var baseSizes = p.sizes && p.sizes.length ? p.sizes : [36, 37, 38, 39, 40, 41, 42, 43];
+    $('colorRows').innerHTML = (p.colors && p.colors.length ? p.colors : [{ n: 'Negro', h: '#1d2733' }]).map(function (c) {
+      return colorRow(c, Array.isArray(c.sizes) && c.sizes.length ? c.sizes : baseSizes);
+    }).join('');
     $('prodFile').value = ''; $('prodErr').hidden = true;
     prodPreview(); openDrawer('productDrawer');
   }
-  $('sizeChips').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-sz]'); if (!b) return; var s = Number(b.dataset.sz);
-    if (pickedSizes.has(s)) pickedSizes.delete(s); else pickedSizes.add(s);
-    b.classList.toggle('on', pickedSizes.has(s)); b.setAttribute('aria-pressed', pickedSizes.has(s));
+  $('colorRows').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-sz]'); if (!b) return;
+    var on = !b.classList.contains('on');
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
   });
   function prodPreview() {
     $('prodPreview').style.background = $('pBg').value;
@@ -646,16 +648,22 @@
   ['pShape', 'pShoeColor', 'pBg', 'pCat'].forEach(function (id) { $(id).addEventListener('input', prodPreview); });
   $('prodImgRemove').addEventListener('click', function () { prodImageUrl = ''; prodPreview(); });
   var cr = 0;
-  function colorRow(c) {
+  function colorRow(c, sizes) {
     cr++;
-    return '<div class="color-row" data-image="' + esc(c.image || '') + '"><label class="sr-only" for="cn' + cr + '">Nombre del color</label><input id="cn' + cr + '" type="text" value="' + esc(c.n || '') + '" placeholder="Nombre del color">' +
+    var have = (sizes || []).map(Number);
+    var chips = '<div class="color-sizes"><span class="color-sizes__lbl" id="cs' + cr + '">Tallas en este color</span><div class="size-chips" role="group" aria-labelledby="cs' + cr + '">' +
+      ALL_SIZES.map(function (s) { var on = have.indexOf(s) > -1; return '<button type="button" class="size-chip' + (on ? ' on' : '') + '" data-sz="' + s + '" aria-pressed="' + on + '">' + s + '</button>'; }).join('') + '</div></div>';
+    return '<div class="color-block"><div class="color-row" data-image="' + esc(c.image || '') + '"><label class="sr-only" for="cn' + cr + '">Nombre del color</label><input id="cn' + cr + '" type="text" value="' + esc(c.n || '') + '" placeholder="Nombre del color">' +
       '<label class="sr-only" for="ch' + cr + '">Tono</label><input id="ch' + cr + '" type="color" value="' + esc(c.h || '#333333') + '">' +
       '<label class="sr-only" for="cf' + cr + '">Foto de este color</label><input id="cf' + cr + '" class="color-image" type="file" accept="image/png,image/jpeg,image/webp">' +
       '<div class="color-image-preview">' + (safeUrl(c.image) ? '<img src="' + esc(c.image) + '" alt="">' : '<span>Sin foto</span>') + '</div>' +
-      '<button type="button" data-rmcolor aria-label="Quitar este color">✕</button></div>';
+      '<button type="button" data-rmcolor aria-label="Quitar este color">✕</button></div>' + chips + '</div>';
   }
-  $('addColor').addEventListener('click', function () { $('colorRows').insertAdjacentHTML('beforeend', colorRow({ n: '', h: '#333333' })); });
-  $('colorRows').addEventListener('click', function (e) { if (e.target.closest('[data-rmcolor]')) e.target.closest('.color-row').remove(); });
+  $('addColor').addEventListener('click', function () {
+    $('colorRows').insertAdjacentHTML('beforeend', colorRow({ n: '', h: '#333333' }, []));
+    var last = $('colorRows').lastElementChild; last.querySelector('input[type=text]').focus();
+  });
+  $('colorRows').addEventListener('click', function (e) { if (e.target.closest('[data-rmcolor]')) e.target.closest('.color-block').remove(); });
   $('colorRows').addEventListener('change', async function (e) {
     if (!e.target.classList.contains('color-image')) return;
     var row = e.target.closest('.color-row'), url = await upload(e.target.files[0]);
@@ -691,18 +699,24 @@
     catch (err) { toast('Error al subir: ' + err.message, 4500); return ''; }
   }
   $('saveProduct').addEventListener('click', async function () {
-    var colors = Array.prototype.map.call($('colorRows').querySelectorAll('.color-row'), function (row) {
-      return { n: row.querySelector('input[type=text]').value.trim() || 'Color', h: row.querySelector('input[type=color]').value, image: row.dataset.image || '' };
+    var colors = Array.prototype.map.call($('colorRows').querySelectorAll('.color-block'), function (blk) {
+      var row = blk.querySelector('.color-row');
+      var sz = Array.prototype.map.call(blk.querySelectorAll('.size-chip.on'), function (b) { return Number(b.dataset.sz); }).sort(function (a, b) { return a - b; });
+      return { n: row.querySelector('input[type=text]').value.trim() || 'Color', h: row.querySelector('input[type=color]').value, image: row.dataset.image || '', sizes: sz };
     });
+    // Tallas del producto = todas las que hay en algún color
+    var allSizes = []; colors.forEach(function (c) { c.sizes.forEach(function (s) { if (allSizes.indexOf(s) < 0) allSizes.push(s); }); });
+    allSizes.sort(function (a, b) { return a - b; });
+    var sinTallas = colors.filter(function (c) { return !c.sizes.length; })[0];
     var body = {
       name: $('pName').value.trim(), brand: $('pBrand').value.trim(), category: $('pCat').value, gender: $('pGen').value,
       price: Number($('pPrice').value) || 0, salePrice: Number($('pSale').value) || null, stock: Number($('pStock').value) || 0,
-      tag: $('pTag').value.trim(), desc: $('pDesc').value.trim(), sizes: Array.from(pickedSizes).sort(function (a, b) { return a - b; }),
-      colors: colors.length ? colors : [{ n: 'Único', h: '#1d2733' }], image: prodImageUrl,
+      tag: $('pTag').value.trim(), desc: $('pDesc').value.trim(), sizes: allSizes,
+      colors: colors, image: prodImageUrl,
       shape: $('pShape').value, shoeColor: $('pShoeColor').value, bg: $('pBg').value,
       active: $('pActive').checked, featured: $('pFeatured').checked
     };
-    var bad = !body.name ? ['pName', 'Escribe el nombre del producto.'] : !body.brand ? ['pBrand', 'Escribe la marca.'] : !body.price ? ['pPrice', 'Escribe el precio.'] : body.salePrice && body.salePrice >= body.price ? ['pSale', 'El precio de oferta debe ser menor que el precio normal.'] : !body.sizes.length ? ['sizeChips', 'Elige al menos una talla.'] : null;
+    var bad = !body.name ? ['pName', 'Escribe el nombre del producto.'] : !body.brand ? ['pBrand', 'Escribe la marca.'] : !body.price ? ['pPrice', 'Escribe el precio.'] : body.salePrice && body.salePrice >= body.price ? ['pSale', 'El precio de oferta debe ser menor que el precio normal.'] : !colors.length ? ['addColor', 'Agrega al menos un color con sus tallas.'] : sinTallas ? ['colorRows', 'Elige al menos una talla para el color “' + sinTallas.n + '” (o quita ese color).'] : null;
     // El mensaje queda al final del cajón: lo mostramos también en un aviso y llevamos al campo
     function showErr(msg, field) {
       $('prodErr').textContent = msg; $('prodErr').hidden = false; toast(msg, 4500);
